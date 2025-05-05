@@ -1,0 +1,12 @@
+{% extends 'home/index.html' %} {% block Contenido %}
+<h1 class="fst-italic lh-1 mb-4">Ferreteria</h1>
+<h1 class="fst-italic lh-1 mb-4">Santa Rita</h1>
+<br />
+<br />
+<form method="post" action="{% url 'login' %}">
+  {% csrf_token %} {{ form.as_p }}
+  <button class="btn btn-primary" type="submit">Ingresar</button>
+</form>
+<br />
+<a href="#">¿Olvidaste tu contraseña?</a>
+{% endblock Contenido %}
