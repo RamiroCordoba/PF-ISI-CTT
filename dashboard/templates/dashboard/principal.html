@@ -15,7 +15,7 @@
       href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css"
       rel="stylesheet"
     />
-    <link href="{% static 'principal/css/styles.css'%}" rel="stylesheet" />
+    <link href="{% static 'principal/css/styles.css'%}?v=1" rel="stylesheet" />
     <script
       src="https://use.fontawesome.com/releases/v6.3.0/js/all.js"
       crossorigin="anonymous"
@@ -80,11 +80,11 @@
           <div class="sb-sidenav-menu">
             <div class="nav">
               <div class="sb-sidenav-menu-heading">Principal</div>
-              <a class="nav-link" href="index.html">
+              <a class="nav-link" href="{% url 'dashboard'%}">
                 <div class="sb-nav-link-icon">
                   <i class="fas fa-tachometer-alt"></i>
                 </div>
-                Dashboard
+                Inicio
               </a>
               <div class="sb-sidenav-menu-heading">Negocio</div>
               <a
@@ -111,10 +111,13 @@
               >
                 <nav class="sb-sidenav-menu-nested nav">
                   <a class="nav-link" href="layout-static.html"
-                    >Buscar producto</a
+                    >Lista de productos</a
                   >
                   <a class="nav-link" href="layout-sidenav-light.html"
                     >Ingresar nuevo producto</a
+                  >
+                  <a class="nav-link" href="{% url 'categorias'%}"
+                    >Categorias de productos</a
                   >
                 </nav>
               </div>
@@ -219,6 +222,7 @@
       </div>
       <div id="layoutSidenav_content">
         <main>
+          {% block Contenido %}
           <div class="container-fluid px-4">
             <h1 class="mt-4">Dashboard</h1>
             <ol class="breadcrumb mb-4">
@@ -317,6 +321,7 @@
               </div>
             </div>
           </div>
+          {% endblock Contenido %}
         </main>
         <footer class="py-4 bg-light mt-auto">
           <div class="container-fluid px-4">
