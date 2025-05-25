@@ -9,8 +9,8 @@ urlpatterns = [
     path('categorias/editar_categoria/<int:pk>/', CategoriaUpdate.as_view(), name='editar_categoria'),
     path('categorias/eliminar_categoria/<int:pk>/', CategoriaDelete.as_view(), name='eliminar_categoria'),
     #__________ Productos
-    path('productos/misproductos', ProductoList.as_view(), name='misproductos'),
-    path('productos/nuevo_producto/', ProductoCreate.as_view(), name='nuevo_producto'),
-    path('productos/editar_producto/<int:pk>/', ProductoUpdate.as_view(), name='editar_producto'),
-    path('productos/eliminar_producto/<int:pk>/', ProductoDelete.as_view(), name='eliminar_producto'),
+    path('articulos/', ProductoList.as_view(), name='mis_articulos'),
+    path('articulos/nuevo_articulo/', ProductoCreate.as_view(), name='nuevo_articulo'),
+    path('articulos/editar_articulo/<int:pk>/', ProductoUpdate.as_view(), name='editar_articulo'),
+    path('articulos/eliminar_articulo/<int:pk>/', ProductoDelete.as_view(), name='eliminar_articulo'),
 ]

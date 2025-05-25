@@ -40,8 +40,8 @@ class CategoriaDelete(DeleteView):
 
 class ProductoList(ListView):
     model = Producto
-    template_name = "productos/producto_list.html"
-    context_object_name = "productos"
+    template_name = "articulos/articulo_list.html"
+    context_object_name = "articulos"
 
     def get_queryset(self):
         queryset = super().get_queryset().order_by("id")
@@ -66,16 +66,16 @@ class ProductoList(ListView):
 class ProductoCreate(CreateView):
      model=Producto
      fields=["nombre","descripcion","precio","stock","stock_maximo","stock_minimo","categoria","marca","fecha_ultimo_ingreso","activo"]
-     template_name="productos/producto_form.html"
-     success_url = reverse_lazy("misproductos")
+     template_name="articulos/articulo_form.html"
+     success_url = reverse_lazy("mis_articulos")
      
 class ProductoUpdate(UpdateView):
      model=Producto
      fields=["nombre","descripcion","precio","stock","stock_maximo","stock_minimo","categoria","marca","fecha_ultimo_ingreso","activo"]
-     template_name="productos/producto_form.html"
-     success_url = reverse_lazy("misproductos")
+     template_name="articulos/articulo_form.html"
+     success_url = reverse_lazy("mis_articulos")
 
 class ProductoDelete(DeleteView):
      model=Producto
-     template_name="productos/producto_confirm_delete.html"
-     success_url = reverse_lazy("misproductos")
+     template_name="articulos/articulo_confirm_delete.html"
+     success_url = reverse_lazy("mis_articulos")

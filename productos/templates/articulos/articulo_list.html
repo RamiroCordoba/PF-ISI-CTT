@@ -1,12 +1,12 @@
 {% extends 'dashboard/principal.html' %} {% block Contenido %}
 <div class="container-fluid px-4">
-  <h1 class="mt-4">Mis productos</h1>
+  <h1 class="mt-4">Mis articulos</h1>
   <hr style="height: 5px; background-color: black; border: none" />
   <!-- Fila de funciones generales -->
   <div class="d-flex justify-content-between align-items-center mb-3">
     <div>
-      <a href="{% url 'nuevo_producto' %}" class="btn btn-primary">
-        Nuevo producto
+      <a href="{% url 'nuevo_articulo' %}" class="btn btn-primary">
+        Nuevo articulo
       </a>
     <!-- Buscador y quitar filtro -->
     </div>
@@ -22,7 +22,7 @@
     </div>
     <div class="d-flex align-items-center">
       {% if request.GET.buscar %}
-        <a href="{% url 'misproductos' %}" class="btn btn-outline-secondary me-2" title="Quitar filtro">
+        <a href="{% url 'mis_articulos' %}" class="btn btn-outline-secondary me-2" title="Quitar filtro">
           <i class="fa fa-times"></i>
         </a>
       {% endif %}
@@ -52,7 +52,7 @@
       </tr>
     <thead>
     <tbody> 
-      {% for p in productos %}
+      {% for p in articulos %}
       <tr>
         <td class="text-center">{{p.id}}</td>
         <td>{{p.nombre}}</td>
@@ -64,16 +64,16 @@
         <td class="text-center">{{p.activo}}</td>
         <td class="text-center">
           {% if request.user.is_staff %}
-              <a href="{% url 'editar_producto' p.id %}" class="btn btn-outline-success mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
+              <a href="{% url 'editar_articulo' p.id %}" class="btn btn-outline-success mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
                   <i class="fa fa-edit fa-sm" title="Editar"></i>
               </a>
-              <a href="{% url 'eliminar_producto' p.id %}" class="btn btn-outline-danger mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
+              <a href="{% url 'eliminar_articulo' p.id %}" class="btn btn-outline-danger mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
                   <i class="fa fa-trash fa-sm" title="Eliminar"></i>
               </a> 
               <a href="#" class="btn btn-outline-primary mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
                 <i class="fa-solid fa-eye" title="Ver"></i>
               </a> 
-            {% endif %}
+          {% endif %}
         </td>
       </tr>
       {% endfor %}
