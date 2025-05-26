@@ -1,10 +1,11 @@
 from django.shortcuts import render
 from django.urls import reverse_lazy
-from django.views.generic import ListView,CreateView,UpdateView,DeleteView
+from django.views.generic import ListView,CreateView,UpdateView,DeleteView,DetailView
 from .models import *
-
+from django.contrib.auth.mixins import LoginRequiredMixin
 #______ Categorias CRUD
-class CategoriaList(ListView):
+
+class CategoriaList(LoginRequiredMixin, ListView):
   model=Categoria
   template_name="categorias/categoria_list.html"
   context_object_name="categorias"
@@ -18,27 +19,27 @@ class CategoriaList(ListView):
               queryset = queryset.filter(nombre__icontains=buscar)
           
           return queryset
-  
-class CategoriaCreate(CreateView):
+
+class CategoriaCreate(LoginRequiredMixin,CreateView):
      model=Categoria
      fields=["nombre","descripcion"]
      template_name="categorias/categoria_form.html"
      success_url = reverse_lazy("categorias")
      
-class CategoriaUpdate(UpdateView):
+class CategoriaUpdate(LoginRequiredMixin,UpdateView):
      model=Categoria
      fields=["nombre","descripcion"]
      template_name="categorias/categoria_form.html"
      success_url = reverse_lazy("categorias")
 
-class CategoriaDelete(DeleteView):
+class CategoriaDelete(LoginRequiredMixin,DeleteView):
      model=Categoria
      template_name="categorias/categoria_confirm_delete.html"
      success_url = reverse_lazy("categorias")
 
 #______ Productos CRUD
 
-class ProductoList(ListView):
+class ArticuloList(LoginRequiredMixin,ListView):
     model = Producto
     template_name = "articulos/articulo_list.html"
     context_object_name = "articulos"
@@ -63,19 +64,24 @@ class ProductoList(ListView):
         return context
 
   
-class ProductoCreate(CreateView):
+class ArticuloCreate(LoginRequiredMixin,CreateView):
      model=Producto
      fields=["nombre","descripcion","precio","stock","stock_maximo","stock_minimo","categoria","marca","fecha_ultimo_ingreso","activo"]
      template_name="articulos/articulo_form.html"
      success_url = reverse_lazy("mis_articulos")
      
-class ProductoUpdate(UpdateView):
+class ArticuloUpdate(LoginRequiredMixin,UpdateView):
      model=Producto
      fields=["nombre","descripcion","precio","stock","stock_maximo","stock_minimo","categoria","marca","fecha_ultimo_ingreso","activo"]
      template_name="articulos/articulo_form.html"
      success_url = reverse_lazy("mis_articulos")
 
-class ProductoDelete(DeleteView):
+class ArticuloDelete(LoginRequiredMixin,DeleteView):
      model=Producto
      template_name="articulos/articulo_confirm_delete.html"
      success_url = reverse_lazy("mis_articulos")
+
+class ArticuloDetail(DetailView):
+     model=Producto
+     template_name="articulos/articulo_details.html"
+     context_object_name = 'elArticulo'
