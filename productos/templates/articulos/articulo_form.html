@@ -1,0 +1,21 @@
+{% extends 'dashboard/principal.html' %} {% block Contenido %}
+<div class="container-fluid px-4">
+  <h1 class="mt-4">Nuevo producto</h1>
+  <hr style="height: 5px; background-color: black; border: none" />
+
+  <form action="" method="post">
+    {% csrf_token %}
+    <table>
+      {{form.as_table}}
+    </table>
+    <input class="btn btn-primary" type="submit" value="Guardar" />
+    <button
+      class="btn btn-secondary"
+      type="button"
+      onclick="window.location.href='{% url 'mis_articulos' %}'"
+    >
+      Cancelar
+    </button>
+  </form>
+</div>
+{% endblock Contenido %}

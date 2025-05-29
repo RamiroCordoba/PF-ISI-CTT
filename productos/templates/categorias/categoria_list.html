@@ -44,10 +44,10 @@
         <td>{{c.descripcion}}</td>
         <td>
           {% if request.user.is_staff %}
-              <a href="{% url 'editar_categoria' c.id %}" class="btn btn-success mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
+              <a href="{% url 'editar_categoria' c.id %}" class="btn btn-outline-success mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
                   <i class="fa fa-edit fa-sm" title="Editar"></i>
               </a>
-              <a href="{% url 'eliminar_categoria' c.id %}" class="btn btn-danger mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
+              <a href="{% url 'eliminar_categoria' c.id %}" class="btn btn-outline-danger mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
                   <i class="fa fa-trash fa-sm" title="Eliminar"></i>
               </a> 
             {% endif %}

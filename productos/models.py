@@ -18,6 +18,7 @@ class Producto(models.Model):
   precio = models.DecimalField(max_digits=10, decimal_places=2)
   stock = models.PositiveIntegerField(default=0)
   stock_maximo = models.PositiveIntegerField(null=True, blank=True)
+  stock_minimo = models.PositiveIntegerField(null=True, blank=True)
   categoria = models.ForeignKey('Categoria', on_delete=models.PROTECT, related_name='productos')
   marca = models.CharField(max_length=50, blank=True, null=True)
   fecha_registro = models.DateTimeField(auto_now_add=True)
