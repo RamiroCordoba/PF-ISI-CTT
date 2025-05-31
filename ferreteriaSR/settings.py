@@ -82,10 +82,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'mssql',
         'NAME': 'FERRETERIASRDB',
-        'USER':'admin',
-        'PASSWORD':'admin',
-        'HOST':r'RamaLenovo2025\SQLEXPRESS',
-        'PORT':'',
+        'USER':'sa',
+        'PASSWORD':'proyecto2025',
+        'HOST':'100.119.162.100\\PROYECTO',
+        'PORT':'1433',
         'OPTIONS':{'driver':'ODBC Driver 17 for SQL Server'},
         'extra_params': 'TrustServerCertificate=yes;',
     }
