@@ -41,7 +41,8 @@ INSTALLED_APPS = [
   #____ Nuestras app de la ferreteria
     'home',
     'dashboard',
-    'productos'
+    'productos',
+    'usuarios',
 ]
 
 MIDDLEWARE = [
