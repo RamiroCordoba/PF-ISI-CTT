@@ -5,9 +5,11 @@
   <!-- Fila de funciones generales -->
   <div class="d-flex justify-content-between align-items-center mb-3">
     <div>
+      {% if request.user.is_staff %}
       <a href="{% url 'nueva_categoria' %}" class="btn btn-primary">
         Nueva categoría
       </a>
+      {%endif%}
     <!-- Buscador y quitar filtro -->
     </div>
     <div class="d-flex align-items-center">
@@ -30,28 +32,28 @@
   <table class="table table-striped">
     <thead>
       <tr>
-        <th>Id</th>
+        {% if request.user.is_staff %}
+        <th>Acciones</th>
+        {%endif%}
         <th>Nombre</th>
         <th>Descripcion</th>
-        <th>Acciones</th>
       </tr>
     <thead>
     <tbody> 
       {% for c in categorias %}
       <tr>
-        <td>{{c.id}}</td>
-        <td>{{c.nombre}}</td>
-        <td>{{c.descripcion}}</td>
+        {% if request.user.is_staff %}
         <td>
-          {% if request.user.is_staff %}
               <a href="{% url 'editar_categoria' c.id %}" class="btn btn-outline-success mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
                   <i class="fa fa-edit fa-sm" title="Editar"></i>
               </a>
               <a href="{% url 'eliminar_categoria' c.id %}" class="btn btn-outline-danger mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
                   <i class="fa fa-trash fa-sm" title="Eliminar"></i>
               </a> 
-            {% endif %}
         </td>
+        {% endif %}
+        <td>{{c.nombre}}</td>
+        <td>{{c.descripcion}}</td>
       </tr>
       {% endfor %}
     </tbody>

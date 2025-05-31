@@ -34,29 +34,27 @@
       <a href="{% url 'mis_articulos' %}" class="btn btn-outline-secondary">
         <i class="fa fa-arrow-left me-1"></i> Volver
       </a>
+      {% if request.user.is_staff %}
       <a
         href="{% url 'editar_articulo' elArticulo.id %}"
         class="btn btn-outline-success"
       >
         <i class="fa fa-edit me-1"></i> Editar
       </a>
+      {%endif%}
     </div>
   </div>
-
   <!-- Separador -->
   <hr class="my-3 border-top border-2 border-dark-subtle" />
-
-  <!-- Tarjeta del detalle -->
   <div class="container mt-5">
     <div class="row">
-      <!-- Columna: Imagen + info lateral -->
+      <!-- Imagen -->
       <div class="col-md-4 text-center">
         <img
           src="{% static 'principal/assets/img/404_no_img_producto.png' %}"
           alt="Imagen del artículo"
           class="img-fluid border mb-3 rounded"
         />
-
         <!-- Estado del artículo -->
         <div class="mb-3">
           <span
@@ -66,21 +64,15 @@
           </span>
         </div>
       </div>
-
-      <!-- Separador -->
       <div class="col-md-1 d-none d-md-block">
         <div class="vr h-100"></div>
       </div>
-
-      <!-- Columna: Información general -->
+      <!-- Información general -->
       <div class="col-md-7">
         <p><strong>Marca:</strong> {{ elArticulo.marca }}</p>
         <p><strong>Categoría:</strong> {{ elArticulo.categoria }}</p>
         <p><strong>Precio:</strong> ${{ elArticulo.precio }}</p>
-
         <hr />
-
-        <!-- Descripción -->
         <p><strong>Descripción:</strong></p>
         <div
           class="border rounded p-3 mb-3"
@@ -88,8 +80,6 @@
         >
           {{ elArticulo.descripcion }}
         </div>
-
-        <!-- Fechas -->
         <hr />
         <p>
           <strong>Fecha de registro:</strong>
@@ -110,11 +100,9 @@
             <strong>Stock máximo:</strong> {{ elArticulo.stock_maximo }}
           </div>
         </div>
-
         <hr class="my-4" />
       </div>
     </div>
   </div>
-
   {% endblock Contenido %}
 </div>

@@ -28,7 +28,7 @@
       {% endif %}
     
       <form method="get" class="d-flex">
-        <input type="text" name="buscar" class="form-control me-2" placeholder="Buscar categoría..." value="{{ request.GET.buscar }}">
+        <input type="text" name="buscar" class="form-control me-2" placeholder="Buscar articulo..." value="{{ request.GET.buscar }}">
         <button class="btn btn-primary" type="submit">Buscar</button>
       </form>
     </div>
@@ -40,7 +40,7 @@
   <table class="table table-striped table-bordered text-center">
     <thead>
       <tr>
-        <th class="text-center">Id</th>
+        <th class="text-center">Acciones</th>
         <th class="text-center">Nombre</th>
         <th class="text-center">Marca</th>
         <th class="text-center">Precio</th>
@@ -48,20 +48,11 @@
         <th class="text-center">Categoria</th>
         <th class="text-center">Ultimo Ingreso</th>
         <th class="text-center">Activo</th>
-        <th class="text-center">Acciones</th>
       </tr>
     <thead>
     <tbody> 
       {% for p in articulos %}
       <tr>
-        <td class="text-center">{{p.id}}</td>
-        <td>{{p.nombre}}</td>
-        <td class="text-center">{{p.marca}}</td>
-        <td class="text-center">{{p.precio}}</td>
-        <td class="text-center">{{p.stock}}</td>
-        <td class="text-center">{{p.categoria}}</td>
-        <td class="text-center">{{ p.fecha_ultimo_ingreso|date:"d/m/Y" }}</td>
-        <td class="text-center">{{p.activo}}</td>
         <td class="text-center">
           {% if request.user.is_staff %}
               <a href="{% url 'editar_articulo' p.id %}" class="btn btn-outline-success mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
@@ -70,11 +61,18 @@
               <a href="{% url 'eliminar_articulo' p.id %}" class="btn btn-outline-danger mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
                   <i class="fa fa-trash fa-sm" title="Eliminar"></i>
               </a> 
-              <a href="{% url 'detalles_de_articulo' p.id %}" class="btn btn-outline-primary mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
-                <i class="fa-solid fa-eye" title="Ver"></i>
-              </a> 
           {% endif %}
+          <a href="{% url 'detalles_de_articulo' p.id %}" class="btn btn-outline-primary mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
+            <i class="fa-solid fa-eye" title="Ver"></i>
+          </a> 
         </td>
+        <td>{{p.nombre}}</td>
+        <td class="text-center">{{p.marca}}</td>
+        <td class="text-center">{{p.precio}}</td>
+        <td class="text-center">{{p.stock}}</td>
+        <td class="text-center">{{p.categoria}}</td>
+        <td class="text-center">{{ p.fecha_ultimo_ingreso|date:"d/m/Y" }}</td>
+        <td class="text-center">{{p.activo}}</td>
       </tr>
       {% endfor %}
     </tbody>
