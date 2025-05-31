@@ -43,7 +43,7 @@
         <th class="text-center">Acciones</th>
         <th class="text-center">Nombre</th>
         <th class="text-center">Marca</th>
-        <th class="text-center">Precio</th>
+        <th class="text-center">Precio $</th>
         <th class="text-center">Stock</th>
         <th class="text-center">Categoria</th>
         <th class="text-center">Ultimo Ingreso</th>
@@ -72,7 +72,13 @@
         <td class="text-center">{{p.stock}}</td>
         <td class="text-center">{{p.categoria}}</td>
         <td class="text-center">{{ p.fecha_ultimo_ingreso|date:"d/m/Y" }}</td>
-        <td class="text-center">{{p.activo}}</td>
+        <td>
+          {% if producto.activo == "True" %}
+          <i class="far fa-square text-secondary"></i>
+          {% else %}
+          <i class="fas fa-check-square text-success"></i>
+          {% endif %}
+        </td>
       </tr>
       {% endfor %}
     </tbody>
