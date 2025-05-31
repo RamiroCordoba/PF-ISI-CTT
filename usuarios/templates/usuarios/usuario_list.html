@@ -17,19 +17,33 @@
     <table class="table table-striped">
       <thead>
         <tr>
-          <th>Nombre de Usuario</th>
-          <th>Nombre Completo</th>
-          <th>Email</th>
-          <th>Rol / Grupo</th>
+          <th class="text-center">Acciones</th>
+          <th class="text-center">Nombre de Usuario</th>
+          <th class="text-center">Nombre Completo</th>
+          <th class="text-center">Email</th>
+          <th class="text-center">Rol / Grupo</th>
         </tr>
       </thead>
       <tbody>
         {% for user in usuarios %}
         <tr>
-          <td>{{ user.username }}</td>
-          <td>{{ user.first_name }} {{ user.last_name }}</td>
-          <td>{{ user.email }}</td>
-          <td>
+          <td class="text-center">
+            {% if request.user.is_staff %}
+                <a href="#" class="btn btn-outline-success mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
+                    <i class="fa fa-edit fa-sm" title="Editar"></i>
+                </a>
+                <a href="#" class="btn btn-outline-danger mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
+                    <i class="fa fa-trash fa-sm" title="Eliminar"></i>
+                </a> 
+            {% endif %}
+            <a href="#" class="btn btn-outline-primary mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
+              <i class="fa-solid fa-eye" title="Ver"></i>
+            </a> 
+          </td>
+          <td class="text-center">{{ user.username }}</td>
+          <td class="text-center">{{ user.first_name }} {{ user.last_name }}</td>
+          <td class="text-center">{{ user.email }}</td>
+          <td class="text-center">
             {% for group in user.groups.all %}
               {{ group.name }}{% if not forloop.last %}, {% endif %}
             {% empty %}
