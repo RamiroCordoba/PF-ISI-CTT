@@ -1,20 +1,81 @@
-{% extends 'dashboard/principal.html' %} {% block Contenido %}
-<div class="container">
-  <h2>Detalles del Usuario: {{ usuario.username }}</h2>
-  <ul>
-    <li><strong>Nombre:</strong> {{ usuario.first_name }}</li>
-    <li><strong>Apellido:</strong> {{ usuario.last_name }}</li>
-    <li><strong>Email:</strong> {{ usuario.email }}</li>
-    <li>
-      <strong>Roles:</strong>
-      {% if usuario.groups.all %} {% for grupo in usuario.groups.all %} {{
-      grupo.name }}{% if not forloop.last %}, {% endif %} {% endfor %} {% else
-      %} Sin roles asignados {% endif %}
-    </li>
-
-    <li><strong>Fecha de creación:</strong> {{ usuario.date_joined }}</li>
-    <li><strong>Último acceso:</strong> {{ usuario.last_login }}</li>
-  </ul>
-  <a href="{% url 'usuarios:listar_usuarios' %}">Volver a la lista</a>
+{% extends 'dashboard/principal.html' %} {% load static %} {% block Contenido %}
+<div class="container-fluid px-4">
+  <!-- Breadcrumb -->
+  <nav
+    aria-label="breadcrumb"
+    class="mt-4 rounded px-3 py-2"
+    style="background-color: #f0f0f0"
+  >
+    <ol class="breadcrumb mb-0 text-muted">
+      <li class="breadcrumb-item">
+        <a
+          href="{% url 'dashboard' %}"
+          class="text-decoration-none text-muted fw-bold"
+          >Inicio</a
+        >
+      </li>
+      <li class="breadcrumb-item">
+        <a
+          href="{% url 'usuarios:listar_usuarios' %}"
+          class="text-decoration-none text-muted fw-bold"
+          >Mis usuarios</a
+        >
+      </li>
+      <li class="breadcrumb-item active" aria-current="page">
+        {{ usuario.username }}
+      </li>
+    </ol>
+  </nav>
+  <hr style="height: 3px; background-color: black; border: none" />
+  <!-- Título y botones -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="mb-0">{{ usuario.username }}</h1>
+    <div class="d-flex gap-2 mt-2">
+      <a
+        href="{% url 'usuarios:listar_usuarios' %}"
+        class="btn btn-outline-secondary"
+      >
+        <i class="fa fa-arrow-left me-1"></i> Volver
+      </a>
+      {% if request.user.is_staff %}
+      <a
+        href="{% url 'usuarios:editar_usuario' usuario.id %}"
+        class="btn btn-outline-success"
+      >
+        <i class="fa fa-edit me-1"></i> Editar
+      </a>
+      {%endif%}
+    </div>
+  </div>
+  <!-- Separador -->
+  <hr class="my-3 border-top border-2 border-dark-subtle" />
+  <div class="container mt-5">
+    <div class="row">
+      <!-- Imagen -->
+      <div class="col-md-4 text-center">
+        <img
+          src="{% static 'principal/assets/img/404_user.png' %}"
+          alt="Imagen del artículo"
+          class="img-fluid border mb-3 rounded"
+        />
+      </div>
+      <div class="col-md-1 d-none d-md-block">
+        <div class="vr h-100"></div>
+      </div>
+      <!-- Información general -->
+      <div class="col-md-7">
+        <p><strong>Nombre:</strong> {{ usuario.first_name }}</p>
+        <p><strong>Apellido:</strong> {{ usuario.last_name }}</p>
+        <p><strong>Email:</strong> ${{ usuario.email }}</p>
+        <p><strong>Rol/es:</strong> ${{ usuario.groups.all }}</p>
+        <p>
+          <strong>Fecha de registro:</strong> ${{
+          usuario.date_joined|date:"d/m/Y" }}
+        </p>
+        <p><strong>Ultimo acceso:</strong> ${{ usuario.last_login }}</p>
+        <hr class="my-4" />
+      </div>
+    </div>
+  </div>
+  {% endblock Contenido %}
 </div>
-{% endblock Contenido %}
