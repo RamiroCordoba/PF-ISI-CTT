@@ -29,14 +29,14 @@
         <tr>
           <td class="text-center">
             {% if request.user.is_staff %}
-                <a href="#" class="btn btn-outline-success mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
+                <a href="{% url 'usuarios:editar_usuario' user.pk %}" class="btn btn-outline-success mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
                     <i class="fa fa-edit fa-sm" title="Editar"></i>
                 </a>
-                <a href="#" class="btn btn-outline-danger mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
+                <a href="{% url 'usuarios:eliminar_usuario' user.pk %}" class="btn btn-outline-danger mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
                     <i class="fa fa-trash fa-sm" title="Eliminar"></i>
                 </a> 
             {% endif %}
-            <a href="#" class="btn btn-outline-primary mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
+            <a href="{% url 'usuarios:detalle_usuario' user.pk %}" class="btn btn-outline-primary mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
               <i class="fa-solid fa-eye" title="Ver"></i>
             </a> 
           </td>

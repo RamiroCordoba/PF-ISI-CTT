@@ -1,0 +1,20 @@
+{% extends 'dashboard/principal.html' %} {% block Contenido %}
+<div class="container">
+  <h2>Detalles del Usuario: {{ usuario.username }}</h2>
+  <ul>
+    <li><strong>Nombre:</strong> {{ usuario.first_name }}</li>
+    <li><strong>Apellido:</strong> {{ usuario.last_name }}</li>
+    <li><strong>Email:</strong> {{ usuario.email }}</li>
+    <li>
+      <strong>Roles:</strong>
+      {% if usuario.groups.all %} {% for grupo in usuario.groups.all %} {{
+      grupo.name }}{% if not forloop.last %}, {% endif %} {% endfor %} {% else
+      %} Sin roles asignados {% endif %}
+    </li>
+
+    <li><strong>Fecha de creación:</strong> {{ usuario.date_joined }}</li>
+    <li><strong>Último acceso:</strong> {{ usuario.last_login }}</li>
+  </ul>
+  <a href="{% url 'usuarios:listar_usuarios' %}">Volver a la lista</a>
+</div>
+{% endblock Contenido %}
