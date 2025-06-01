@@ -41,7 +41,8 @@ INSTALLED_APPS = [
   #____ Nuestras app de la ferreteria
     'home',
     'dashboard',
-    'productos'
+    'productos',
+    'usuarios',
 ]
 
 MIDDLEWARE = [
@@ -85,7 +86,7 @@ DATABASES = {
         'USER':'sa',
         'PASSWORD':'proyecto2025',
         'HOST':'100.119.162.100\\PROYECTO',
-        'PORT':'1433',
+        'PORT':'',
         'OPTIONS':{'driver':'ODBC Driver 17 for SQL Server'},
         'extra_params': 'TrustServerCertificate=yes;',
     }

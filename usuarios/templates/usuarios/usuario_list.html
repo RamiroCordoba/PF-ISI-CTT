@@ -1,0 +1,63 @@
+{% extends 'dashboard/principal.html' %} {% block Contenido %}
+<div class="container-fluid px-4">
+  <h1 class="mt-4">Mis usuarios</h1>
+  <hr style="height: 5px; background-color: black; border: none" />
+  <!-- Fila de funciones generales -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      {% if request.user.is_staff %}
+      <a href="{% url 'usuarios:nuevo_usuario' %}" class="btn btn-primary">
+        Nuevo usuario
+      </a>
+      {%endif%}
+    </div>
+  </div>
+    <!-- Fin de fila de funciones generales -->
+    <hr style="height: 5px; background-color: black; border: none" />
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th class="text-center">Acciones</th>
+          <th class="text-center">Nombre de Usuario</th>
+          <th class="text-center">Nombre Completo</th>
+          <th class="text-center">Email</th>
+          <th class="text-center">Rol / Grupo</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for user in usuarios %}
+        <tr>
+          <td class="text-center">
+            {% if request.user.is_staff %}
+                <a href="{% url 'usuarios:editar_usuario' user.pk %}" class="btn btn-outline-success mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
+                    <i class="fa fa-edit fa-sm" title="Editar"></i>
+                </a>
+                <a href="{% url 'usuarios:eliminar_usuario' user.pk %}" class="btn btn-outline-danger mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
+                    <i class="fa fa-trash fa-sm" title="Eliminar"></i>
+                </a> 
+            {% endif %}
+            <a href="{% url 'usuarios:detalle_usuario' user.pk %}" class="btn btn-outline-primary mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
+              <i class="fa-solid fa-eye" title="Ver"></i>
+            </a> 
+          </td>
+          <td class="text-center">{{ user.username }}</td>
+          <td class="text-center">{{ user.first_name }} {{ user.last_name }}</td>
+          <td class="text-center">{{ user.email }}</td>
+          <td class="text-center">
+            {% for group in user.groups.all %}
+              {{ group.name }}{% if not forloop.last %}, {% endif %}
+            {% empty %}
+              Sin grupo
+            {% endfor %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4">No hay usuarios registrados.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endblock Contenido %}
+</div>

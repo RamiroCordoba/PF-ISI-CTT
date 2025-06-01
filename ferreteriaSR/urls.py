@@ -6,6 +6,7 @@ urlpatterns = [
     path('', include('home.urls')),
     path('dashboard/', include('dashboard.urls')),
     path('productos/', include('productos.urls')),
+    path('usuarios/', include('usuarios.urls', namespace='usuarios')),
     #path('proveedores/', include('proveedores.urls')),
     #path('pedidos/', include('pedidos.urls')),
     #path('ventas/', include('ventas.urls')),

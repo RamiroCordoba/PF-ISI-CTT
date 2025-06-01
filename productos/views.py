@@ -65,13 +65,13 @@ class ArticuloList(LoginRequiredMixin,ListView):
   
 class ArticuloCreate(LoginRequiredMixin,CreateView):
      model=Producto
-     fields=["nombre","descripcion","precio","stock","stock_maximo","stock_minimo","categoria","marca","fecha_ultimo_ingreso","activo"]
+     fields=["nombre","descripcion","precio","stock","stock_maximo","stock_minimo","stock_optimo","categoria","marca","fecha_ultimo_ingreso","activo"]
      template_name="articulos/articulo_form.html"
      success_url = reverse_lazy("mis_articulos")
      
 class ArticuloUpdate(LoginRequiredMixin,UpdateView):
      model=Producto
-     fields=["nombre","descripcion","precio","stock","stock_maximo","stock_minimo","categoria","marca","fecha_ultimo_ingreso","activo"]
+     fields=["nombre","descripcion","precio","stock","stock_maximo","stock_minimo","stock_optimo","categoria","marca","fecha_ultimo_ingreso","activo"]
      template_name="articulos/articulo_form.html"
      success_url = reverse_lazy("mis_articulos")
 
