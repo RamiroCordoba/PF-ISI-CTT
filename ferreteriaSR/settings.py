@@ -60,7 +60,7 @@ ROOT_URLCONF = 'ferreteriaSR.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -136,3 +136,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_URL = '/login/'
 
+# Email y recuperacion de contraseña
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
+EMAIL_HOST_USER = 'proyectoferreteriasr@gmail.com'
+EMAIL_HOST_PASSWORD = 'pmky cqca vmrm xwes' # Buscar forma de que no este harcodeado.
+DEFAULT_FROM_EMAIL = 'Ferretería Santa Rita <proyectoferreteriasr@gmail.com>'
