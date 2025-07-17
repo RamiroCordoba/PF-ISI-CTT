@@ -155,9 +155,9 @@
                   <a class="nav-link" href="{% url 'mis_articulos' %}"
                     >Lista de productos</a
                   >
-                  <a class="nav-link" href="{% url 'nuevo_articulo' %}"
+                  <!--<a class="nav-link" href="{% url 'nuevo_articulo' %}"
                     >Ingresar nuevo producto</a
-                  >
+                  >-->
                   <a class="nav-link" href="{% url 'categorias'%}"
                     >Categorias de productos</a
                   >
@@ -197,25 +197,10 @@
                     aria-expanded="false"
                     aria-controls="pagesCollapseAuth"
                   >
-                    Listar proveedores
-                    <div class="sb-sidenav-collapse-arrow">
-                      <i class="fas fa-angle-down"></i>
-                    </div>
+                    <a class="nav-link" href="{% url 'mis_proveedores' %}"
+                    >Lista de proveedores</a
+                    >
                   </a>
-                  <div
-                    class="collapse"
-                    id="pagesCollapseAuth"
-                    aria-labelledby="headingOne"
-                    data-bs-parent="#sidenavAccordionPages"
-                  >
-                    <nav class="sb-sidenav-menu-nested nav">
-                      <a class="nav-link" href="login.html">Login</a>
-                      <a class="nav-link" href="register.html">Register</a>
-                      <a class="nav-link" href="password.html"
-                        >Forgot Password</a
-                      >
-                    </nav>
-                  </div>
                   <a
                     class="nav-link collapsed"
                     href="#"
