@@ -14,4 +14,10 @@ urlpatterns = [
     path('articulos/editar_articulo/<int:pk>/', ArticuloUpdate.as_view(), name='editar_articulo'),
     path('articulos/eliminar_articulo/<int:pk>/', ArticuloDelete.as_view(), name='eliminar_articulo'),
     path('articulos/informacion/<int:pk>/', ArticuloDetail.as_view(), name='detalles_de_articulo'),
+    #__________ Proveedor
+    path('Proveedor/', ProveedorList.as_view(), name='mis_proveedores'),
+    path('Proveedor/nuevo_proveedor/', ProveedorCreate.as_view(), name='nuevo_proveedor'),
+    path('Proveedor/editar_proveedor/<int:pk>/', ProveedorUpdate.as_view(), name='editar_proveedor'),
+    path('Proveedor/eliminar_proveedor/<int:pk>/', ProveedorDelete.as_view(), name='eliminar_proveedor'),
+    path('Proveedor/informacion/<int:pk>/', ProveedorDetail.as_view(), name='detalles_de_proveedor')
 ]

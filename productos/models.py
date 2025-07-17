@@ -31,5 +31,23 @@ class Producto(models.Model):
     verbose_name_plural = 'productos'
     ordering = ['nombre']
 
+
+class Proveedor(models.Model):
+  nombreEmpresa = models.CharField(max_length=200,unique=True,blank=False,null=False)
+  nombreProv  =  models.CharField(max_length=200,unique=True,blank=False,null=False)
+  telefono = models.CharField(max_length=15,blank=True)
+  mail = models.EmailField()
+  estado = models.BooleanField(default=True)
+  direccion = models.CharField(max_length=200,null=True,blank=True)
+  provincia = models.CharField(max_length=50,null=True,blank=True)
+  ciudad = models.CharField(max_length=50,null=True,blank=True)
+  categoria = models.ManyToManyField('Categoria', related_name='proveedores')
+    
+  class Meta:
+    verbose_name = 'Proveedor'
+    verbose_name_plural = 'Proveedores'
+    ordering = ['nombreEmpresa']
+
+  
   def __str__(self):
-    return self.nombre
+    return self.nombreEmpresa

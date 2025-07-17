@@ -84,3 +84,49 @@ class ArticuloDetail(DetailView):
      model=Producto
      template_name="articulos/articulo_details.html"
      context_object_name = 'elArticulo'
+
+
+class ProveedorCreate(LoginRequiredMixin,CreateView):
+     model=Proveedor
+     fields=["nombreEmpresa","nombreProv","telefono","mail","estado","direccion","provincia","ciudad","categoria"]
+     template_name="proveedores/proveedor_form.html"
+     success_url = reverse_lazy("mis_proveedores")
+     
+class ProveedorUpdate(LoginRequiredMixin,UpdateView):
+     model=Proveedor
+     fields=["nombreEmpresa","nombreProv","telefono","mail","estado","direccion","provincia","ciudad","categoria"]
+     template_name="proveedores/proveedor_form.html"
+     success_url = reverse_lazy("mis_proveedores")
+
+class ProveedorDelete(LoginRequiredMixin,DeleteView):
+     model=Proveedor
+     template_name="proveedores/proveedor_confirm_delete.html"
+     success_url = reverse_lazy("mis_proveedores")
+
+class ProveedorDetail(DetailView):
+     model=Proveedor
+     template_name="proveedores/proveedor_details.html"
+     context_object_name = 'elProveedor'
+
+class ProveedorList(LoginRequiredMixin,ListView):
+    model = Proveedor
+    template_name = "proveedores/proveedor_list.html"
+    context_object_name = "proveedores"
+
+    def get_queryset(self):
+        queryset = super().get_queryset().order_by("id")
+        buscar = self.request.GET.get("buscar")
+        proveedor_id = self.request.GET.get("proveedor")
+
+        if buscar:
+            queryset = queryset.filter(nombre__icontains=buscar)
+
+        if proveedor_id:
+            queryset = queryset.filter(proveedor_id=proveedor_id)
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["proveedores"] = Proveedor.objects.all().order_by("nombreEmpresa")
+        return context
