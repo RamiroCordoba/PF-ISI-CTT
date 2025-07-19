@@ -19,5 +19,11 @@ urlpatterns = [
     path('Proveedor/nuevo_proveedor/', ProveedorCreate.as_view(), name='nuevo_proveedor'),
     path('Proveedor/editar_proveedor/<int:pk>/', ProveedorUpdate.as_view(), name='editar_proveedor'),
     path('Proveedor/eliminar_proveedor/<int:pk>/', ProveedorDelete.as_view(), name='eliminar_proveedor'),
-    path('Proveedor/informacion/<int:pk>/', ProveedorDetail.as_view(), name='detalles_de_proveedor')
+    path('Proveedor/informacion/<int:pk>/', ProveedorDetail.as_view(), name='detalles_de_proveedor'),
+        #__________ Estacionalidad
+    path('Estacionalidad/', EstacionalidadList.as_view(), name='mis_estacionalidades'),
+    path('Estacionalidad/nueva_estacionalidad/', EstacionalidadCreate.as_view(), name='nueva_estacionalidad'),
+    path('Estacionalidad/editar_estacionalidad/<int:pk>/', EstacionalidadUpdate.as_view(), name='editar_estacionalidad'),
+    path('Estacionalidad/eliminar_estacionalidad/<int:pk>/', EstacionalidadDelete.as_view(), name='eliminar_estacionalidad'),
+    path('Estacionalidad/informacion/<int:pk>/', EstacionalidadDetail.as_view(), name='detalles_de_estacionalidad')
 ]
