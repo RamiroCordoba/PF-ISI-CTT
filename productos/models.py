@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 class Categoria(models.Model):
   nombre = models.CharField(max_length=40, unique=True, null=False, blank=False)
@@ -51,3 +52,24 @@ class Proveedor(models.Model):
   
   def __str__(self):
     return self.nombreEmpresa
+  
+
+class Estacionalidad(models.Model):
+  producto = models.ManyToManyField('Producto' ,related_name='estacionalidades')
+  nombre = models.CharField(max_length= 200 , blank = True)
+  estacion = models.CharField(max_length= 50)
+  mesDesde = models.PositiveIntegerField(verbose_name='Mes Hasta',null=False, blank=False,validators=[MinValueValidator(1),MaxValueValidator(12)])
+  diaHasta = models.PositiveIntegerField(verbose_name='Dia Hasta',null=False, blank=False,validators=[MinValueValidator(1),MaxValueValidator(31)])
+  diaDesde = models.PositiveIntegerField(verbose_name='Dia Hasta',null=False, blank=False,validators=[MinValueValidator(1),MaxValueValidator(31)])#igual creo q deberia ser mes y dia porque las estacionalidades es la misma cada año (periodo) y no algo de un año particular
+  mesHasta = models.PositiveIntegerField(verbose_name='Mes Hasta',null=False, blank=False,validators=[MinValueValidator(1),MaxValueValidator(12)])
+  stockMin   = models.PositiveIntegerField(null=True, blank=True)
+  stockMax   = models.PositiveIntegerField(null=True, blank=True)
+  
+  class Meta:
+    verbose_name = 'Estacionalidad'
+    verbose_name_plural = 'Estacionalidades'
+    ordering = ['nombre']
+
+  
+  def __str__(self):
+    return self.nombre

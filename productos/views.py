@@ -116,17 +116,63 @@ class ProveedorList(LoginRequiredMixin,ListView):
     def get_queryset(self):
         queryset = super().get_queryset().order_by("id")
         buscar = self.request.GET.get("buscar")
-        proveedor_id = self.request.GET.get("proveedor")
+        #proveedor_id = self.request.GET.get("proveedor")
 
         if buscar:
-            queryset = queryset.filter(nombre__icontains=buscar)
+            queryset = queryset.filter(nombreEmpresa__icontains=buscar)
 
-        if proveedor_id:
-            queryset = queryset.filter(proveedor_id=proveedor_id)
+        #if proveedor_id:
+        #    queryset = queryset.filter(proveedor_id=proveedor_id)
 
         return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["proveedores"] = Proveedor.objects.all().order_by("nombreEmpresa")
+        #context["proveedores"] = Proveedor.objects.all().order_by("nombreEmpresa")
+        return context
+
+#Estacionalidad
+class EstacionalidadCreate(LoginRequiredMixin,CreateView):
+     model=Estacionalidad
+     fields=["producto","nombre","estacion","diaDesde","mesDesde","diaHasta","mesHasta","stockMin","stockMax"]
+     template_name="estacionalidades/estacionalidad_form.html"
+     success_url = reverse_lazy("mis_estacionalidades")
+     
+class EstacionalidadUpdate(LoginRequiredMixin,UpdateView):
+     model=Estacionalidad
+     fields=["producto","nombre","estacion","diaDesde","mesDesde","diaHasta","mesHasta","stockMin","stockMax"]
+     template_name="estacionalidades/estacionalidad_form.html"
+     success_url = reverse_lazy("mis_estacionalidades")
+
+class EstacionalidadDelete(LoginRequiredMixin,DeleteView):
+     model=Estacionalidad
+     template_name="estacionalidades/estacionalidad_confirm_delete.html"
+     success_url = reverse_lazy("mis_estacionalidades")
+
+class EstacionalidadDetail(DetailView):
+     model=Estacionalidad
+     template_name="estacionalidades/estacionalidad_details.html"
+     context_object_name = 'laEstacionalidad'
+
+class EstacionalidadList(LoginRequiredMixin,ListView):
+    model = Estacionalidad
+    template_name = "estacionalidades/estacionalidad_list.html"
+    context_object_name = "estacionalidades"
+
+    def get_queryset(self):
+        queryset = super().get_queryset().order_by("id")
+        buscar = self.request.GET.get("buscar")
+        #estacionalidad_id = self.request.GET.get("estacionalidad")
+
+        if buscar:
+            queryset = queryset.filter(nombre__icontains=buscar)
+
+        #if estacionalidad_id:
+        #    queryset = queryset.filter(estacionalidad_id=estacionalidad_id)
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        #context["estacionalidades"] = Estacionalidad.objects.all().order_by("nombre")
         return context

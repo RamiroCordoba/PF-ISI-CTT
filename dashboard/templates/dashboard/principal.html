@@ -133,9 +133,9 @@
                 class="nav-link collapsed"
                 href="#"
                 data-bs-toggle="collapse"
-                data-bs-target="#collapseLayouts"
+                data-bs-target="#collapseProductos"
                 aria-expanded="false"
-                aria-controls="collapseLayouts"
+                aria-controls="collapseProductos"
               >
                 <div class="sb-nav-link-icon">
                   <i class="fas fa-columns"></i>
@@ -147,7 +147,7 @@
               </a>
               <div
                 class="collapse"
-                id="collapseLayouts"
+                id="collapseProductos"
                 aria-labelledby="headingOne"
                 data-bs-parent="#sidenavAccordion"
               >
@@ -167,9 +167,9 @@
                 class="nav-link collapsed"
                 href="#"
                 data-bs-toggle="collapse"
-                data-bs-target="#collapsePages"
+                data-bs-target="#collapseProveedores"
                 aria-expanded="false"
-                aria-controls="collapsePages"
+                aria-controls="collapseProveedores"
               >
                 <div class="sb-nav-link-icon">
                   <i class="fas fa-book-open"></i>
@@ -181,51 +181,42 @@
               </a>
               <div
                 class="collapse"
-                id="collapsePages"
+                id="collapseProveedores"
                 aria-labelledby="headingTwo"
                 data-bs-parent="#sidenavAccordion"
               >
-                <nav
-                  class="sb-sidenav-menu-nested nav accordion"
-                  id="sidenavAccordionPages"
-                >
-                  <a
-                    class="nav-link collapsed"
-                    href="#"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#pagesCollapseAuth"
-                    aria-expanded="false"
-                    aria-controls="pagesCollapseAuth"
-                  >
-                    <a class="nav-link" href="{% url 'mis_proveedores' %}"
-                    >Lista de proveedores</a
-                    >
+                <nav class="sb-sidenav-menu-nested nav">
+                  <a class="nav-link" href="{% url 'mis_proveedores' %}">
+                    Lista de proveedores
                   </a>
-                  <a
-                    class="nav-link collapsed"
-                    href="#"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#pagesCollapseError"
-                    aria-expanded="false"
-                    aria-controls="pagesCollapseError"
-                  >
-                    Nuevo proveedor
-                    <div class="sb-sidenav-collapse-arrow">
-                      <i class="fas fa-angle-down"></i>
-                    </div>
+                </nav>
+              </div>
+              <a
+                class="nav-link collapsed"
+                href="#"
+                data-bs-toggle="collapse"
+                data-bs-target="#collapseEstacionalidades"
+                aria-expanded="false"
+                aria-controls="collapseEstacionalidades"
+              >
+                <div class="sb-nav-link-icon">
+                  <i class="fas fa-book-open"></i>
+                </div>
+                Estacionalidades
+                <div class="sb-sidenav-collapse-arrow">
+                  <i class="fas fa-angle-down"></i>
+                </div>
+              </a>
+              <div
+                class="collapse"
+                id="collapseEstacionalidades"
+                aria-labelledby="headingTwo"
+                data-bs-parent="#sidenavAccordion"
+              >
+                <nav class="sb-sidenav-menu-nested nav">
+                  <a class="nav-link" href="{% url 'mis_estacionalidades' %}">
+                    Lista de estacionalidades
                   </a>
-                  <div
-                    class="collapse"
-                    id="pagesCollapseError"
-                    aria-labelledby="headingOne"
-                    data-bs-parent="#sidenavAccordionPages"
-                  >
-                    <nav class="sb-sidenav-menu-nested nav">
-                      <a class="nav-link" href="401.html">401 Page</a>
-                      <a class="nav-link" href="404.html">404 Page</a>
-                      <a class="nav-link" href="500.html">500 Page</a>
-                    </nav>
-                  </div>
                 </nav>
               </div>
               <div class="sb-sidenav-menu-heading">Registros</div>

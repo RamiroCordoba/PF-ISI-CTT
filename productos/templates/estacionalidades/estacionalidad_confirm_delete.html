@@ -1,12 +1,12 @@
 {% extends 'dashboard/principal.html' %} {% block Contenido %}
 <div class="container-fluid px-4">
-  <h1 class="mt-4">Eliminar proveedor</h1>
+  <h1 class="mt-4">Eliminar estacionalidad</h1>
   <hr style="height: 5px; background-color: black; border: none" />
   <form action=" " method="post">
     {% csrf_token %}
     <div class="text-center">
       <h3>
-        ¿Esta seguro de eliminar la categoria?
+        ¿Esta seguro de eliminar la estacionalidad?
         <p style="color: red">{{object}}</p>
       </h3>
     </div>
@@ -15,7 +15,7 @@
       <button
         class="btn btn-secondary"
         type="button"
-        onclick="window.location.href='{% url 'mis_proveedores' %}'"
+        onclick="window.location.href='{% url 'mis_estacionalidades' %}'"
       >
         Cancelar
       </button>
