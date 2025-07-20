@@ -3,6 +3,7 @@ from django.urls import reverse_lazy
 from django.views.generic import ListView,CreateView,UpdateView,DeleteView,DetailView
 from .models import *
 from django.contrib.auth.mixins import LoginRequiredMixin
+from .forms import ProveedorForm
 #______ Categorias CRUD
 
 class CategoriaList(LoginRequiredMixin, ListView):
@@ -93,11 +94,14 @@ class ProveedorCreate(LoginRequiredMixin,CreateView):
      template_name="proveedores/proveedor_form.html"
      success_url = reverse_lazy("mis_proveedores")
      
-class ProveedorUpdate(LoginRequiredMixin,UpdateView):
-     model=Proveedor
-     fields=["nombreEmpresa","nombreProv","telefono","mail","estado","direccion","provincia","ciudad","categoria"]
-     template_name="proveedores/proveedor_form.html"
-     success_url = reverse_lazy("mis_proveedores")
+
+class ProveedorUpdate(LoginRequiredMixin, UpdateView):
+    model = Proveedor
+    form_class = ProveedorForm
+    template_name = "proveedores/proveedor_form.html"
+    success_url = reverse_lazy("mis_proveedores")
+
+
 
 class ProveedorDelete(LoginRequiredMixin,DeleteView):
      model=Proveedor
