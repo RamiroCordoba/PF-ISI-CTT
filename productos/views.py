@@ -85,6 +85,7 @@ class ArticuloDetail(DetailView):
      template_name="articulos/articulo_details.html"
      context_object_name = 'elArticulo'
 
+#______ Productos CRUD
 
 class ProveedorCreate(LoginRequiredMixin,CreateView):
      model=Proveedor
