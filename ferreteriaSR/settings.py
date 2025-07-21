@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -75,22 +76,35 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'ferreteriaSR.wsgi.application'
 
-
+# CI
+CI_ENVIRONMENT = os.environ.get("CI") == "true"
+# Base directory
+BASE_DIR = Path(__file__).resolve().parent.parent
+# SECRET_KEY
+SECRET_KEY = os.environ.get('SECRET_KEY', 'clave-insegura-de-fallback')
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'mssql',
-        'NAME': 'FERRETERIASRDB',
-        'USER':'sa',
-        'PASSWORD':'proyecto2025',
-        'HOST':'100.119.162.100\\PROYECTO',
-        'PORT':'',
-        'OPTIONS':{'driver':'ODBC Driver 17 for SQL Server'},
-        'extra_params': 'TrustServerCertificate=yes;',
+if CI_ENVIRONMENT:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'ci_db.sqlite3',
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'mssql',
+            'NAME': 'FERRETERIASRDB',
+            'USER':'sa',
+            'PASSWORD':'proyecto2025',
+            'HOST':'100.119.162.100\\PROYECTO',
+            'PORT':'',
+            'OPTIONS':{'driver':'ODBC Driver 17 for SQL Server'},
+            'extra_params': 'TrustServerCertificate=yes;',
+        }
+    }
 
 
 # Password validation
