@@ -1,0 +1,63 @@
+{% extends 'dashboard/principal.html' %} {% block Contenido %}
+<div class="container-fluid px-4">
+  <h1 class="mt-4">Estacionalidades</h1>
+  <hr style="height: 5px; background-color: black; border: none" />
+  <!-- Fila de funciones generales -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      {% if request.user.is_staff %}
+      <a href="{% url 'nueva_estacionalidad' %}" class="btn btn-primary">
+        Nueva estacionalidad
+      </a>
+      {%endif%}
+    <!-- Buscador y quitar filtro -->
+    </div>
+    <div class="d-flex align-items-center">
+      {% if request.GET.buscar %}
+        <a href="{% url 'mis_estacionalidades' %}" class="btn btn-outline-secondary me-2" title="Quitar filtro">
+          <i class="fa fa-times"></i>
+        </a>
+      {% endif %}
+    
+      <form method="get" class="d-flex">
+        <input type="text" name="buscar" class="form-control me-2" placeholder="Buscar estacionalidad..." value="{{ request.GET.buscar }}">
+        <button class="btn btn-primary" type="submit">Buscar</button>
+      </form>
+    </div>
+    <!-- Fin de buscador y quitar filtro -->
+    
+  </div>
+   <!-- Fin de fila de funciones generales -->
+  <hr style="height: 5px; background-color: black; border: none" />
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        {% if request.user.is_staff %}
+        <th>Acciones</th>
+        {%endif%}
+        <th>Nombre</th>
+        <th>Estacion</th>
+      </tr>
+    <thead>
+    <tbody> 
+      {% for e in estacionalidades %}
+      <tr>
+        {% if request.user.is_staff %}
+        <td>
+              <a href="{% url 'editar_estacionalidad' e.id %}" class="btn btn-outline-success mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
+                  <i class="fa fa-edit fa-sm" title="Editar"></i>
+              </a>
+              <a href="{% url 'eliminar_estacionalidad' e.id %}" class="btn btn-outline-danger mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
+                  <i class="fa fa-trash fa-sm" title="Eliminar"> 
+                  </i>
+                </a>
+        </td>
+        {% endif %}
+        <td>{{e.nombre}}</td>
+        <td>{{e.estacion}}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock Contenido %}

@@ -14,4 +14,16 @@ urlpatterns = [
     path('articulos/editar_articulo/<int:pk>/', ArticuloUpdate.as_view(), name='editar_articulo'),
     path('articulos/eliminar_articulo/<int:pk>/', ArticuloDelete.as_view(), name='eliminar_articulo'),
     path('articulos/informacion/<int:pk>/', ArticuloDetail.as_view(), name='detalles_de_articulo'),
+    #__________ Proveedor
+    path('Proveedor/', ProveedorList.as_view(), name='mis_proveedores'),
+    path('Proveedor/nuevo_proveedor/', ProveedorCreate.as_view(), name='nuevo_proveedor'),
+    path('Proveedor/editar_proveedor/<int:pk>/', ProveedorUpdate.as_view(), name='editar_proveedor'),
+    path('Proveedor/eliminar_proveedor/<int:pk>/', ProveedorDelete.as_view(), name='eliminar_proveedor'),
+    path('Proveedor/informacion/<int:pk>/', ProveedorDetail.as_view(), name='detalles_de_proveedor'),
+        #__________ Estacionalidad
+    path('Estacionalidad/', EstacionalidadList.as_view(), name='mis_estacionalidades'),
+    path('Estacionalidad/nueva_estacionalidad/', EstacionalidadCreate.as_view(), name='nueva_estacionalidad'),
+    path('Estacionalidad/editar_estacionalidad/<int:pk>/', EstacionalidadUpdate.as_view(), name='editar_estacionalidad'),
+    path('Estacionalidad/eliminar_estacionalidad/<int:pk>/', EstacionalidadDelete.as_view(), name='eliminar_estacionalidad'),
+    path('Estacionalidad/informacion/<int:pk>/', EstacionalidadDetail.as_view(), name='detalles_de_estacionalidad')
 ]

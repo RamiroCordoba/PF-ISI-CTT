@@ -1,0 +1,103 @@
+{% extends 'dashboard/principal.html' %}
+{% block Contenido %}
+<div class="container-fluid px-4">
+  <h1 class="mt-4">Proveedores</h1>
+  <hr style="height: 5px; background-color: black; border: none" />
+
+  <!-- Fila de funciones generales -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      {% if request.user.is_staff %}
+      <a href="{% url 'nuevo_proveedor' %}" class="btn btn-primary">
+        Nuevo proveedor
+      </a>
+      {% endif %}
+    </div>
+
+    <!-- Buscador -->
+    <div class="d-flex align-items-center">
+      {% if request.GET.buscar %}
+      <a href="{% url 'mis_proveedores' %}" class="btn btn-outline-secondary me-2" title="Quitar filtro">
+        <i class="fa fa-times"></i>
+      </a>
+      {% endif %}
+
+      <form method="get" class="d-flex">
+        <input type="text" name="buscar" class="form-control me-2" placeholder="Buscar proveedor..." value="{{ request.GET.buscar }}">
+        <button class="btn btn-primary" type="submit">Buscar</button>
+      </form>
+    </div>
+  </div>
+  <!-- Fin fila funciones generales -->
+
+  <hr style="height: 5px; background-color: black; border: none" />
+
+  <table class="table table-striped text-center align-middle">
+    <thead>
+      <tr>
+        {% if request.user.is_staff %}
+        <th class="text-center">Acciones</th>
+        <th class="text-center">Contacto</th>
+        {% endif %}
+        <th class="text-center">Empresa</th>
+        <th class="text-center">Nombre del proveedor</th>
+        <th class="text-center">Categorias asociadas</th>
+        <th class="text-center">Estado</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in proveedores %}
+      <tr>
+        {% if request.user.is_staff %}
+        <!-- Columna de acciones -->
+        <td class="text-center">
+          <a href="{% url 'detalles_de_proveedor' p.id %}" class="btn btn-outline-primary mt-2"
+            style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
+            <i class="fa-solid fa-eye" title="Ver"></i>
+          </a>
+          <a href="{% url 'editar_proveedor' p.id %}" class="btn btn-outline-success mt-2"
+            style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
+            <i class="fa fa-edit fa-sm" title="Editar"></i>
+          </a>
+          <a href="{% url 'eliminar_proveedor' p.id %}" class="btn btn-outline-danger mt-2"
+            style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
+            <i class="fa fa-trash fa-sm" title="Eliminar"></i>
+          </a>
+        </td>
+
+        <!-- Columna de contacto -->
+        <td class="text-center">
+          <a href="https://wa.me/{{ p.telefono }}" target="_blank"
+            class="btn btn-outline-success mt-2 me-1"
+            style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;"
+            title="WhatsApp">
+            <i class="fab fa-whatsapp fa-sm"></i>
+          </a>
+          <a href="mailto:{{ p.mail }}?subject=Solicitud%20de%20Ferreteria%20Santa%20Rita%20-%20Rosario&body=--%0D%0ASaludos,%20Ferreteria%20Santa%20Rita."
+            class="btn btn-outline-primary mt-2"
+            style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;"
+            title="Enviar correo">
+            <i class="fa-solid fa-envelope"></i>
+          </a>
+        </td>
+        {% endif %}
+        <td class="text-center">{{ p.nombreEmpresa }}</td>
+        <td class="text-center">{{ p.nombreProv }}</td>
+        <td>
+          {% for cat in p.categoria.all %}
+          {{ cat.nombre }}{% if not forloop.last %}, {% endif %}
+          {% empty %}
+            No asignadas
+          {% endfor %}
+        </td>                         
+        <td>
+          <span class="badge {% if p.estado %}bg-success{% else %}bg-danger{% endif %} px-3 py-2">
+            {% if p.estado %}Activo{% else %}Inactivo{% endif %}
+          </span>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock Contenido %}
