@@ -32,6 +32,8 @@ class Producto(models.Model):
     verbose_name_plural = 'productos'
     ordering = ['nombre']
 
+  def __str__(self):
+    return self.nombre
 
 class Proveedor(models.Model):
   nombreEmpresa = models.CharField(max_length=200,unique=True,blank=False,null=False)
