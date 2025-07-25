@@ -1,0 +1,21 @@
+{% extends 'dashboard/principal.html' %}
+{% load static %}
+{% block Contenido %}
+
+<h2>Carga Masiva de Productos</h2>
+
+<a href="{% url 'exportar_productos' %}" class="btn btn-success mb-3">
+    📥 Descargar productos actuales (Excel)
+</a>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">📤 Cargar productos desde Excel</button>
+</form>
+
+{% for message in messages %}
+  <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+{% endfor %}
+
+{% endblock %}

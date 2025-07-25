@@ -4,36 +4,39 @@
   <hr style="height: 5px; background-color: black; border: none" />
   <!-- Fila de funciones generales -->
   <div class="d-flex justify-content-between align-items-center mb-3">
-    <div>
-      <a href="{% url 'nuevo_articulo' %}" class="btn btn-primary">
-        Nuevo articulo
+    <div class="d-flex gap-2 mb-3">
+      <a href="{% url 'nuevo_articulo' %}" class="btn btn-primary d-flex align-items-center justify-content-center px-4">
+        Nuevo artículo
       </a>
-    <!-- Buscador y quitar filtro -->
+      <a href="{% url 'carga_masiva_productos' %}" class="btn btn-success d-flex align-items-center justify-content-center px-4">
+        <i class="fas fa-file-excel me-2"></i> Carga masiva
+      </a>
     </div>
-    <div>
-      <form method="get" id="filtro_categoria_form" class="mb-3">
-        <select name="categoria" class="form-select" onchange="document.getElementById('filtro_categoria_form').submit()">
+
+    <div class="d-flex align-items-center gap-3 mb-3 flex-wrap">
+      <!-- Filtro por categoría -->
+      <form method="get" class="d-flex align-items-center">
+        <select name="categoria" class="form-select me-2" onchange="this.form.submit()">
           <option value="">-- Todas las categorías --</option>
           {% for cat in categorias %}
             <option value="{{ cat.id }}" {% if request.GET.categoria == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.nombre }}</option>
           {% endfor %}
         </select>
       </form>
-    </div>
-    <div class="d-flex align-items-center">
+
+      <!-- Quitar filtro si existe búsqueda -->
       {% if request.GET.buscar %}
-        <a href="{% url 'mis_articulos' %}" class="btn btn-outline-secondary me-2" title="Quitar filtro">
+        <a href="{% url 'mis_articulos' %}" class="btn btn-outline-secondary" title="Quitar filtro">
           <i class="fa fa-times"></i>
         </a>
       {% endif %}
-    
-      <form method="get" class="d-flex">
-        <input type="text" name="buscar" class="form-control me-2" placeholder="Buscar articulo..." value="{{ request.GET.buscar }}">
+      <!-- Buscador -->
+      <form method="get" class="d-flex align-items-center flex-grow-1">
+        <input type="text" name="buscar" class="form-control me-2" placeholder="Buscar artículo..." value="{{ request.GET.buscar }}">
         <button class="btn btn-primary" type="submit">Buscar</button>
       </form>
-    </div>
-    <!-- Fin de buscador y quitar filtro -->
-    
+
+    </div>    
   </div>
    <!-- Fin de fila de funciones generales -->
   <hr style="height: 5px; background-color: black; border: none" />
