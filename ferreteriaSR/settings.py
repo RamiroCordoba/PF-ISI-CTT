@@ -99,7 +99,7 @@ else:
             'NAME': 'FERRETERIASRDB',
             'USER':'sa',
             'PASSWORD':'proyecto2025',
-            'HOST':'100.119.162.100\\PROYECTO',
+            'HOST':'100.105.229.3\\PROYECTO',
             'PORT':'',
             'OPTIONS':{'driver':'ODBC Driver 17 for SQL Server'},
             'extra_params': 'TrustServerCertificate=yes;',
