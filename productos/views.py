@@ -1,11 +1,17 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.views.generic import ListView,CreateView,UpdateView,DeleteView,DetailView
 from .models import *
 from django.contrib.auth.mixins import LoginRequiredMixin
-from .forms import ProveedorForm
-#______ Categorias CRUD
+from .forms import ProveedorForm, CargaMasivaProductosForm
+from django.views import View
+from django.contrib import messages
+from django.http import HttpResponse
+import pandas as pd
+from django.utils.timezone import now
+from datetime import datetime
 
+#______ Categorias CRUD
 class CategoriaList(LoginRequiredMixin, ListView):
   model=Categoria
   template_name="categorias/categoria_list.html"
@@ -39,7 +45,6 @@ class CategoriaDelete(LoginRequiredMixin,DeleteView):
      success_url = reverse_lazy("categorias")
 
 #______ Productos CRUD
-
 class ArticuloList(LoginRequiredMixin,ListView):
     model = Producto
     template_name = "articulos/articulo_list.html"
@@ -86,22 +91,151 @@ class ArticuloDetail(DetailView):
      template_name="articulos/articulo_details.html"
      context_object_name = 'elArticulo'
 
-#______ Productos CRUD
+class CargaMasivaProductosView(View):
+    template_name = 'articulos/carga_masiva_productos.html'
 
+    def get(self, request):
+        form = CargaMasivaProductosForm()
+        return render(request, self.template_name, {'form': form})
+
+    def post(self, request):
+        form = CargaMasivaProductosForm(request.POST, request.FILES)
+        if form.is_valid():
+            archivo = request.FILES['archivo_excel']
+
+            # Validar extensión del archivo
+            if not archivo.name.endswith('.xlsx'):
+                messages.error(request, "El archivo debe tener extensión .xlsx   ")
+                return redirect('carga_masiva_productos')
+
+            try:
+                df = pd.read_excel(archivo)
+            except Exception as e:
+                messages.error(request, f"Error al leer el archivo: {str(e)}")
+                return redirect('carga_masiva_productos')
+
+            errores = []
+            productos_agregados = []
+            productos_actualizados = []
+
+            for index, fila in df.iterrows():
+                # Saltar fila vacía completa
+                if fila.isnull().all():
+                    continue
+
+                try:
+                    nombre = str(fila['nombre']).strip()
+                    if not nombre:
+                        raise ValueError("El campo 'nombre' está vacío")
+
+                    descripcion = str(fila.get('descripcion', '')).strip()
+                    precio = float(fila['precio'])
+                    stock = int(fila['stock'])
+                    stock_optimo = int(fila['stock_optimo'])
+                    stock_maximo = int(fila.get('stock_maximo')) if not pd.isna(fila.get('stock_maximo')) else None
+                    stock_minimo = int(fila.get('stock_minimo')) if not pd.isna(fila.get('stock_minimo')) else None
+                    marca = str(fila.get('marca', '')).strip()
+
+                    categoria_nombre = str(fila['categoria']).strip()
+                    categoria_obj = Categoria.objects.filter(nombre__iexact=categoria_nombre).first()
+                    if not categoria_obj:
+                        raise ValueError(f"Categoría '{categoria_nombre}' no encontrada")
+
+                    producto, creado = Producto.objects.get_or_create(nombre=nombre, defaults={
+                        'descripcion': descripcion,
+                        'precio': precio,
+                        'stock': stock,
+                        'stock_optimo': stock_optimo,
+                        'stock_maximo': stock_maximo,
+                        'stock_minimo': stock_minimo,
+                        'categoria': categoria_obj,
+                        'marca': marca,
+                        'fecha_ultimo_ingreso': now(),
+                    })
+
+                    if not creado:
+                        cambios = False
+                        datos = {
+                            'descripcion': descripcion,
+                            'precio': precio,
+                            'stock': stock,
+                            'stock_optimo': stock_optimo,
+                            'stock_maximo': stock_maximo,
+                            'stock_minimo': stock_minimo,
+                            'categoria': categoria_obj,
+                            'marca': marca,
+                        }
+
+                        for campo, valor_nuevo in datos.items():
+                            if getattr(producto, campo) != valor_nuevo:
+                                setattr(producto, campo, valor_nuevo)
+                                cambios = True
+
+                        if cambios:
+                            producto.fecha_ultimo_ingreso = now()
+                            producto.save()
+                            productos_actualizados.append(nombre)
+                    else:
+                        productos_agregados.append(nombre)
+
+                except Exception as e:
+                    errores.append(f"Fila {index + 2} - Error: {str(e)}")
+
+            if errores:
+                for error in errores:
+                    messages.error(request, error)
+            if productos_agregados:
+                messages.success(request, f"Productos agregados: {', '.join(productos_agregados)}")
+            if productos_actualizados:
+                messages.info(request, f"Productos actualizados: {', '.join(productos_actualizados)}")
+            if not productos_agregados and not productos_actualizados and not errores:
+                messages.info(request, "no_cambios")
+
+            return redirect('carga_masiva_productos')
+
+        return render(request, self.template_name, {'form': form})
+
+#_____ Descarga del archivo
+
+class ExportarProductosExcelView(View):
+    def get(self, request):
+        productos = Producto.objects.all().select_related('categoria')
+        data = []
+
+        for p in productos:
+            data.append({
+                'nombre': p.nombre,
+                'descripcion': p.descripcion,
+                'precio': float(p.precio),
+                'stock': p.stock,
+                'stock_optimo': p.stock_optimo,
+                'stock_maximo': p.stock_maximo,
+                'stock_minimo': p.stock_minimo,
+                'categoria': p.categoria.nombre,
+                'marca': p.marca or '',
+            })
+
+        df = pd.DataFrame(data)
+        timestamp = datetime.now().strftime('%d_%m_%Y_%H_%Mhs') # Obtengo los datos de fecha y hora/min
+        filename = f'listado_productos_{timestamp}.xlsx'
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = f'attachment; filename={filename}'
+        df.to_excel(response, index=False, engine='openpyxl')
+        return response
+
+
+#______ Productos CRUD
 class ProveedorCreate(LoginRequiredMixin,CreateView):
      model=Proveedor
      fields=["nombreEmpresa","nombreProv","telefono","mail","estado","direccion","provincia","ciudad","categoria"]
      template_name="proveedores/proveedor_form.html"
-     success_url = reverse_lazy("mis_proveedores")
-     
+     success_url = reverse_lazy("mis_proveedores") 
 
 class ProveedorUpdate(LoginRequiredMixin, UpdateView):
     model = Proveedor
     form_class = ProveedorForm
     template_name = "proveedores/proveedor_form.html"
     success_url = reverse_lazy("mis_proveedores")
-
-
 
 class ProveedorDelete(LoginRequiredMixin,DeleteView):
      model=Proveedor
@@ -136,7 +270,7 @@ class ProveedorList(LoginRequiredMixin,ListView):
         #context["proveedores"] = Proveedor.objects.all().order_by("nombreEmpresa")
         return context
 
-#Estacionalidad
+#______ Estacionalidad
 class EstacionalidadCreate(LoginRequiredMixin,CreateView):
      model=Estacionalidad
      fields=["producto","nombre","estacion","diaDesde","mesDesde","diaHasta","mesHasta","stockMin","stockMax"]
