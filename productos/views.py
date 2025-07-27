@@ -4,12 +4,12 @@ from django.views.generic import ListView,CreateView,UpdateView,DeleteView,Detai
 from .models import *
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .forms import ProveedorForm, CargaMasivaProductosForm
-#____ Carga masiva
 from django.views import View
 from django.contrib import messages
 from django.http import HttpResponse
 import pandas as pd
 from django.utils.timezone import now
+from datetime import datetime
 
 #______ Categorias CRUD
 class CategoriaList(LoginRequiredMixin, ListView):
@@ -102,6 +102,12 @@ class CargaMasivaProductosView(View):
         form = CargaMasivaProductosForm(request.POST, request.FILES)
         if form.is_valid():
             archivo = request.FILES['archivo_excel']
+
+            # Validar extensión del archivo
+            if not archivo.name.endswith('.xlsx'):
+                messages.error(request, "El archivo debe tener extensión .xlsx   ")
+                return redirect('carga_masiva_productos')
+
             try:
                 df = pd.read_excel(archivo)
             except Exception as e:
@@ -113,6 +119,10 @@ class CargaMasivaProductosView(View):
             productos_actualizados = []
 
             for index, fila in df.iterrows():
+                # Saltar fila vacía completa
+                if fila.isnull().all():
+                    continue
+
                 try:
                     nombre = str(fila['nombre']).strip()
                     if not nombre:
@@ -178,11 +188,14 @@ class CargaMasivaProductosView(View):
                 messages.success(request, f"Productos agregados: {', '.join(productos_agregados)}")
             if productos_actualizados:
                 messages.info(request, f"Productos actualizados: {', '.join(productos_actualizados)}")
+            if not productos_agregados and not productos_actualizados and not errores:
+                messages.info(request, "no_cambios")
 
             return redirect('carga_masiva_productos')
 
         return render(request, self.template_name, {'form': form})
 
+#_____ Descarga del archivo
 
 class ExportarProductosExcelView(View):
     def get(self, request):
@@ -203,8 +216,10 @@ class ExportarProductosExcelView(View):
             })
 
         df = pd.DataFrame(data)
+        timestamp = datetime.now().strftime('%d_%m_%Y_%H_%Mhs') # Obtengo los datos de fecha y hora/min
+        filename = f'listado_productos_{timestamp}.xlsx'
         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        response['Content-Disposition'] = 'attachment; filename=productos_ferreteria.xlsx'
+        response['Content-Disposition'] = f'attachment; filename={filename}'
         df.to_excel(response, index=False, engine='openpyxl')
         return response
 
