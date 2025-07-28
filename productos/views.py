@@ -45,31 +45,35 @@ class CategoriaDelete(LoginRequiredMixin,DeleteView):
      success_url = reverse_lazy("categorias")
 
 #______ Productos CRUD
-def get_queryset(self):
-    queryset = super().get_queryset().order_by("id")
-    buscar = self.request.GET.get("buscar")
-    categoria_id = self.request.GET.get("categoria")
-    proveedor_id = self.request.GET.get("proveedor")
-    estado = self.request.GET.get("estado")
+class ArticuloList(LoginRequiredMixin,ListView):
+    model = Producto
+    template_name = "articulos/articulo_list.html"
+    context_object_name = "articulos"
+    def get_queryset(self):
+        queryset = super().get_queryset().order_by("id")
+        buscar = self.request.GET.get("buscar")
+        categoria_id = self.request.GET.get("categoria")
+        proveedor_id = self.request.GET.get("proveedor")
+        estado = self.request.GET.get("estado")
 
-    # Filtro por texto
-    if buscar:
-        queryset = queryset.filter(nombre__icontains=buscar)
+        # Filtro por texto
+        if buscar:
+            queryset = queryset.filter(nombre__icontains=buscar)
 
-    # Filtro por categoría
-    if categoria_id:
-        queryset = queryset.filter(categoria_id=categoria_id)
+        # Filtro por categoría
+        if categoria_id:
+            queryset = queryset.filter(categoria_id=categoria_id)
 
-    # Filtro por proveedor
-    if proveedor_id:
-        queryset = queryset.filter(proveedores__id=proveedor_id)
+        # Filtro por proveedor
+        if proveedor_id:
+            queryset = queryset.filter(proveedores__id=proveedor_id)
 
-    # Filtro por estado
-    if estado == "activos":
-        queryset = queryset.filter(activo=True)
-    elif estado == "inactivos":
-        queryset = queryset.filter(activo=False)
-    return queryset
+        # Filtro por estado
+        if estado == "activos":
+            queryset = queryset.filter(activo=True)
+        elif estado == "inactivos":
+            queryset = queryset.filter(activo=False)
+        return queryset
 
 
 class ArticuloCreate(LoginRequiredMixin, CreateView):
