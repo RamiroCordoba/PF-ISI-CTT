@@ -26,7 +26,8 @@ class Producto(models.Model):
   fecha_registro = models.DateTimeField(auto_now_add=True)
   fecha_ultimo_ingreso = models.DateTimeField(null=True, blank=True)
   activo = models.BooleanField(default=True)
-
+  proveedores = models.ManyToManyField('Proveedor', related_name='productos', blank=True)
+  
   class Meta:
     verbose_name = 'producto'
     verbose_name_plural = 'productos'
