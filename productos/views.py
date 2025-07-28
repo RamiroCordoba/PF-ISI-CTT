@@ -230,7 +230,6 @@ class ExportarProductosExcelView(View):
         df.to_excel(response, index=False, engine='openpyxl')
         return response
 
-
 #______ Productos CRUD
 class ProveedorCreate(LoginRequiredMixin,CreateView):
      model=Proveedor

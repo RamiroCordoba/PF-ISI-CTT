@@ -15,7 +15,7 @@ class ProveedorForm(forms.ModelForm):
 class ProductoForm(forms.ModelForm):
     class Meta:
         model = Producto
-        fields = ['nombre', 'descripcion', 'precio', 'stock','stock_optimo', 'stock_minimo', 'stock_maximo','categoria', 'marca', 'proveedores']
+        fields = ['nombre', 'descripcion', 'precio', 'stock','stock_optimo', 'stock_minimo', 'stock_maximo','categoria', 'marca', 'proveedores', 'activo']
         widgets = {'proveedores': forms.CheckboxSelectMultiple,}
 
 #_______ Carga masiva de productos
