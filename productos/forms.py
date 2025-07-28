@@ -1,5 +1,5 @@
 from django import forms
-from .models import Proveedor
+from .models import Proveedor,Producto
 
 #_______ Formulario de proveedor
 class ProveedorForm(forms.ModelForm):
@@ -9,6 +9,14 @@ class ProveedorForm(forms.ModelForm):
         widgets = {
             'categoria': forms.CheckboxSelectMultiple()
         }
+
+#_______ Formulario de producto
+
+class ProductoForm(forms.ModelForm):
+    class Meta:
+        model = Producto
+        fields = ['nombre', 'descripcion', 'precio', 'stock','stock_optimo', 'stock_minimo', 'stock_maximo','categoria', 'marca', 'proveedores']
+        widgets = {'proveedores': forms.CheckboxSelectMultiple,}
 
 #_______ Carga masiva de productos
 

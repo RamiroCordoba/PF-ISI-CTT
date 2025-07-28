@@ -1,13 +1,66 @@
-{% extends 'dashboard/principal.html' %} {% block Contenido %}
+{% extends 'dashboard/principal.html' %}
+{% block Contenido %}
 <div class="container-fluid px-4">
-  <h1 class="mt-4">Nuevo producto</h1>
+  <h1 class="mt-4">
+    {% if form.instance.pk %}
+      Cambiar datos
+    {% else %}
+      Nuevo producto
+    {% endif %}
+  </h1>
   <hr style="height: 5px; background-color: black; border: none" />
 
   <form action="" method="post">
     {% csrf_token %}
-    <table>
-      {{form.as_table}}
-    </table>
+
+    <div class="mb-3">
+      {{ form.nombre.label_tag }} {{ form.nombre }}
+    </div>
+
+    <div class="mb-3">
+      {{ form.descripcion.label_tag }} {{ form.descripcion }}
+    </div>
+
+    <div class="mb-3">
+      {{ form.precio.label_tag }} {{ form.precio }}
+    </div>
+
+    <div class="mb-3">
+      {{ form.stock.label_tag }} {{ form.stock }}
+    </div>
+
+    <div class="mb-3">
+      {{ form.stock_optimo.label_tag }} {{ form.stock_optimo }}
+    </div>
+
+    <div class="mb-3">
+      {{ form.stock_minimo.label_tag }} {{ form.stock_minimo }}
+    </div>
+
+    <div class="mb-3">
+      {{ form.stock_maximo.label_tag }} {{ form.stock_maximo }}
+    </div>
+
+    <div class="mb-3">
+      {{ form.categoria.label_tag }} {{ form.categoria }}
+    </div>
+
+    <div class="mb-3">
+      {{ form.marca.label_tag }} {{ form.marca }}
+    </div>
+
+    <div class="mb-3">
+      <label>Proveedores:</label>
+      {% for proveedor in form.proveedores %}
+        <div class="form-check">
+          {{ proveedor.tag }}
+          <label class="form-check-label" for="{{ proveedor.id_for_label }}">
+            {{ proveedor.choice_label }}
+          </label>
+        </div>
+      {% endfor %}
+    </div>
+
     <input class="btn btn-primary" type="submit" value="Guardar" />
     <button
       class="btn btn-secondary"
@@ -18,4 +71,35 @@
     </button>
   </form>
 </div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const campoOptimo = document.getElementById("id_stock_optimo");
+    const campoMin = document.getElementById("id_stock_minimo");
+    const campoMax = document.getElementById("id_stock_maximo");
+
+    if (!campoOptimo || !campoMin || !campoMax) return;
+
+    // Si no hay stock óptimo cargado (modo creación), deshabilitar los otros
+    if (!campoOptimo.value) {
+      campoMin.disabled = true;
+      campoMax.disabled = true;
+    }
+
+    campoOptimo.addEventListener("input", function () {
+      const optimo = parseInt(campoOptimo.value);
+      if (!isNaN(optimo)) {
+        campoMin.value = Math.floor(optimo * 0.8);
+        campoMax.value = Math.ceil(optimo * 1.2);
+        campoMin.disabled = false;
+        campoMax.disabled = false;
+      } else {
+        campoMin.value = '';
+        campoMax.value = '';
+        campoMin.disabled = true;
+        campoMax.disabled = true;
+      }
+    });
+  });
+</script>
 {% endblock Contenido %}

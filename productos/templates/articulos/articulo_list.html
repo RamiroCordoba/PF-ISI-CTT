@@ -24,8 +24,16 @@
     </div>
     <!-- Filtros y buscador -->
     <div class="d-flex align-items-center gap-3 flex-wrap">
-      <!-- Filtro por categoría -->
       <form method="get" class="d-flex align-items-center">
+        
+        <!-- Filtro por estado -->
+        <select name="estado" class="form-select form-select-sm me-2" onchange="this.form.submit()">
+          <option value="activos" {% if request.GET.estado == "activos" %}selected{% endif %}>Productos activos</option>
+          <option value="inactivos" {% if request.GET.estado == "inactivos" %}selected{% endif %}>Productos inactivos</option>
+          <option value="todos" {% if request.GET.estado == "todos" %}selected{% endif %}>Todos</option>
+        </select>
+
+        <!-- Filtro por categoría -->
         <select name="categoria" class="form-select form-select-sm me-2" onchange="this.form.submit()">
           <option value="">-- Todas las categorías --</option>
           {% for cat in categorias %}
@@ -34,7 +42,18 @@
             </option>
           {% endfor %}
         </select>
+
+        <!-- Filtro por proveedor -->
+        <select name="proveedor" class="form-select form-select-sm me-2" onchange="this.form.submit()">
+          <option value="">-- Todos los proveedores --</option>
+          {% for p in proveedores %}
+            <option value="{{ p.id }}" {% if request.GET.proveedor == p.id|stringformat:"s" %}selected{% endif %}>
+              {{ p.nombreEmpresa }}
+            </option>
+          {% endfor %}
+        </select>
       </form>
+
       <!-- Quitar filtro si existe búsqueda -->
       {% if request.GET.buscar %}
         <a href="{% url 'mis_articulos' %}" 
@@ -60,6 +79,7 @@
         <th class="text-center">Precio $</th>
         <th class="text-center">Stock</th>
         <th class="text-center">Categoria</th>
+        <th class="text-center">Proveedores</th>
         <th class="text-center">Ultimo Ingreso</th>
         <th class="text-center">Activo</th>
       </tr>
@@ -85,12 +105,21 @@
         <td class="text-center">{{p.precio}}</td>
         <td class="text-center">{{p.stock}}</td>
         <td class="text-center">{{p.categoria}}</td>
+        <td>
+          {% if p.proveedores.exists %}
+            {% for pro in p.proveedores.all %}
+              {{ pro.nombreEmpresa }}{% if not forloop.last %}, {% endif %}
+            {% endfor %}
+          {% else %}
+            <em>Sin proveedor</em>
+          {% endif %}
+        </td>
         <td class="text-center">{{ p.fecha_ultimo_ingreso|date:"d/m/Y" }}</td>
         <td>
-          {% if producto.activo == "True" %}
-          <i class="far fa-square text-secondary"></i>
+          {% if p.activo %}
+            <i class="fas fa-check-square text-success"></i>
           {% else %}
-          <i class="fas fa-check-square text-success"></i>
+            <i class="fas fa-times-square text-danger"></i>
           {% endif %}
         </td>
       </tr>
