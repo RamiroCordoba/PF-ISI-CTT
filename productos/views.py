@@ -116,7 +116,7 @@ class CargaMasivaProductosView(View):
                 return redirect('carga_masiva_productos')
 
             try:
-                df = pd.read_excel(archivo)
+                df = pd.read_excel(archivo, dtype={'proveedores': 'string'})
             except Exception as e:
                 messages.error(request, f"Error al leer el archivo: {str(e)}")
                 return redirect('carga_masiva_productos')
@@ -124,7 +124,8 @@ class CargaMasivaProductosView(View):
             errores = []
             productos_agregados = []
             productos_actualizados = []
-
+            proveedores_actualizados = []
+            proveedores_no_existentes = []
             for index, fila in df.iterrows():
                 # Saltar fila vacía completa
                 if fila.isnull().all():
@@ -142,11 +143,12 @@ class CargaMasivaProductosView(View):
                     stock_maximo = int(fila.get('stock_maximo')) if not pd.isna(fila.get('stock_maximo')) else None
                     stock_minimo = int(fila.get('stock_minimo')) if not pd.isna(fila.get('stock_minimo')) else None
                     marca = str(fila.get('marca', '')).strip()
-
+                    activo = True
                     categoria_nombre = str(fila['categoria']).strip()
                     categoria_obj = Categoria.objects.filter(nombre__iexact=categoria_nombre).first()
                     if not categoria_obj:
                         raise ValueError(f"Categoría '{categoria_nombre}' no encontrada")
+                    
 
                     producto, creado = Producto.objects.get_or_create(nombre=nombre, defaults={
                         'descripcion': descripcion,
@@ -156,9 +158,31 @@ class CargaMasivaProductosView(View):
                         'stock_maximo': stock_maximo,
                         'stock_minimo': stock_minimo,
                         'categoria': categoria_obj,
+                        'activo': activo,
                         'marca': marca,
                         'fecha_ultimo_ingreso': now(),
                     })
+                    
+                    raw_proveedor = fila.get('proveedores', None)
+                    if pd.isna(raw_proveedor):
+                        proveedor_nombre = ''
+                    else:
+                        proveedor_nombre = str(raw_proveedor).strip()
+
+                    if proveedor_nombre.lower() == 'nan':
+                        proveedor_nombre = ''
+
+                    if proveedor_nombre:
+                        proveedor_obj = Proveedor.objects.filter(nombreEmpresa__iexact=proveedor_nombre).first()
+                        if not proveedor_obj:
+                            proveedor_obj = None  
+                    else:
+                        proveedor_obj = None  
+                    if creado:
+                        if proveedor_obj:
+                            producto.proveedores.set([proveedor_obj])
+                        else:
+                            producto.proveedores.clear()
 
                     if not creado:
                         cambios = False
@@ -170,6 +194,7 @@ class CargaMasivaProductosView(View):
                             'stock_maximo': stock_maximo,
                             'stock_minimo': stock_minimo,
                             'categoria': categoria_obj,
+                            'activo': activo,
                             'marca': marca,
                         }
 
@@ -177,6 +202,21 @@ class CargaMasivaProductosView(View):
                             if getattr(producto, campo) != valor_nuevo:
                                 setattr(producto, campo, valor_nuevo)
                                 cambios = True
+                        if proveedor_nombre:
+                            if proveedor_obj:
+                                if not producto.proveedores.filter(pk=proveedor_obj.pk).exists():
+                                    producto.proveedores.add(proveedor_obj)
+                                    cambios = True
+                                    proveedores_actualizados.append(
+                                        f"{nombre} (proveedor agregado: {proveedor_obj.nombreEmpresa})"
+                                    )
+                            else:
+                                proveedores_no_existentes.append(f"{nombre} (proveedor: {proveedor_nombre})")
+                        else:
+                            if producto.proveedores.exists():
+                                producto.proveedores.clear()
+                                cambios = True
+                                proveedores_actualizados.append(f"{nombre} (proveedores eliminados)")
 
                         if cambios:
                             producto.fecha_ultimo_ingreso = now()
@@ -191,12 +231,36 @@ class CargaMasivaProductosView(View):
             if errores:
                 for error in errores:
                     messages.error(request, error)
+            def label(base_singular, base_plural, n):
+                return base_singular if n == 1 else base_plural
             if productos_agregados:
-                messages.success(request, f"Productos agregados: {', '.join(productos_agregados)}")
+                n = len(productos_agregados)
+                messages.success(
+                    request,
+                    f"{n} {label('producto agregado', 'productos agregados', n)}: {', '.join(productos_agregados)}"
+                )
+
             if productos_actualizados:
-                messages.info(request, f"Productos actualizados: {', '.join(productos_actualizados)}")
+                n = len(productos_actualizados)
+                messages.info(
+                    request,
+                    f"{n} {label('producto actualizado', 'productos actualizados', n)}: {', '.join(productos_actualizados)}"
+                )
+            if proveedores_actualizados:
+                n = len(proveedores_actualizados)
+                messages.info(
+                    request,
+                    f"{n} {label('proveedor actualizado', 'proveedores actualizados', n)}: {', '.join(proveedores_actualizados)}"
+                )
+
+            if proveedores_no_existentes:
+                n = len(proveedores_no_existentes)
+                messages.warning(
+                    request,
+                    f"{n} {label('proveedor inexistente', 'proveedores inexistentes', n)}: {', '.join(proveedores_no_existentes)}"
+                )
             if not productos_agregados and not productos_actualizados and not errores:
-                messages.info(request, "no_cambios")
+                messages.info(request, "No se detectaron cambios.")
 
             return redirect('carga_masiva_productos')
 
@@ -210,6 +274,8 @@ class ExportarProductosExcelView(View):
         data = []
 
         for p in productos:
+            prov_nombres = list(p.proveedores.values_list('nombreEmpresa', flat=True))
+            prov_str = ', '.join(prov_nombres) if prov_nombres else '' 
             data.append({
                 'nombre': p.nombre,
                 'descripcion': p.descripcion,
@@ -220,6 +286,7 @@ class ExportarProductosExcelView(View):
                 'stock_minimo': p.stock_minimo,
                 'categoria': p.categoria.nombre,
                 'marca': p.marca or '',
+                'proveedores': prov_str
             })
 
         df = pd.DataFrame(data)
