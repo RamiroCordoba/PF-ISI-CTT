@@ -66,13 +66,10 @@
       <div class="col-md-7">
         <p><strong>Nombre:</strong> {{ usuario.first_name }}</p>
         <p><strong>Apellido:</strong> {{ usuario.last_name }}</p>
-        <p><strong>Email:</strong> ${{ usuario.email }}</p>
-        <p><strong>Rol/es:</strong> ${{ usuario.groups.all }}</p>
-        <p>
-          <strong>Fecha de registro:</strong> ${{
-          usuario.date_joined|date:"d/m/Y" }}
-        </p>
-        <p><strong>Ultimo acceso:</strong> ${{ usuario.last_login }}</p>
+        <p><strong>Email:</strong> {{ usuario.email }}</p>
+        <p><strong>Rol/es:</strong> {{ usuario.groups.all|join:", " }}</p>
+        <p><strong>Fecha de registro:</strong> {{ usuario.date_joined|date:"d/m/Y" }}</p>
+        <p><strong>Último acceso:</strong> {{ usuario.last_login|date:"j \\d\\e F \\d\\e Y \\a \\l\\a\\s H:i" }}</p>
         <hr class="my-4" />
       </div>
     </div>

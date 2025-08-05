@@ -40,18 +40,16 @@
         <div class="bg-color-personalizado p- contenedor-bordes-redondos">
           <h1 class="fst-italic lh-1 mb-4">Ferreteria Santa Rita</h1>
           <hr />
-          <form method="post" action="{% url 'login' %}">
-            {% csrf_token %} {{ form.as_p }}
-            <hr />
-            <button class="btn btn-primary" type="submit">Ingresar</button>
-            <button
-              class="btn btn-secondary"
-              type="button"
-              onclick="window.location.href='{% url 'home' %}'"
-            >
-              Cancelar
-            </button>
-          </form>
+            <form method="post" action="{% url 'login' %}">
+              {% csrf_token %}
+              {{ form.email.label_tag }}<br>
+              {{ form.email }}<br><br>
+
+              {{ form.password.label_tag }}<br>
+              {{ form.password }}<br><br>
+
+              <button type="submit">Ingresar</button>
+            </form>
           <br />
           <a href="{% url 'password_reset' %}">¿Olvidaste tu contraseña?</a>
         </div>

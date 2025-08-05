@@ -34,6 +34,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'usuarios',
   #____ App de defecto que trae Django
     'django.contrib.admin',
     'django.contrib.auth',
@@ -45,9 +46,13 @@ INSTALLED_APPS = [
     'home',
     'dashboard',
     'productos',
-    'usuarios',
+
 ]
 
+AUTHENTICATION_BACKENDS = [
+    'usuarios.backends.EmailBackend',  
+    'django.contrib.auth.backends.ModelBackend', 
+]
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -132,6 +137,7 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+AUTH_USER_MODEL = 'usuarios.UsuarioPersonalizado'
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
