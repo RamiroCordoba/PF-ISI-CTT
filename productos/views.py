@@ -52,28 +52,45 @@ class ArticuloList(LoginRequiredMixin,ListView):
     def get_queryset(self):
         queryset = super().get_queryset().order_by("id")
         buscar = self.request.GET.get("buscar")
-        categoria_id = self.request.GET.get("categoria")
-        proveedor_id = self.request.GET.get("proveedor")
-        estado = self.request.GET.get("estado")
+        categoria_ids = self.request.GET.getlist("categoria")
+        proveedor_ids = self.request.GET.getlist("proveedor")
+        estados = self.request.GET.getlist("estado")
 
-        # Filtro por texto
         if buscar:
             queryset = queryset.filter(nombre__icontains=buscar)
 
-        # Filtro por categoría
-        if categoria_id:
-            queryset = queryset.filter(categoria_id=categoria_id)
+        if categoria_ids:
+            queryset = queryset.filter(categoria_id__in=categoria_ids)
 
-        # Filtro por proveedor
-        if proveedor_id:
-            queryset = queryset.filter(proveedores__id=proveedor_id)
+        if proveedor_ids:
+            queryset = queryset.filter(proveedores__id__in=proveedor_ids)
 
-        # Filtro por estado
-        if estado == "activos":
+        if "activos" in estados and "inactivos" not in estados:
             queryset = queryset.filter(activo=True)
-        elif estado == "inactivos":
+        elif "inactivos" in estados and "activos" not in estados:
             queryset = queryset.filter(activo=False)
+
         return queryset
+
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        request = self.request
+
+        # 🔧 Agregá estas líneas:
+        context["categorias"] = Categoria.objects.all()
+        context["proveedores"] = Proveedor.objects.all()
+
+        # Filtros activos
+        context["filtro_estados"] = request.GET.getlist("estado")
+        context["filtro_categorias"] = request.GET.getlist("categoria")
+        context["filtro_proveedores"] = request.GET.getlist("proveedor")
+        context["filtros_activos"] = (
+            bool(context["filtro_estados"])
+            or bool(context["filtro_categorias"])
+            or bool(context["filtro_proveedores"])
+        )
+        return context
 
 
 class ArticuloCreate(LoginRequiredMixin, CreateView):
