@@ -6,6 +6,9 @@ from productos.models import Producto, Categoria
 
 @receiver(post_migrate)
 def crear_grupos(sender, **kwargs):
+    if sender.name != "usuarios":
+        return
+
     vendedor, _ = Group.objects.get_or_create(name='vendedor')
     administrador, _ = Group.objects.get_or_create(name='administrador')
 

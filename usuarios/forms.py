@@ -1,11 +1,10 @@
 from django import forms
-from django.contrib.auth.models import User, Group
 from django.contrib.auth.forms import UserCreationForm
+from .models import UsuarioPersonalizado
+from django.contrib.auth.models import Group
 
 class RegistroForm(UserCreationForm):
     email = forms.EmailField(required=True)
-    password1 = forms.CharField(label="Contraseña", widget=forms.PasswordInput())
-    password2 = forms.CharField(label="Repetir Contraseña", widget=forms.PasswordInput())
     
     grupo = forms.ModelChoiceField(
         queryset=Group.objects.all(),
@@ -14,7 +13,7 @@ class RegistroForm(UserCreationForm):
     )
 
     class Meta:
-        model = User
+        model = UsuarioPersonalizado
         fields = [
             "first_name",
             "last_name",
@@ -24,3 +23,6 @@ class RegistroForm(UserCreationForm):
             "password2",
             "grupo"
         ]
+class EmailAuthenticationForm(forms.Form):
+    email = forms.EmailField(label="Correo electrónico")
+    password = forms.CharField(label="Contraseña", widget=forms.PasswordInput)
