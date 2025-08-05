@@ -1,0 +1,291 @@
+def load_backend(path):
+    return import_string(path)()
+
+def _get_backends(return_tuples=False):
+    backends = []
+    for backend_path in settings.AUTHENTICATION_BACKENDS:
+        backend = load_backend(backend_path)
+        print("backend:", backend)
+        print("backend_path:", backend_path)
+        print("return_tuples:", return_tuples)
+        backends.append((backend, backend_path) if return_tuples else backend)
+        print("backends:", backends)
+    if not backends:
+        raise ImproperlyConfigured(
+            "No authentication backends have been defined. Does "
+            "AUTHENTICATION_BACKENDS contain anything?"
+        )
+    return backends
+
+@sensitive_variables("credentials")
+def authenticate(request=None, **credentials):
+    """
+    If the given credentials are valid, return a User object.
+    """
+    for backend, backend_path in _get_backends(return_tuples=True):
+        backend_signature = inspect.signature(backend.authenticate)
+        print("backend_signature:", backend_signature)
+        try:
+            backend_signature.bind(request, **credentials)
+            print("backend_signature2:", backend_signature)
+            print("request2:", request)
+            print("credentials2:", credentials)
+        except TypeError:
+            # This backend doesn't accept these credentials as arguments. Try
+            # the next one.
+            continue
+        try:
+            user = backend.authenticate(request, **credentials)
+            print("credentials3:", credentials)
+            print("request3:", request)
+            print("user3:", user)
+        except PermissionDenied:
+            # This backend says to stop in our tracks - this user should not be
+            # allowed in at all.
+            break
+        if user is None:
+            continue
+        # Annotate the user object with the path of the backend.
+        user.backend = backend_path
+        return user
+
+    # The credentials supplied are invalid to all backends, fire signal
+    user_login_failed.send(
+        sender=__name__, credentials=_clean_credentials(credentials), request=request
+    )
+
+@sensitive_variables("credentials")
+def _clean_credentials(credentials):
+    """
+    Clean a dictionary of credentials of potentially sensitive info before
+    sending to less secure functions.
+
+    Not comprehensive - intended for user_login_failed signal
+    """
+    SENSITIVE_CREDENTIALS = re.compile("api|token|key|secret|password|signature", re.I)
+    CLEANSED_SUBSTITUTE = "********************"
+    for key in credentials:
+        if SENSITIVE_CREDENTIALS.search(key):
+            credentials[key] = CLEANSED_SUBSTITUTE
+    return credentials
+
+def get_user_model():
+    """
+    Return the User model that is active in this project.
+    """
+    try:
+        return django_apps.get_model(settings.AUTH_USER_MODEL, require_ready=False)
+    except ValueError:
+        raise ImproperlyConfigured(
+            "AUTH_USER_MODEL must be of the form 'app_label.model_name'"
+        )
+    except LookupError:
+        raise ImproperlyConfigured(
+            "AUTH_USER_MODEL refers to model '%s' that has not been installed"
+            % settings.AUTH_USER_MODEL
+        )
+
+
+def _get_user_session_key(request):
+    # This value in the session is always serialized to a string, so we need
+    # to convert it back to Python whenever we access it.
+    return get_user_model()._meta.pk.to_python(request.session[SESSION_KEY])
+
+
+def login(request, user, backend=None):
+    """
+    Persist a user id and a backend in the request. This way a user doesn't
+    have to reauthenticate on every request. Note that data set during
+    the anonymous session is retained when the user logs in.
+    """
+    session_auth_hash = ""
+    if user is None:
+        user = request.user
+    if hasattr(user, "get_session_auth_hash"):
+        session_auth_hash = user.get_session_auth_hash()
+
+    if SESSION_KEY in request.session:
+        if _get_user_session_key(request) != user.pk or (
+            session_auth_hash
+            and not constant_time_compare(
+                request.session.get(HASH_SESSION_KEY, ""), session_auth_hash
+            )
+        ):
+            # To avoid reusing another user's session, create a new, empty
+            # session if the existing session corresponds to a different
+            # authenticated user.
+            request.session.flush()
+    else:
+        request.session.cycle_key()
+
+    try:
+        backend = backend or user.backend
+    except AttributeError:
+        backends = _get_backends(return_tuples=True)
+        if len(backends) == 1:
+            _, backend = backends[0]
+        else:
+            raise ValueError(
+                "You have multiple authentication backends configured and "
+                "therefore must provide the `backend` argument or set the "
+                "`backend` attribute on the user."
+            )
+    else:
+        if not isinstance(backend, str):
+            raise TypeError(
+                "backend must be a dotted import path string (got %r)." % backend
+            )
+
+    request.session[SESSION_KEY] = user._meta.pk.value_to_string(user)
+    request.session[BACKEND_SESSION_KEY] = backend
+    request.session[HASH_SESSION_KEY] = session_auth_hash
+    if hasattr(request, "user"):
+        request.user = user
+    rotate_token(request)
+    user_logged_in.send(sender=user.__class__, request=request, user=user)
+
+
+    -------------------------------------- VIEW.py del home--------------------------------------
+    from django.shortcuts import render, redirect
+from django.urls import reverse_lazy
+from django.contrib.auth import login, authenticate
+from django.contrib.auth.forms import AuthenticationForm
+from .models import *
+import os
+from hashlib import sha256
+from django import forms
+from django.contrib.auth.models import User, Group
+from django.contrib.auth.forms import UserCreationForm
+from django.views.decorators.debug import sensitive_variables
+from django.utils.module_loading import import_string
+from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured, PermissionDenied
+import inspect
+from .signals import user_logged_in, user_logged_out, user_login_failed
+from django.utils.crypto import constant_time_compare
+import re
+from django.apps import apps as django_apps
+from django.middleware.csrf import rotate_token
+from django.contrib.auth.models import User
+from django.contrib.auth.backends import ModelBackend
+from django.contrib.auth import get_user_model
+from django.contrib.auth.views import LoginView
+from .models import EmailLoginForm
+
+SESSION_KEY = "_auth_user_id"
+BACKEND_SESSION_KEY = "_auth_user_backend"
+HASH_SESSION_KEY = "_auth_user_hash"
+REDIRECT_FIELD_NAME = "next"
+semilla = os.environ.get("Semilla")
+
+if not semilla:
+    raise ValueError("No se encontró la variable de entorno 'Semilla'")
+
+clave = sha256(semilla.encode()).digest()
+
+#--- Pagina principal
+def home_view(request):
+  return render(request,"home/index.html")
+
+#--- Pagina para el login
+"""def login_view(request):
+  if request.method == "POST":
+    usuario = request.POST['username']
+    clave = request.POST['password']
+    entrada = (semilla + clave).encode()
+    hash_contraseña = sha256(entrada).hexdigest()
+    print(f"Hash de la contraseña: {hash_contraseña}")
+    user=authenticate(request, username=usuario,password=clave)
+    if user is not None:
+      login(request, user)
+      return redirect('dashboard') # Si esta todo bien, lleva al dashboard
+    else:
+      return redirect(reverse_lazy('home'))
+  else:
+    #___ Si ingresa por aca es porque es la primera vez.
+    miForm= AuthenticationForm()
+  return render(request, "home/login.html",{"form":miForm})"""
+class CustomLoginView(LoginView):
+    template_name = "home/login.html"
+    authentication_form = EmailLoginForm
+    
+    def get_success_url(self):
+        return reverse_lazy('dashboard')
+
+
+
+"""class CustomLoginView(LoginView):
+    template_name = "home/login.html" 
+    authentication_form = EmailLoginForm
+"""
+
+"""  if request.method == "POST":
+    usuario = request.POST['username']
+    clave = request.POST['password']
+    entrada = (semilla + clave).encode()
+    hash_contraseña = sha256(entrada).hexdigest()
+    print(f"Hash de la contraseña: {hash_contraseña}")
+    user=authenticate(request, username=usuario,password=clave)
+    if user is not None:
+      login(request, user)
+      return redirect('dashboard') # Si esta todo bien, lleva al dashboard
+    else:
+      return redirect(reverse_lazy('home'))
+  else:
+    #___ Si ingresa por aca es porque es la primera vez.
+    miForm= AuthenticationForm()
+  return render(request, "home/login.html",{"form":miForm})"""
+-----------------URL HOME---------------------
+from django.contrib.auth import views as auth_views
+from django.urls import path
+from . import views
+from .views import CustomLoginView
+
+urlpatterns = [
+    path('', views.home_view, name='home'),
+    path('login/', CustomLoginView.as_view(), name='login'),
+    # Recuperación de contraseña
+    path(
+    'password_reset/',
+    auth_views.PasswordResetView.as_view(
+        template_name='restablecedor/password_reset_form.html',
+        email_template_name='restablecedor/password_reset_email.txt',         # versión texto plano por si tiene bloqueado HTML el usuario
+        html_email_template_name='restablecedor/password_reset_email.html',   # <- versión moderna con HTML
+        subject_template_name='restablecedor/password_reset_subject.txt'
+    ),
+    name='password_reset'
+),
+    path(
+        'password_reset/done/',
+        auth_views.PasswordResetDoneView.as_view(template_name='restablecedor/password_reset_done.html'),
+        name='password_reset_done'
+    ),
+    path(
+        'reset/<uidb64>/<token>/',
+        auth_views.PasswordResetConfirmView.as_view(template_name='restablecedor/password_reset_confirm.html'),
+        name='password_reset_confirm'
+    ),
+    path(
+        'reset/done/',
+        auth_views.PasswordResetCompleteView.as_view(template_name='restablecedor/password_reset_complete.html'),
+        name='password_reset_complete'
+    ),
+]
+
+
+
+-------------------backend.py-----------------------
+from django.contrib.auth.backends import ModelBackend
+from django.contrib.auth import get_user_model
+
+class EmailBackend(ModelBackend):
+    def authenticate(self, request, email=None, password=None, **kwargs):
+        UserModel = get_user_model()
+        try:
+            user = UserModel.objects.get(email=email) 
+        except UserModel.DoesNotExist:
+            return None
+
+        if user.check_password(password):
+            return user
+        return None

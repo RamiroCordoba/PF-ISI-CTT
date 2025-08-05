@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 import os
+import json
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -85,6 +87,21 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'clave-insegura-de-fallback')
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
+CI_ENVIRONMENT = os.getenv("CI", "False").lower() in ("true", "1", "yes")  # Mejor para detectar True
+
+json_config = os.getenv("BD_PF")
+
+if json_config:
+    if json_config.startswith("'") and json_config.endswith("'"):
+        json_config = json_config[1:-1]
+    json_config = json_config.replace('\\\\\\\\', '\\\\')
+
+    db_config = json.loads(json_config)
+else:
+    db_config = None
+
+#print(db_config)
+
 if CI_ENVIRONMENT:
     DATABASES = {
         'default': {
@@ -93,20 +110,11 @@ if CI_ENVIRONMENT:
         }
     }
 else:
+    if not json_config:
+        raise Exception("La variable de entorno BD_PF no está definida o está vacía.")
     DATABASES = {
-        'default': {
-            'ENGINE': 'mssql',
-            'NAME': 'FERRETERIASRDB',
-            'USER':'sa',
-            'PASSWORD':'proyecto2025',
-            'HOST':'100.105.229.3\\PROYECTO',
-            'PORT':'',
-            'OPTIONS':{'driver':'ODBC Driver 17 for SQL Server'},
-            'extra_params': 'TrustServerCertificate=yes;',
-        }
+        'default': json.loads(json_config)
     }
-
-
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
 
@@ -124,8 +132,10 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-
-
+AUTHENTICATION_BACKENDS = [
+    'home.backends.EmailBackend', 
+    'django.contrib.auth.backends.ModelBackend',  
+]
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
@@ -157,6 +167,7 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
+PASSMAIL = os.getenv("PASS_MAIL")
 EMAIL_HOST_USER = 'proyectoferreteriasr@gmail.com'
-EMAIL_HOST_PASSWORD = 'pmky cqca vmrm xwes' # Buscar forma de que no este harcodeado.
+EMAIL_HOST_PASSWORD = PASSMAIL         
 DEFAULT_FROM_EMAIL = 'Ferretería Santa Rita <proyectoferreteriasr@gmail.com>'
