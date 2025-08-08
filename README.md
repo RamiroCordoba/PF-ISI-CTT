@@ -55,7 +55,7 @@ Actualmente hay 3 tipos de usuarios con diferentes permisos asignados:
 
 ### Credenciales para probar:
 - SuperAdmin:
-  - User: admin
+  - Email: admin@admin.com
   - Pass: admin
 - Administrador:
   - User: administrador1
