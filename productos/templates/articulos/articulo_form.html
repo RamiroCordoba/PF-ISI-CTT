@@ -54,6 +54,18 @@
     </div>
 
     <div class="mb-3">
+      {{ form.fecha_registro.label_tag }}
+      {{ form.fecha_registro }}
+    </div>
+
+    <div class="mb-3">
+      {{ form.fecha_ultimo_ingreso.label_tag }}
+      <div class="input-group">
+        {{ form.fecha_ultimo_ingreso }}
+      </div>
+    </div>
+
+    <div class="mb-3">
       <label>Proveedores:</label>
       {% for proveedor in form.proveedores %}
         <div class="form-check">
@@ -105,5 +117,10 @@
       }
     });
   });
+  function ponerFechaHoy(campoId) {
+    const ahora = new Date();
+    const localDatetime = ahora.toISOString().slice(0, 16); // "YYYY-MM-DDTHH:MM"
+    document.getElementById(campoId).value = localDatetime;
+  }
 </script>
 {% endblock Contenido %}
