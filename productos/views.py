@@ -354,27 +354,57 @@ class ProveedorDetail(DetailView):
      template_name="proveedores/proveedor_details.html"
      context_object_name = 'elProveedor'
 
-class ProveedorList(LoginRequiredMixin,ListView):
+
+class ProveedorList(LoginRequiredMixin, ListView):
     model = Proveedor
     template_name = "proveedores/proveedor_list.html"
     context_object_name = "proveedores"
+    paginate_by = 20
 
     def get_queryset(self):
         queryset = super().get_queryset().order_by("id")
-        buscar = self.request.GET.get("buscar")
-        #proveedor_id = self.request.GET.get("proveedor")
+        request = self.request
 
+        # Filtro por empresa
+        empresa = request.GET.get('empresa', '').strip()
+        if empresa:
+            queryset = queryset.filter(nombreEmpresa__icontains=empresa)
+
+        # Filtro por categoría (ManyToMany)
+        categorias = request.GET.getlist('categoria')
+        if categorias:
+            queryset = queryset.filter(categoria__id__in=categorias)
+
+        # Filtro por estado
+        estado = request.GET.get('estado')
+        if estado == 'activos':
+            queryset = queryset.filter(estado=True)
+        elif estado == 'inactivos':
+            queryset = queryset.filter(estado=False)
+
+        # Buscador por texto
+        buscar = request.GET.get('buscar', '').strip()
         if buscar:
-            queryset = queryset.filter(nombreEmpresa__icontains=buscar)
+            queryset = queryset.filter(
+                models.Q(nombreEmpresa__icontains=buscar) |
+                models.Q(nombreProv__icontains=buscar) |
+                models.Q(mail__icontains=buscar) |
+                models.Q(ciudad__icontains=buscar)
+            )
 
-        #if proveedor_id:
-        #    queryset = queryset.filter(proveedor_id=proveedor_id)
-
+        queryset = queryset.distinct()
         return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        #context["proveedores"] = Proveedor.objects.all().order_by("nombreEmpresa")
+        request = self.request
+        context['empresas'] = Proveedor.objects.values_list('nombreEmpresa', flat=True).distinct().order_by('nombreEmpresa')
+        context['categorias'] = Categoria.objects.all()
+        context['filtro_empresa'] = request.GET.get('empresa', '')
+        context['filtro_categorias'] = request.GET.getlist('categoria')
+        context['filtro_estado'] = request.GET.get('estado', '')
+        context['buscar'] = request.GET.get('buscar', '')
+        context['filtros_activos'] = bool(context['filtro_empresa'] or context['filtro_categorias'] or context['filtro_estado'] or context['buscar'])
         return context
 
 #______ Estacionalidad

@@ -1,6 +1,12 @@
 {% extends 'dashboard/principal.html' %} {% block Contenido %}
 <div class="container-fluid px-4">
-  <h1 class="mt-4">Nuevo usuario</h1>
+  <h1 class="mt-4">
+    {% if form.instance.pk %}
+      Editando usuario
+    {% else %}
+      Nuevo usuario
+    {% endif %}
+  </h1>
   <hr style="height: 5px; background-color: black; border: none" />
 
   <form action="" method="post">

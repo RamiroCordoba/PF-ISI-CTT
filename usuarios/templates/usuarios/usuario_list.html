@@ -84,29 +84,34 @@
 
   <!-- Mostrador de filtros activos -->
   {% if filtros_activos or buscar %}
-  <div class="text-secondary small mt-3">
-    Se está filtrando por
-    {% if filtro_estados %}
-      {% if "activos" in filtro_estados %} usuarios activos{% endif %}
-      {% if "inactivos" in filtro_estados %}
-        {% if "activos" in filtro_estados %} y{% endif %} usuarios inactivos
+    <div class="text-secondary small mt-3">
+      <strong>Se está filtrando por:</strong>
+      {% if filtro_estados %}
+        Estado:
+        <span>
+          {% if "activos" in filtro_estados %}<strong>Activos</strong>{% endif %}
+          {% if "activos" in filtro_estados and "inactivos" in filtro_estados %} y {% endif %}
+          {% if "inactivos" in filtro_estados %}<strong>Inactivos</strong>{% endif %}
+        </span>
       {% endif %}
-    {% endif %}
-    {% if filtro_roles %}
-      {% if filtro_estados %},{% endif %} con rol/es
-      {% for id in filtro_roles %}
-        {% for rol in roles %}
-          {% if rol.id|stringformat:"s" == id %}
-            {{ rol.name }}{% if not forloop.last %}, {% endif %}
-          {% endif %}
-        {% endfor %}
-      {% endfor %}
-    {% endif %}
-    {% if buscar %}
-      {% if filtro_estados or filtro_roles %},{% endif %}
-      que coinciden con: "<strong>{{ buscar }}</strong>"
-    {% endif %}.
-  </div>
+      {% if filtro_roles %}
+        {% if filtro_estados %}, {% endif %}
+        Rol/es:
+        <span>
+          {% for id in filtro_roles %}
+            {% for rol in roles %}
+              {% if rol.id|stringformat:"s" == id %}
+                <strong>{{ rol.name }}</strong>{% if not forloop.last or not forloop.parentloop.last %}, {% endif %}
+              {% endif %}
+            {% endfor %}
+          {% endfor %}
+        </span>
+      {% endif %}
+      {% if buscar %}
+        {% if filtro_estados or filtro_roles %}, {% endif %}
+        Búsqueda de texto: <span><strong>"{{ buscar }}"</strong></span>
+      {% endif %}
+    </div>
   {% endif %}
 
   <hr style="height: 5px; background-color: black; border: none" />
@@ -122,50 +127,52 @@
       </tr>
     </thead>
     <tbody>
-      {% for user in usuarios %}
-      <tr>
-        <td class="text-center">
-          {% if request.user.is_staff %}
-              <a href="{% url 'usuarios:editar_usuario' user.pk %}" class="btn btn-outline-success mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
-                  <i class="fa fa-edit fa-sm" title="Editar"></i>
-              </a>
-              <a href="{% url 'usuarios:eliminar_usuario' user.pk %}" class="btn btn-outline-danger mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
-                  <i class="fa fa-trash fa-sm" title="Eliminar"></i>
-              </a> 
-          {% endif %}
-          <a href="{% url 'usuarios:detalle_usuario' user.pk %}" class="btn btn-outline-primary mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
-            <i class="fa-solid fa-eye" title="Ver"></i>
-          </a> 
-        </td>
-        <td class="text-center">{{ user.username }}</td>
-        <td class="text-center">{{ user.first_name }} {{ user.last_name }}</td>
-        <td class="text-center">{{ user.email }}</td>
-        <td class="text-center">
-          {% if user.is_superuser %}
-            <span title="Superadmin" style="color: #f7b731; font-size: 1.2em;">&#x1F451;</span> <strong>Superadmin</strong>
-            {% if user.groups.count > 1 %}, {% endif %}
-          {% endif %}
-          {% for group in user.groups.all %}
-            {% if not user.is_superuser or group.name != 'Superadmin' %}
-              {{ group.name }}{% if not forloop.last %}, {% endif %}
+      {% if usuarios %}
+        {% for user in usuarios %}
+        <tr>
+          <td class="text-center">
+            {% if request.user.is_staff %}
+                <a href="{% url 'usuarios:editar_usuario' user.pk %}" class="btn btn-outline-success mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
+                    <i class="fa fa-edit fa-sm" title="Editar"></i>
+                </a>
+                <a href="{% url 'usuarios:eliminar_usuario' user.pk %}" class="btn btn-outline-danger mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
+                    <i class="fa fa-trash fa-sm" title="Eliminar"></i>
+                </a> 
             {% endif %}
-          {% empty %}
-            {% if not user.is_superuser %}Sin grupo{% endif %}
-          {% endfor %}
-        </td>
-        <td class="text-center">
-          {% if user.is_active %}
-            <span class="badge bg-success">Activo</span>
-          {% else %}
-            <span class="badge bg-danger">Inactivo</span>
-          {% endif %}
-        </td>
-      </tr>
-      {% empty %}
-      <tr>
-        <td colspan="6">No hay usuarios registrados.</td>
-      </tr>
-      {% endfor %}
+            <a href="{% url 'usuarios:detalle_usuario' user.pk %}" class="btn btn-outline-primary mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
+              <i class="fa-solid fa-eye" title="Ver"></i>
+            </a> 
+          </td>
+          <td class="text-center">{{ user.username }}</td>
+          <td class="text-center">{{ user.first_name }} {{ user.last_name }}</td>
+          <td class="text-center">{{ user.email }}</td>
+          <td class="text-center">
+            {% if user.is_superuser %}
+              <span title="Superadmin" style="color: #f7b731; font-size: 1.2em;">&#x1F451;</span> <strong>Superadmin</strong>
+              {% if user.groups.count > 1 %}, {% endif %}
+            {% endif %}
+            {% for group in user.groups.all %}
+              {% if not user.is_superuser or group.name != 'Superadmin' %}
+                {{ group.name }}{% if not forloop.last %}, {% endif %}
+              {% endif %}
+            {% empty %}
+              {% if not user.is_superuser %}Sin grupo{% endif %}
+            {% endfor %}
+          </td>
+          <td class="text-center">
+            {% if user.is_active %}
+              <span class="badge bg-success">Activo</span>
+            {% else %}
+              <span class="badge bg-danger">Inactivo</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      {% else %}
+        <tr>
+          <td colspan="6" class="text-center">No se encontraron usuarios.</td>
+        </tr>
+      {% endif %}
     </tbody>
   </table>
 
