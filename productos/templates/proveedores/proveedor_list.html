@@ -42,6 +42,7 @@
           {% endfor %}
         </span>
       {% endif %}
+      
       {% if filtro_estado %}
         {% if filtro_empresa or filtro_categorias %}, {% endif %}
         Estado: <span><strong>{% if filtro_estado == 'activos' %}Activos{% elif filtro_estado == 'inactivos' %}Inactivos{% endif %}</strong></span>
