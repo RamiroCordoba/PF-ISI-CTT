@@ -50,7 +50,7 @@ class ArticuloList(LoginRequiredMixin, ListView):
     model = Producto
     template_name = "articulos/articulo_list.html"
     context_object_name = "articulos"
-    paginate_by = 50  # Display 50 articles per page
+    paginate_by = 25  # <-- Aca se setea la cantidad de articulos a mostrar
 
     def get_queryset(self):
         queryset = super().get_queryset().order_by("id")
@@ -79,7 +79,7 @@ class ArticuloList(LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         request = self.request
 
-        # Pagination logic
+        # Paginacion de articulos
         queryset = self.get_queryset()
         paginator = Paginator(queryset, self.paginate_by)
         page = request.GET.get('page')
@@ -92,13 +92,13 @@ class ArticuloList(LoginRequiredMixin, ListView):
             articulos_paginated = paginator.page(paginator.num_pages)
 
         context["page_obj"] = articulos_paginated
-        context["articulos"] = articulos_paginated.object_list  # Paginated articles
+        context["articulos"] = articulos_paginated.object_list 
 
-        # Add categories and providers for filters
+        # Filtros
         context["categorias"] = Categoria.objects.all()
         context["proveedores"] = Proveedor.objects.all()
 
-        # Active filters
+        # Filtros activos
         context["filtro_estados"] = request.GET.getlist("estado")
         context["filtro_categorias"] = request.GET.getlist("categoria")
         context["filtro_proveedores"] = request.GET.getlist("proveedor")
