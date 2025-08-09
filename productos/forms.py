@@ -1,6 +1,8 @@
 from django import forms
-from .models import Proveedor
+from .models import Proveedor,Producto
+import datetime
 
+#_______ Formulario de proveedor
 class ProveedorForm(forms.ModelForm):
     class Meta:
         model = Proveedor
@@ -8,3 +10,57 @@ class ProveedorForm(forms.ModelForm):
         widgets = {
             'categoria': forms.CheckboxSelectMultiple()
         }
+
+#_______ Formulario de producto
+
+class ProductoForm(forms.ModelForm):
+    fecha_registro_display = forms.DateTimeField(
+        label='Fecha de registro',
+        required=False,
+        disabled=True,
+        widget=forms.DateTimeInput(attrs={
+            'class': 'form-control',
+            'readonly': 'readonly',
+        }, format='%Y-%m-%d %H:%M:%S')
+    )
+
+    class Meta:
+        model = Producto
+        fields = ['nombre', 'descripcion', 'precio', 'stock', 'stock_optimo', 'stock_minimo', 'stock_maximo',
+                  'categoria', 'marca', 'proveedores', 'activo', 'fecha_ultimo_ingreso']
+        widgets = {
+            'proveedores': forms.CheckboxSelectMultiple,
+            'fecha_ultimo_ingreso': forms.DateInput(
+                attrs={
+                    'type': 'date',
+                    'class': 'form-control',
+                    'placeholder': 'Fecha',
+                },
+                format='%Y-%m-%d'
+            ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.pk:
+            self.fields['fecha_registro_display'].initial = self.instance.fecha_registro
+
+    def clean_fecha_ultimo_ingreso(self):
+        fecha = self.cleaned_data.get('fecha_ultimo_ingreso')
+        if fecha:
+            # Convertir a datetime con hora 00:00:00
+            return datetime.datetime.combine(fecha, datetime.time.min)
+        return fecha
+
+
+#_______ Carga masiva de productos
+
+class CargaMasivaProductosForm(forms.Form):
+    archivo_excel = forms.FileField(label="Archivo Excel (.xlsx)")
+
+    def clean_archivo_excel(self):
+        archivo = self.cleaned_data['archivo_excel']
+        if not archivo.name.endswith('.xlsx'):
+            raise forms.ValidationError("El archivo debe tener extensión .xlsx")
+        return archivo
+

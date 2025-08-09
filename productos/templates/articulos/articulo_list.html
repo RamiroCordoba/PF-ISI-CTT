@@ -1,41 +1,167 @@
 {% extends 'dashboard/principal.html' %} {% block Contenido %}
+<script>
+  document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+    cb.addEventListener('change', function() {
+      this.form.submit();
+    });
+  });
+</script>
+
 <div class="container-fluid px-4">
   <h1 class="mt-4">Mis articulos</h1>
   <hr style="height: 5px; background-color: black; border: none" />
   <!-- Fila de funciones generales -->
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <div>
-      <a href="{% url 'nuevo_articulo' %}" class="btn btn-primary">
-        Nuevo articulo
+  <div class="d-flex justify-content-between align-items-center py-2">
+    <!-- Botones de acciones -->
+    <div class="d-flex gap-2 flex-wrap">
+      <a href="{% url 'nuevo_articulo' %}" 
+        class="btn btn-primary btn-sm d-flex align-items-center justify-content-center px-4">
+        Nuevo artículo
       </a>
-    <!-- Buscador y quitar filtro -->
+      <a href="{% url 'carga_masiva_productos' %}" 
+        class="btn btn-success btn-sm d-flex align-items-center justify-content-center px-4">
+        <i class="fas fa-file-excel me-2"></i> Carga masiva
+      </a>
+      <a href="{% url 'exportar_productos' %}" 
+        class="btn btn-outline-primary btn-sm d-flex align-items-center justify-content-center px-3"
+        data-bs-toggle="tooltip" 
+        data-bs-placement="top" 
+        title="Descargar lista de productos">
+        <i class="fa-solid fa-download"></i>
+      </a>
     </div>
-    <div>
-      <form method="get" id="filtro_categoria_form" class="mb-3">
-        <select name="categoria" class="form-select" onchange="document.getElementById('filtro_categoria_form').submit()">
-          <option value="">-- Todas las categorías --</option>
-          {% for cat in categorias %}
-            <option value="{{ cat.id }}" {% if request.GET.categoria == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.nombre }}</option>
-          {% endfor %}
-        </select>
+    
+    <!-- Filtros y buscador -->
+    <div class="d-flex align-items-end gap-3 flex-wrap">
+      <!-- Filtros + Buscador (UN SOLO FORMULARIO) -->
+      <form method="get" class="d-flex align-items-end gap-3 flex-wrap">
+
+        <!-- Estado -->
+        <div class="dropdown">
+          <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Estado
+          </button>
+          <ul class="dropdown-menu p-2">
+            <li>
+              <div class="form-check mb-0">
+                <input class="form-check-input" type="checkbox" name="estado" value="activos"
+                id="estado_activos" {% if "activos" in filtro_estados %}checked{% endif %}>
+                <label class="form-check-label" for="estado_activos">Activos</label>
+              </div>
+            </li>
+            <li>
+              <div class="form-check mb-0">
+                <input class="form-check-input" type="checkbox" name="estado" value="inactivos"
+                id="estado_inactivos" {% if "inactivos" in filtro_estados %}checked{% endif %}>
+                <label class="form-check-label" for="estado_inactivos">Inactivos</label>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Categorías -->
+        <div class="dropdown">
+          <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Categorías
+          </button>
+          <ul class="dropdown-menu p-2" style="max-height: 200px; overflow-y: auto;">
+            {% for cat in categorias %}
+              <li>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="categoria" value="{{ cat.id }}"
+                  id="cat{{ cat.id }}" {% if cat.id|stringformat:"s" in filtro_categorias %}checked{% endif %}>
+                  <label class="form-check-label" for="cat{{ cat.id }}">{{ cat.nombre }}</label>
+                </div>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <!-- Proveedores -->
+        <div class="dropdown">
+          <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Proveedores
+          </button>
+          <ul class="dropdown-menu p-2" style="max-height: 200px; overflow-y: auto;">
+            {% for p in proveedores %}
+              <li>
+                <div class="form-check mb-0">
+                  <input class="form-check-input" type="checkbox" name="proveedor" value="{{ p.id }}"
+                  id="prov{{ p.id }}" {% if p.id|stringformat:"s" in filtro_proveedores %}checked{% endif %}>
+                  <label class="form-check-label" for="prov{{ p.id }}">{{ p.nombreEmpresa }}</label>
+                </div>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <!-- Buscador -->
+        <div class="d-flex align-items-end gap-2">
+          <input type="text" name="buscar" class="form-control form-control-sm" placeholder="Buscar artículo..." value="{{ request.GET.buscar }}">
+          <!--<button class="btn btn-primary btn-sm px-4" type="submit">Buscar</button>-->
+        </div>
+
+        <!-- Botón filtrar -->
+        <button type="submit" class="btn btn-sm btn-primary mb-0">Filtrar</button>
+
+        <!-- Botón restablecer filtros -->
+        {% if filtros_activos or request.GET.buscar %}
+          <a href="{% url 'mis_articulos' %}" class="btn btn-outline-danger btn-sm" title="Restablecer filtros">
+            <i class="fa-solid fa-rotate-left"></i>
+          </a>
+        {% endif %}
       </form>
     </div>
-    <div class="d-flex align-items-center">
-      {% if request.GET.buscar %}
-        <a href="{% url 'mis_articulos' %}" class="btn btn-outline-secondary me-2" title="Quitar filtro">
-          <i class="fa fa-times"></i>
-        </a>
-      {% endif %}
-    
-      <form method="get" class="d-flex">
-        <input type="text" name="buscar" class="form-control me-2" placeholder="Buscar articulo..." value="{{ request.GET.buscar }}">
-        <button class="btn btn-primary" type="submit">Buscar</button>
-      </form>
-    </div>
-    <!-- Fin de buscador y quitar filtro -->
-    
   </div>
-   <!-- Fin de fila de funciones generales -->
+  <!-- Aca esta el mostrador de porque se esta filtrando -->
+  <div>
+  {% if filtros_activos or request.GET.buscar %}
+  <div class="text-secondary small mt-3">
+    Se está filtrando por
+
+    {# Estado #}
+    {% if filtro_estados %}
+      {% if "activos" in filtro_estados %} productos activos{% endif %}
+      {% if "inactivos" in filtro_estados %}
+        {% if "activos" in filtro_estados %} y{% endif %} productos inactivos
+      {% endif %}
+    {% endif %}
+
+    {# Categorías #}
+    {% if filtro_categorias %}
+      {% if filtro_estados %},{% endif %} en la categoría/s
+      {% for id in filtro_categorias %}
+        {% for cat in categorias %}
+          {% if cat.id|stringformat:"s" == id %}
+            {{ cat.nombre }}{% if not forloop.last %}, {% endif %}
+          {% endif %}
+        {% endfor %}
+      {% endfor %}
+    {% endif %}
+
+    {# Proveedores #}
+    {% if filtro_proveedores %}
+      {% if filtro_estados or filtro_categorias %},{% endif %} con proveedor/es
+      {% for id in filtro_proveedores %}
+        {% for prov in proveedores %}
+          {% if prov.id|stringformat:"s" == id %}
+            {{ prov.nombreEmpresa }}{% if not forloop.last %}, {% endif %}
+          {% endif %}
+        {% endfor %}
+      {% endfor %}
+    {% endif %}
+
+    {# Búsqueda de texto #}
+    {% if request.GET.buscar %}
+      {% if filtro_estados or filtro_categorias or filtro_proveedores %},{% endif %}
+      que coinciden con: "<strong>{{ request.GET.buscar }}</strong>"
+    {% endif %}.
+  </div>
+  {% endif %}
+</div>
+
+
+
   <hr style="height: 5px; background-color: black; border: none" />
   <table class="table table-striped table-bordered text-center">
     <thead>
@@ -46,6 +172,7 @@
         <th class="text-center">Precio $</th>
         <th class="text-center">Stock</th>
         <th class="text-center">Categoria</th>
+        <th class="text-center">Proveedores</th>
         <th class="text-center">Ultimo Ingreso</th>
         <th class="text-center">Activo</th>
       </tr>
@@ -71,12 +198,21 @@
         <td class="text-center">{{p.precio}}</td>
         <td class="text-center">{{p.stock}}</td>
         <td class="text-center">{{p.categoria}}</td>
+        <td>
+          {% if p.proveedores.exists %}
+            {% for pro in p.proveedores.all %}
+              {{ pro.nombreEmpresa }}{% if not forloop.last %}, {% endif %}
+            {% endfor %}
+          {% else %}
+            <em>Sin proveedor</em>
+          {% endif %}
+        </td>
         <td class="text-center">{{ p.fecha_ultimo_ingreso|date:"d/m/Y" }}</td>
         <td>
-          {% if producto.activo == "True" %}
-          <i class="far fa-square text-secondary"></i>
+          {% if p.activo %}
+            <i class="fas fa-check-square text-success"></i>
           {% else %}
-          <i class="fas fa-check-square text-success"></i>
+            <i class="fas fa-times-square text-danger"></i>
           {% endif %}
         </td>
       </tr>

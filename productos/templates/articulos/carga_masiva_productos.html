@@ -1,0 +1,162 @@
+{% extends 'dashboard/principal.html' %}
+{% load static %}
+{% block Contenido %}
+
+<!-- Asegurate de tener Font Awesome y Bootstrap CSS/JS en tu base -->
+
+<div class="container-fluid px-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="mt-4 fw-bold">Carga masiva de productos</h1>
+    <div class="d-flex gap-2 mt-2">
+      <a href="{% url 'mis_articulos' %}" class="btn btn-outline-secondary">
+        <i class="fa fa-arrow-left me-1"></i> Volver
+      </a>
+    </div>
+  </div>
+  <hr style="height: 5px; background-color: black; border: none;" />
+
+  <!-- Recuadro de informacion -->
+  <div class="bg-light border border-secondary p-4 mb-4">
+    <p class="text-center text-secondary fs-5 fw-semibold mb-0">
+      Para realizar la carga masiva de productos, primero seleccione el archivo excel elegido y luego haga click en "Cargar productos".
+      En la sección inferior vera los mensajes en azul, de aquellos productos que se cargaron satisfactoriamente y en rojo si hubo un error en la carga. Los error tambien son informados con detalles.
+    </p>
+  </div>
+
+  <!-- Formulario de carga -->
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="bg-light border border-secondary p-4 mb-4">
+      <div class="input-group w-100">
+        {{ form.as_p }}
+      </div>
+    </div>
+
+    <!-- Botones -->
+    <div class="text-center mb-4">
+      <button type="submit" class="btn btn-primary fw-bold text-white px-5">
+        Cargar productos
+      </button>
+      <button
+        class="btn btn-secondary"
+        type="button"
+        onclick="window.location.href='{% url 'mis_articulos' %}'">Cancelar</button>
+    </div>
+  </form>
+
+  <hr style="height: 5px; background-color: black; border: none;" />
+
+  <!-- Mensajes -->
+  {% for message in messages %}
+    {% if message.tags == "success" %}
+      <div class="alert alert-info border border-info text-primary fw-semibold">
+        {{ message }}
+      </div>
+    {% elif message.tags == "error" %}
+      <div class="alert alert-danger border border-danger text-danger fw-semibold">
+        {{ message }}
+      </div>
+    {% else %}
+      <div class="alert alert-secondary">{{ message }}</div>
+    {% endif %}
+  {% endfor %}
+
+  <!-- Modal -->
+  <div class="modal fade" id="resultModal" tabindex="-1" aria-labelledby="resultModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content text-center p-4">
+        <div class="modal-body">
+          <div id="modalIcon" class="mb-3"></div>
+          <h5 class="fw-bold" id="modalTitle"></h5>
+          <p id="modalRedirectMessage" class="mt-3 d-none">
+            En <span id="countdown">15</span> segundos se redirigirá a <strong>Mis productos</strong>.
+          </p>
+          <button type="button" class="btn btn-outline-secondary mt-2 d-none" id="cancelRedirect">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let countdown = 15;
+  let intervalId;
+  let redirectCancelled = false;
+
+  function startCountdown() {
+    intervalId = setInterval(() => {
+      countdown--;
+      document.getElementById("countdown").textContent = countdown;
+
+      if (countdown <= 0 && !redirectCancelled) {
+        clearInterval(intervalId);
+        window.location.href = "{% url 'mis_articulos' %}";
+      }
+    }, 1000);
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    let hasSuccess = false;
+    let hasError = false;
+    let noChanges = false;
+
+    {% for message in messages %}
+      {% if message.tags == "success" %}
+        hasSuccess = true;
+      {% elif message.tags == "error" %}
+        hasError = true;
+      {% elif message|stringformat:"s" == "no_cambios" %}
+        noChanges = true;
+      {% endif %}
+    {% endfor %}
+
+    if (hasSuccess || hasError || noChanges) {
+      const modalElement = document.getElementById('resultModal');
+      const modal = new bootstrap.Modal(modalElement);
+      const iconContainer = document.getElementById('modalIcon');
+      const titleEl = document.getElementById('modalTitle');
+      const redirectMsg = document.getElementById('modalRedirectMessage');
+      const cancelBtn = document.getElementById('cancelRedirect');
+
+      // Reset modal contents
+      iconContainer.innerHTML = '';
+      titleEl.textContent = '';
+      redirectMsg.classList.add("d-none");
+      cancelBtn.classList.add("d-none");
+
+      if (noChanges) {
+        iconContainer.innerHTML = `<i class="fa-solid fa-triangle-exclamation fa-4x text-warning"></i>`;
+        titleEl.textContent = 'No hay cambios ni productos nuevos para agregar.';
+        modal.show();
+
+      } else if (hasSuccess && !hasError) {
+        iconContainer.innerHTML = `<i class="fa-solid fa-circle-check fa-4x text-success"></i>`;
+        titleEl.textContent = 'Se cargaron todos los productos satisfactoriamente.';
+        redirectMsg.classList.remove("d-none");
+        cancelBtn.classList.remove("d-none");
+        modal.show();
+        startCountdown();
+
+      } else if (hasSuccess && hasError) {
+        iconContainer.innerHTML = `<i class="fa-solid fa-triangle-exclamation fa-4x text-warning"></i>`;
+        titleEl.textContent = 'Se cargaron algunos productos. Por favor, revise los errores.';
+        modal.show();
+
+      } else if (!hasSuccess && hasError) {
+        iconContainer.innerHTML = `<i class="fa-solid fa-circle-xmark fa-4x text-danger"></i>`;
+        titleEl.textContent = 'No se pudo cargar ningún producto. Por favor, revise los errores.';
+        modal.show();
+      }
+
+      cancelBtn?.addEventListener("click", () => {
+        redirectCancelled = true;
+        clearInterval(intervalId);
+        const modalInstance = bootstrap.Modal.getInstance(modalElement);
+        modalInstance.hide();
+      });
+    }
+  });
+</script>
+
+{% endblock %}

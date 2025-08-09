@@ -68,39 +68,59 @@
         <div class="vr h-100"></div>
       </div>
       <!-- Información general -->
-      <div class="col-md-7">
-        <p><strong>Marca:</strong> {{ elArticulo.marca }}</p>
-        <p><strong>Categoría:</strong> {{ elArticulo.categoria }}</p>
-        <p><strong>Precio:</strong> ${{ elArticulo.precio }}</p>
-        <hr />
-        <p><strong>Descripción:</strong></p>
-        <div
-          class="border rounded p-3 mb-3"
-          style="min-height: 100px; border-color: #6c757d"
-        >
-          {{ elArticulo.descripcion }}
-        </div>
-        <hr />
-        <p>
-          <strong>Fecha de registro:</strong>
-          {{ elArticulo.fecha_registro|date:"d/m/Y" }}
-        </p>
-        <p>
-          <strong>Último ingreso:</strong>
-          {{ elArticulo.fecha_ultimo_ingreso|date:"d/m/Y" }}
-        </p>
-        <!-- Bloque de stock -->
-        <hr />
-        <div style="display: flex; justify-content: space-between; width: 100%">
-          <div><strong>Stock actual:</strong> {{ elArticulo.stock }}</div>
-          <div>
-            <strong>Stock mínimo:</strong> {{ elArticulo.stock_minimo }}
+        <div class="col-md-7">
+        <!-- Nav tabs -->
+        <ul class="nav nav-tabs mb-3" id="articuloTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="info-tab" data-bs-toggle="tab" data-bs-target="#info" type="button" role="tab" aria-controls="info" aria-selected="true">
+              Información General
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="proveedores-tab" data-bs-toggle="tab" data-bs-target="#proveedores" type="button" role="tab" aria-controls="proveedores" aria-selected="false">
+              Proveedores
+            </button>
+          </li>
+        </ul>
+
+        <!-- Tab panes -->
+        <div class="tab-content" id="articuloTabsContent">
+          <!-- Información General -->
+          <div class="tab-pane fade show active" id="info" role="tabpanel" aria-labelledby="info-tab">
+            <p><strong>Marca:</strong> {{ elArticulo.marca }}</p>
+            <p><strong>Categoría:</strong> {{ elArticulo.categoria }}</p>
+            <p><strong>Precio:</strong> ${{ elArticulo.precio }}</p>
+            <hr />
+            <p><strong>Descripción:</strong></p>
+            <div
+              class="border rounded p-3 mb-3"
+              style="min-height: 100px; border-color: #6c757d"
+            >
+              {{ elArticulo.descripcion }}
+            </div>
+            <hr />
+            <p>
+              <strong>Fecha de registro:</strong>
+              {{ elArticulo.fecha_registro|date:"d/m/Y" }}
+            </p>
+            <p>
+              <strong>Último ingreso:</strong>
+              {{ elArticulo.fecha_ultimo_ingreso|date:"d/m/Y" }}
+            </p>
+            <hr />
+            <div style="display: flex; justify-content: space-between; width: 100%">
+              <div><strong>Stock actual:</strong> {{ elArticulo.stock }}</div>
+              <div><strong>Stock mínimo:</strong> {{ elArticulo.stock_minimo }}</div>
+              <div><strong>Stock máximo:</strong> {{ elArticulo.stock_maximo }}</div>
+            </div>
+            <hr class="my-4" />
           </div>
-          <div>
-            <strong>Stock máximo:</strong> {{ elArticulo.stock_maximo }}
+
+          <!-- Proveedores -->
+          <div class="tab-pane fade" id="proveedores" role="tabpanel" aria-labelledby="proveedores-tab">
+            <h5>Aca va la lista de proveedores</h5>
           </div>
         </div>
-        <hr class="my-4" />
       </div>
     </div>
   </div>

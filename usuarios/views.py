@@ -3,17 +3,19 @@ from django.views.generic import ListView, CreateView, UpdateView, DeleteView, D
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from .forms import RegistroForm
+from .models import UsuarioPersonalizado
+
 
 #________ Usuarios del sistema
 
 class UsuarioListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
-    model = User
+    model = UsuarioPersonalizado
     template_name = 'usuarios/usuario_list.html'
     context_object_name = 'usuarios'
     permission_required = 'auth.view_user'
 
 class UsuarioCreateView(CreateView):
-    model = User
+    model = UsuarioPersonalizado
     form_class = RegistroForm
     template_name = 'usuarios/usuario_form.html'
     success_url = reverse_lazy('usuarios:listar_usuarios')
@@ -26,17 +28,17 @@ class UsuarioCreateView(CreateView):
         return super().form_valid(form)
     
 class UsuarioUpdateView(UpdateView):
-    model = User
+    model = UsuarioPersonalizado
     fields = ['first_name', 'last_name', 'username', 'email', 'groups']
     template_name = 'usuarios/usuario_form.html'
     success_url = reverse_lazy('usuarios:listar_usuarios')
 
 class UsuarioDeleteView(DeleteView):
-    model = User
+    model = UsuarioPersonalizado
     template_name = 'usuarios/usuario_confirm_delete.html'
     success_url = reverse_lazy('usuarios:listar_usuarios')
 
 class UsuarioDetailView(DetailView):
-    model = User
+    model = UsuarioPersonalizado
     template_name = 'usuarios/usuario_details.html'
     context_object_name = 'usuario'
