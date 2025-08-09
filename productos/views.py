@@ -10,6 +10,7 @@ from django.http import HttpResponse
 import pandas as pd
 from django.utils.timezone import now
 from datetime import datetime
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 #______ Categorias CRUD
 class CategoriaList(LoginRequiredMixin, ListView):
@@ -45,10 +46,12 @@ class CategoriaDelete(LoginRequiredMixin,DeleteView):
      success_url = reverse_lazy("categorias")
 
 #______ Productos CRUD
-class ArticuloList(LoginRequiredMixin,ListView):
+class ArticuloList(LoginRequiredMixin, ListView):
     model = Producto
     template_name = "articulos/articulo_list.html"
     context_object_name = "articulos"
+    paginate_by = 50  # Display 50 articles per page
+
     def get_queryset(self):
         queryset = super().get_queryset().order_by("id")
         buscar = self.request.GET.get("buscar")
@@ -72,16 +75,30 @@ class ArticuloList(LoginRequiredMixin,ListView):
 
         return queryset
 
-    
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         request = self.request
 
-        # 🔧 Agregá estas líneas:
+        # Pagination logic
+        queryset = self.get_queryset()
+        paginator = Paginator(queryset, self.paginate_by)
+        page = request.GET.get('page')
+
+        try:
+            articulos_paginated = paginator.page(page)
+        except PageNotAnInteger:
+            articulos_paginated = paginator.page(1)
+        except EmptyPage:
+            articulos_paginated = paginator.page(paginator.num_pages)
+
+        context["page_obj"] = articulos_paginated
+        context["articulos"] = articulos_paginated.object_list  # Paginated articles
+
+        # Add categories and providers for filters
         context["categorias"] = Categoria.objects.all()
         context["proveedores"] = Proveedor.objects.all()
 
-        # Filtros activos
+        # Active filters
         context["filtro_estados"] = request.GET.getlist("estado")
         context["filtro_categorias"] = request.GET.getlist("categoria")
         context["filtro_proveedores"] = request.GET.getlist("proveedor")

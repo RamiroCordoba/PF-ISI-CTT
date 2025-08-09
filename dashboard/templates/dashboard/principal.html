@@ -54,7 +54,11 @@
               <li><a class="dropdown-item" href="#!">Mi Perfil</a></li>
               <li><a class="dropdown-item" href="#!">Configuraciones</a></li>
               <li><hr class="dropdown-divider" /></li>
-              <li><a class="dropdown-item" href="{% url 'logout' %}">Cerrar Sesion</a></li>
+              <li>
+                <a class="dropdown-item" href="{% url 'logout' %}"
+                  >Cerrar Sesion</a
+                >
+              </li>
             </ul>
           </li>
         </ul>
@@ -342,6 +346,7 @@
           {% endblock Contenido %}
         </main>
         <footer class="py-4 bg-light mt-auto">
+          {% block footer %} {% endblock footer %}
           <div class="container-fluid px-4">
             <div
               class="d-flex align-items-center justify-content-between small"
