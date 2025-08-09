@@ -1,5 +1,4 @@
 {% extends 'dashboard/principal.html' %} {% block Contenido %}
-{% load humanize %}
 <script>
   document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
     cb.addEventListener('change', function() {
@@ -196,7 +195,7 @@
         </td>
         <td>{{p.nombre}}</td>
         <td class="text-center">{{p.marca}}</td>
-        <td class="text-end">${{ p.precio|intcomma }}</td>
+        <td class="text-center">{{p.precio}}</td>
         <td class="text-center">{{p.stock}}</td>
         <td class="text-center">{{p.categoria}}</td>
         <td>

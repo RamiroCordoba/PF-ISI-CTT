@@ -1,63 +1,250 @@
 {% extends 'dashboard/principal.html' %} {% block Contenido %}
+
 <div class="container-fluid px-4">
   <h1 class="mt-4">Mis usuarios</h1>
   <hr style="height: 5px; background-color: black; border: none" />
   <!-- Fila de funciones generales -->
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <div>
+  <div class="d-flex justify-content-between align-items-center py-2">
+    <div class="d-flex gap-2 flex-wrap">
       {% if request.user.is_staff %}
-      <a href="{% url 'usuarios:nuevo_usuario' %}" class="btn btn-primary">
+      <a href="{% url 'usuarios:nuevo_usuario' %}"
+        class="btn btn-primary btn-sm d-flex align-items-center justify-content-center px-4">
         Nuevo usuario
       </a>
-      {%endif%}
+      {% endif %}
+    </div>
+
+    <!-- Filtros y buscador -->
+    <div class="d-flex align-items-end gap-3 flex-wrap">
+      <form method="get" class="d-flex align-items-end gap-3 flex-wrap">
+        <!-- Estado -->
+        <div class="dropdown">
+          <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Estado
+          </button>
+          <ul class="dropdown-menu p-2">
+            <li>
+              <div class="form-check mb-0">
+                <input class="form-check-input" type="checkbox" name="estado" value="activos"
+                id="estado_activos" {% if "activos" in filtro_estados %}checked{% endif %}>
+                <label class="form-check-label" for="estado_activos">Activos</label>
+              </div>
+            </li>
+            <li>
+              <div class="form-check mb-0">
+                <input class="form-check-input" type="checkbox" name="estado" value="inactivos"
+                id="estado_inactivos" {% if "inactivos" in filtro_estados %}checked{% endif %}>
+                <label class="form-check-label" for="estado_inactivos">Inactivos</label>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Roles -->
+        <div class="dropdown">
+          <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Roles
+          </button>
+          <ul class="dropdown-menu p-2" style="max-height: 200px; overflow-y: auto;">
+            {% for rol in roles %}
+              <li>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="rol" value="{{ rol.id }}"
+                  id="rol{{ rol.id }}" {% if rol.id|stringformat:"s" in filtro_roles %}checked{% endif %}>
+                  <label class="form-check-label" for="rol{{ rol.id }}">
+                    {% if rol.name == 'Superadmin' %}
+                      <span title="Superadmin" style="color: #f7b731;">&#x1F451;</span> Superadmin
+                    {% else %}
+                      {{ rol.name }}
+                    {% endif %}
+                  </label>
+                </div>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <!-- Buscador -->
+        <div class="d-flex align-items-end gap-2">
+          <input type="text" name="buscar" class="form-control form-control-sm" placeholder="Buscar usuario..." value="{{ buscar }}">
+        </div>
+
+        <!-- Botón filtrar -->
+        <button type="submit" class="btn btn-sm btn-primary mb-0">Filtrar</button>
+
+        <!-- Botón restablecer filtros -->
+        {% if filtros_activos or buscar %}
+          <a href="{% url 'usuarios:listar_usuarios' %}" class="btn btn-outline-danger btn-sm" title="Restablecer filtros">
+            <i class="fa-solid fa-rotate-left"></i>
+          </a>
+        {% endif %}
+      </form>
     </div>
   </div>
-    <!-- Fin de fila de funciones generales -->
-    <hr style="height: 5px; background-color: black; border: none" />
-    <table class="table table-striped">
-      <thead>
-        <tr>
-          <th class="text-center">Acciones</th>
-          <th class="text-center">Nombre de Usuario</th>
-          <th class="text-center">Nombre Completo</th>
-          <th class="text-center">Email</th>
-          <th class="text-center">Rol / Grupo</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for user in usuarios %}
-        <tr>
-          <td class="text-center">
-            {% if request.user.is_staff %}
-                <a href="{% url 'usuarios:editar_usuario' user.pk %}" class="btn btn-outline-success mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
-                    <i class="fa fa-edit fa-sm" title="Editar"></i>
-                </a>
-                <a href="{% url 'usuarios:eliminar_usuario' user.pk %}" class="btn btn-outline-danger mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
-                    <i class="fa fa-trash fa-sm" title="Eliminar"></i>
-                </a> 
-            {% endif %}
-            <a href="{% url 'usuarios:detalle_usuario' user.pk %}" class="btn btn-outline-primary mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
-              <i class="fa-solid fa-eye" title="Ver"></i>
-            </a> 
-          </td>
-          <td class="text-center">{{ user.username }}</td>
-          <td class="text-center">{{ user.first_name }} {{ user.last_name }}</td>
-          <td class="text-center">{{ user.email }}</td>
-          <td class="text-center">
-            {% for group in user.groups.all %}
-              {{ group.name }}{% if not forloop.last %}, {% endif %}
-            {% empty %}
-              Sin grupo
-            {% endfor %}
-          </td>
-        </tr>
-        {% empty %}
-        <tr>
-          <td colspan="4">No hay usuarios registrados.</td>
-        </tr>
+
+  <!-- Mostrador de filtros activos -->
+  {% if filtros_activos or buscar %}
+  <div class="text-secondary small mt-3">
+    Se está filtrando por
+    {% if filtro_estados %}
+      {% if "activos" in filtro_estados %} usuarios activos{% endif %}
+      {% if "inactivos" in filtro_estados %}
+        {% if "activos" in filtro_estados %} y{% endif %} usuarios inactivos
+      {% endif %}
+    {% endif %}
+    {% if filtro_roles %}
+      {% if filtro_estados %},{% endif %} con rol/es
+      {% for id in filtro_roles %}
+        {% for rol in roles %}
+          {% if rol.id|stringformat:"s" == id %}
+            {{ rol.name }}{% if not forloop.last %}, {% endif %}
+          {% endif %}
         {% endfor %}
-      </tbody>
-    </table>
+      {% endfor %}
+    {% endif %}
+    {% if buscar %}
+      {% if filtro_estados or filtro_roles %},{% endif %}
+      que coinciden con: "<strong>{{ buscar }}</strong>"
+    {% endif %}.
   </div>
-  {% endblock Contenido %}
+  {% endif %}
+
+  <hr style="height: 5px; background-color: black; border: none" />
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th class="text-center">Acciones</th>
+        <th class="text-center">Nombre de Usuario</th>
+        <th class="text-center">Nombre Completo</th>
+        <th class="text-center">Email</th>
+        <th class="text-center">Rol / Grupo</th>
+        <th class="text-center">Estado</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for user in usuarios %}
+      <tr>
+        <td class="text-center">
+          {% if request.user.is_staff %}
+              <a href="{% url 'usuarios:editar_usuario' user.pk %}" class="btn btn-outline-success mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
+                  <i class="fa fa-edit fa-sm" title="Editar"></i>
+              </a>
+              <a href="{% url 'usuarios:eliminar_usuario' user.pk %}" class="btn btn-outline-danger mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
+                  <i class="fa fa-trash fa-sm" title="Eliminar"></i>
+              </a> 
+          {% endif %}
+          <a href="{% url 'usuarios:detalle_usuario' user.pk %}" class="btn btn-outline-primary mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
+            <i class="fa-solid fa-eye" title="Ver"></i>
+          </a> 
+        </td>
+        <td class="text-center">{{ user.username }}</td>
+        <td class="text-center">{{ user.first_name }} {{ user.last_name }}</td>
+        <td class="text-center">{{ user.email }}</td>
+        <td class="text-center">
+          {% if user.is_superuser %}
+            <span title="Superadmin" style="color: #f7b731; font-size: 1.2em;">&#x1F451;</span> <strong>Superadmin</strong>
+            {% if user.groups.count > 1 %}, {% endif %}
+          {% endif %}
+          {% for group in user.groups.all %}
+            {% if not user.is_superuser or group.name != 'Superadmin' %}
+              {{ group.name }}{% if not forloop.last %}, {% endif %}
+            {% endif %}
+          {% empty %}
+            {% if not user.is_superuser %}Sin grupo{% endif %}
+          {% endfor %}
+        </td>
+        <td class="text-center">
+          {% if user.is_active %}
+            <span class="badge bg-success">Activo</span>
+          {% else %}
+            <span class="badge bg-danger">Inactivo</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="6">No hay usuarios registrados.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Paginación -->
+  {% if is_paginated %}
+  <nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center mb-0">
+      {% if page_obj.has_previous %}
+      <li class="page-item">
+        <a class="page-link"
+           href="?{% if request.GET %}{{ request.GET.urlencode|cut:'page='|cut:'&page=' }}&{% endif %}page={{ page_obj.previous_page_number }}"
+           aria-label="Anterior">
+          &laquo;
+        </a>
+      </li>
+      {% else %}
+      <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+      {% endif %}
+
+      {% if page_obj.number != 1 %}
+      <li class="page-item">
+        <a class="page-link"
+           href="?{% if request.GET %}{{ request.GET.urlencode|cut:'page='|cut:'&page=' }}&{% endif %}page=1">
+          1
+        </a>
+      </li>
+      {% else %}
+      <li class="page-item active"><span class="page-link">1</span></li>
+      {% endif %}
+
+      {% if page_obj.number > 4 %}
+      <li class="page-item disabled"><span class="page-link">...</span></li>
+      {% endif %}
+
+      {% for num in page_obj.paginator.page_range %}
+        {% if num != 1 and num != page_obj.paginator.num_pages %}
+          {% if num >= page_obj.number|add:"-2" and num <= page_obj.number|add:"2" %}
+            {% if num == page_obj.number %}
+              <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% else %}
+              <li class="page-item">
+                <a class="page-link"
+                   href="?{% if request.GET %}{{ request.GET.urlencode|cut:'page='|cut:'&page=' }}&{% endif %}page={{ num }}">
+                  {{ num }}
+                </a>
+              </li>
+            {% endif %}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+
+      {% if page_obj.number < page_obj.paginator.num_pages|add:"-3" %}
+      <li class="page-item disabled"><span class="page-link">...</span></li>
+      {% endif %}
+
+      {% if page_obj.number != page_obj.paginator.num_pages %}
+      <li class="page-item">
+        <a class="page-link"
+           href="?{% if request.GET %}{{ request.GET.urlencode|cut:'page='|cut:'&page=' }}&{% endif %}page={{ page_obj.paginator.num_pages }}">
+          {{ page_obj.paginator.num_pages }}
+        </a>
+      </li>
+      {% else %}
+      <li class="page-item active"><span class="page-link">{{ page_obj.paginator.num_pages }}</span></li>
+      {% endif %}
+
+      {% if page_obj.has_next %}
+      <li class="page-item">
+        <a class="page-link"
+           href="?{% if request.GET %}{{ request.GET.urlencode|cut:'page='|cut:'&page=' }}&{% endif %}page={{ page_obj.next_page_number }}"
+           aria-label="Siguiente">
+          &raquo;
+        </a>
+      </li>
+      {% else %}
+      <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+      {% endif %}
+    </ul>
+  </nav>
+  {% endif %}
 </div>
+{% endblock Contenido %}

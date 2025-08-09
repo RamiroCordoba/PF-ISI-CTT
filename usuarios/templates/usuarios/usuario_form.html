@@ -6,7 +6,34 @@
   <form action="" method="post">
     {% csrf_token %}
     <table>
-      {{form.as_table}}
+      {% for field in form %}
+        <tr>
+          <th>{{ field.label_tag }}</th>
+          <td>
+            {% if field.name == 'grupos' %}
+              <div>
+                {% for checkbox in field %}
+                  <div class="form-check">
+                    <label class="form-check-label">
+                      {{ checkbox.tag }}
+                      {% if checkbox.choice_label == 'Superadmin' %}
+                        <span title="Superadmin" style="color: #f7b731;">&#x1F451;</span> <strong>Superadmin</strong>
+                      {% else %}
+                        {{ checkbox.choice_label }}
+                      {% endif %}
+                    </label>
+                  </div>
+                {% endfor %}
+              </div>
+              {% if field.errors %}<div class="text-danger small">{{ field.errors }}</div>{% endif %}
+            {% else %}
+              {{ field }}
+              {% if field.errors %}<div class="text-danger small">{{ field.errors }}</div>{% endif %}
+            {% endif %}
+            {% if field.help_text %}<small class="form-text text-muted">{{ field.help_text }}</small>{% endif %}
+          </td>
+        </tr>
+      {% endfor %}
     </table>
     <input class="btn btn-primary" type="submit" value="Guardar" />
     <button
