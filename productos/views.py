@@ -116,11 +116,21 @@ class ArticuloCreate(LoginRequiredMixin, CreateView):
     template_name = "articulos/articulo_form.html"
     success_url = reverse_lazy("mis_articulos")
 
+    def form_valid(self, form):
+        estado = self.request.POST.get('estado', 'True')
+        form.instance.activo = True if estado == 'True' else False
+        return super().form_valid(form)
+
 class ArticuloUpdate(LoginRequiredMixin, UpdateView):
     model = Producto
     form_class = ProductoForm
     template_name = "articulos/articulo_form.html"
     success_url = reverse_lazy("mis_articulos")
+
+    def form_valid(self, form):
+        estado = self.request.POST.get('estado', 'True')
+        form.instance.activo = True if estado == 'True' else False
+        return super().form_valid(form)
 
 class ArticuloDelete(LoginRequiredMixin,DeleteView):
      model=Producto

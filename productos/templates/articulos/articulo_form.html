@@ -1,91 +1,140 @@
 {% extends 'dashboard/principal.html' %}
 {% block Contenido %}
-<div class="container-fluid px-4">
-  <h1 class="mt-4">
-    {% if form.instance.pk %}
-      Editando producto
-    {% else %}
-      Nuevo producto
-    {% endif %}
-  </h1>
-  <hr style="height: 5px; background-color: black; border: none" />
-
-  <form action="" method="post">
-    {% csrf_token %}
-
-    <div class="mb-3">
-      {{ form.nombre.label_tag }} {{ form.nombre }}
-    </div>
-
-    <div class="mb-3">
-      {{ form.descripcion.label_tag }} {{ form.descripcion }}
-    </div>
-
-    <div class="mb-3">
-      {{ form.precio.label_tag }} {{ form.precio }}
-    </div>
-
-    <div class="mb-3">
-      {{ form.stock.label_tag }} {{ form.stock }}
-    </div>
-
-    <div class="mb-3">
-      {{ form.stock_optimo.label_tag }} {{ form.stock_optimo }}
-    </div>
-
-    <div class="mb-3">
-      {{ form.stock_minimo.label_tag }} {{ form.stock_minimo }}
-    </div>
-
-    <div class="mb-3">
-      {{ form.stock_maximo.label_tag }} {{ form.stock_maximo }}
-    </div>
-
-    <div class="mb-3">
-      {{ form.activo.label_tag }} {{ form.activo }}
-    </div>
-
-    <div class="mb-3">
-      {{ form.categoria.label_tag }} {{ form.categoria }}
-    </div>
-
-    <div class="mb-3">
-      {{ form.marca.label_tag }} {{ form.marca }}
-    </div>
-
-    <div class="mb-3">
-      {{ form.fecha_registro.label_tag }}
-      {{ form.fecha_registro }}
-    </div>
-
-    <div class="mb-3">
-      {{ form.fecha_ultimo_ingreso.label_tag }}
-      <div class="input-group">
-        {{ form.fecha_ultimo_ingreso }}
+<div class="container-fluid px-4" style="background-color: #f5f6fa; min-height: 100vh;">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-7">
+      <div class="card border-0 mt-4 shadow-lg" style="box-shadow: 0 6px 32px 0 rgba(0,0,0,0.10), 0 1.5px 6px 0 rgba(0,0,0,0.08);">
+        <div class="card-header text-white text-center py-3 rounded-top" style="background: #ff8800;">
+          <h3 class="mb-0">
+            {% if form.instance.pk %}
+              <i class="fa fa-edit me-2"></i>Editando producto
+            {% else %}
+              <i class="fa fa-plus me-2"></i>Nuevo producto
+            {% endif %}
+          </h3>
+        </div>
+        <div class="card-body bg-white">
+          <form action="" method="post" autocomplete="off">
+            {% csrf_token %}
+            <div class="mb-4">
+              <label for="id_nombre" class="form-label fw-semibold">Nombre</label>
+              <input type="text" name="nombre" class="form-control form-control-lg" id="id_nombre" value="{{ form.nombre.value|default_if_none:'' }}">
+              {% if form.nombre.errors %}
+                <div class="text-danger small mt-1">{{ form.nombre.errors }}</div>
+              {% endif %}
+            </div>
+            <div class="mb-4">
+              <label for="id_descripcion" class="form-label fw-semibold">Descripción</label>
+              <textarea name="descripcion" class="form-control form-control-lg" id="id_descripcion" rows="2">{{ form.descripcion.value|default_if_none:'' }}</textarea>
+              {% if form.descripcion.errors %}
+                <div class="text-danger small mt-1">{{ form.descripcion.errors }}</div>
+              {% endif %}
+            </div>
+            <div class="mb-4">
+              <label for="id_precio" class="form-label fw-semibold">Precio</label>
+              <input type="number" step="0.01" name="precio" class="form-control form-control-lg" id="id_precio" value="{{ form.precio.value|stringformat:'s'|default_if_none:'' }}">
+              {% if form.precio.errors %}
+                <div class="text-danger small mt-1">{{ form.precio.errors }}</div>
+              {% endif %}
+            </div>
+            <div class="mb-4">
+              <label for="id_stock" class="form-label fw-semibold">Stock</label>
+              <input type="number" name="stock" class="form-control form-control-lg" id="id_stock" value="{{ form.stock.value|default_if_none:'' }}">
+              {% if form.stock.errors %}
+                <div class="text-danger small mt-1">{{ form.stock.errors }}</div>
+              {% endif %}
+            </div>
+            <div class="mb-4">
+              <label for="id_stock_optimo" class="form-label fw-semibold">Stock óptimo</label>
+              <input type="number" name="stock_optimo" class="form-control form-control-lg" id="id_stock_optimo" value="{{ form.stock_optimo.value|default_if_none:'' }}">
+              {% if form.stock_optimo.errors %}
+                <div class="text-danger small mt-1">{{ form.stock_optimo.errors }}</div>
+              {% endif %}
+            </div>
+            <div class="mb-4">
+              <label for="id_stock_minimo" class="form-label fw-semibold">Stock mínimo</label>
+              <input type="number" name="stock_minimo" class="form-control form-control-lg" id="id_stock_minimo" value="{{ form.stock_minimo.value|default_if_none:'' }}">
+              {% if form.stock_minimo.errors %}
+                <div class="text-danger small mt-1">{{ form.stock_minimo.errors }}</div>
+              {% endif %}
+            </div>
+            <div class="mb-4">
+              <label for="id_stock_maximo" class="form-label fw-semibold">Stock máximo</label>
+              <input type="number" name="stock_maximo" class="form-control form-control-lg" id="id_stock_maximo" value="{{ form.stock_maximo.value|default_if_none:'' }}">
+              {% if form.stock_maximo.errors %}
+                <div class="text-danger small mt-1">{{ form.stock_maximo.errors }}</div>
+              {% endif %}
+            </div>
+            <div class="mb-4">
+              <label for="id_estado" class="form-label fw-semibold">Estado</label>
+              <select name="estado" id="id_estado" class="form-select form-select-lg" style="width: 100%;">
+                <option value="True" {% if form.instance.pk and form.instance.activo %}selected{% elif not form.instance.pk %}selected{% endif %}>Activo</option>
+                <option value="False" {% if form.instance.pk and not form.instance.activo %}selected{% endif %}>Inactivo</option>
+              </select>
+            </div>
+            <div class="mb-4">
+              <label for="id_categoria" class="form-label fw-semibold">Categoría</label>
+              <select name="categoria" id="id_categoria" class="form-select form-select-lg" style="width: 100%;">
+                {% for option in form.categoria.field.choices %}
+                  <option value="{{ option.0 }}" {% if option.0 == form.categoria.value %}selected{% endif %}>{{ option.1 }}</option>
+                {% endfor %}
+              </select>
+              {% if form.categoria.errors %}
+                <div class="text-danger small mt-1">{{ form.categoria.errors }}</div>
+              {% endif %}
+            </div>
+            <div class="mb-4">
+              <label for="id_marca" class="form-label fw-semibold">Marca</label>
+              <input type="text" name="marca" class="form-control form-control-lg" id="id_marca" value="{{ form.marca.value|default_if_none:'' }}">
+              {% if form.marca.errors %}
+                <div class="text-danger small mt-1">{{ form.marca.errors }}</div>
+              {% endif %}
+            </div>
+            <div class="mb-4">
+              <label for="id_fecha_registro" class="form-label fw-semibold">Fecha de registro</label>
+              {% if form.instance.pk and form.instance.fecha_registro %}
+                <input type="text" name="fecha_registro" class="form-control form-control-lg" id="id_fecha_registro" value="{{ form.instance.fecha_registro|date:'d/m/y' }}" readonly style="background-color: #e9ecef;">
+              {% else %}
+                <input type="text" name="fecha_registro" class="form-control form-control-lg" id="id_fecha_registro" value="" readonly style="background-color: #e9ecef;">
+              {% endif %}
+              {% if form.fecha_registro.errors %}
+                <div class="text-danger small mt-1">{{ form.fecha_registro.errors }}</div>
+              {% endif %}
+            </div>
+            <div class="mb-4">
+              <label for="id_fecha_ultimo_ingreso" class="form-label fw-semibold">Fecha último ingreso</label>
+              <input type="date" name="fecha_ultimo_ingreso" class="form-control form-control-lg" id="id_fecha_ultimo_ingreso" style="width: 100%;" value="{{ form.fecha_ultimo_ingreso.value|default_if_none:'' }}">
+              {% if form.fecha_ultimo_ingreso.errors %}
+                <div class="text-danger small mt-1">{{ form.fecha_ultimo_ingreso.errors }}</div>
+              {% endif %}
+            </div>
+            <div class="mb-4">
+              <label class="form-label fw-semibold">Proveedores</label>
+              <div>
+                {% for proveedor in form.proveedores %}
+                  <div class="form-check" style="font-size: 1.05em; min-height: 1.7em;">
+                    <input type="checkbox" name="proveedores" value="{{ proveedor.data.value }}" id="{{ proveedor.id_for_label }}" class="form-check-input" style="transform: scale(1.08); margin-right: 7px;" {% if proveedor.data.selected %}checked{% endif %}>
+                    <label class="form-check-label" for="{{ proveedor.id_for_label }}">
+                      {{ proveedor.choice_label }}
+                    </label>
+                  </div>
+                {% endfor %}
+              </div>
+              {% if form.proveedores.errors %}<div class="text-danger small mt-1">{{ form.proveedores.errors }}</div>{% endif %}
+            </div>
+            <div class="d-flex justify-content-center gap-2 mt-4">
+              <button class="btn px-4 text-white" style="background: #ff8800;" type="submit">
+                <i class="fa fa-save me-1"></i>Guardar
+              </button>
+              <button class="btn btn-secondary px-4" type="button" onclick="window.location.href='{% url 'mis_articulos' %}'">
+                <i class="fa fa-times me-1"></i>Cancelar
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
-
-    <div class="mb-3">
-      <label>Proveedores:</label>
-      {% for proveedor in form.proveedores %}
-        <div class="form-check">
-          {{ proveedor.tag }}
-          <label class="form-check-label" for="{{ proveedor.id_for_label }}">
-            {{ proveedor.choice_label }}
-          </label>
-        </div>
-      {% endfor %}
-    </div>
-
-    <input class="btn btn-primary" type="submit" value="Guardar" />
-    <button
-      class="btn btn-secondary"
-      type="button"
-      onclick="window.location.href='{% url 'mis_articulos' %}'"
-    >
-      Cancelar
-    </button>
-  </form>
+  </div>
 </div>
 
 <script>
