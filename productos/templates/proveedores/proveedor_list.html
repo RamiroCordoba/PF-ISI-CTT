@@ -1,65 +1,124 @@
 {% extends 'dashboard/principal.html' %}
 {% block Contenido %}
+
+
 <div class="container-fluid px-4">
   <h1 class="mt-4">Proveedores</h1>
   <hr style="height: 5px; background-color: black; border: none" />
-
-
-  <!-- Fila de funciones generales y filtros -->
   <div class="d-flex justify-content-between align-items-center py-2">
     <div class="d-flex gap-2 flex-wrap">
       {% if request.user.is_staff %}
-      <a href="{% url 'nuevo_proveedor' %}" class="btn btn-primary">
+      <a href="{% url 'nuevo_proveedor' %}"
+        class="btn btn-primary btn-sm d-flex align-items-center justify-content-center px-4" style="height: 38px;">
         Nuevo proveedor
       </a>
       {% endif %}
     </div>
-
-    <!-- Filtros y buscador -->
-    <div class="d-flex align-items-end gap-3 flex-wrap">
-      <form method="get" class="d-flex align-items-end gap-3 flex-wrap">
-        <!-- ...existing code... -->
-      </form>
-    </div>
-  </div>
-  <!-- Mostrador de filtros activos -->
-  {% if filtros_activos or buscar %}
-    <div class="text-secondary small mt-3">
-      <strong>Se está filtrando por:</strong>
-      {% if filtro_empresa %}
-        Empresa: <span><strong>{{ filtro_empresa }}</strong></span>
-      {% endif %}
-      {% if filtro_categorias %}
-        {% if filtro_empresa %}, {% endif %}
-        Categoría/s:
-        <span>
-          {% for id in filtro_categorias %}
-            {% for cat in categorias %}
-              {% if cat.id|stringformat:"s" == id %}
-                <strong>{{ cat.nombre }}</strong>{% if not forloop.last or not forloop.parentloop.last %}, {% endif %}
-              {% endif %}
-            {% endfor %}
+    <form method="get" class="d-flex align-items-end gap-3 flex-wrap">
+      <!-- Empresa -->
+      <div class="dropdown">
+        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+          Empresa
+        </button>
+        <ul class="dropdown-menu p-2" style="max-height: 200px; overflow-y: auto;">
+          {% for empresa in empresas %}
+            <li>
+              <div class="form-check mb-0">
+                <input class="form-check-input" type="checkbox" name="empresa" value="{{ empresa }}" id="empresa_{{ forloop.counter }}" {% if filtro_empresa == empresa %}checked{% endif %}>
+                <label class="form-check-label" for="empresa_{{ forloop.counter }}">{{ empresa }}</label>
+              </div>
+            </li>
           {% endfor %}
-        </span>
+        </ul>
+      </div>
+      <!-- Categorías -->
+      <div class="dropdown">
+        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+          Categorías
+        </button>
+        <ul class="dropdown-menu p-2" style="max-height: 200px; overflow-y: auto;">
+          {% for cat in categorias %}
+            <li>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="categoria" value="{{ cat.id }}" id="cat{{ cat.id }}" {% if cat.id|stringformat:'s' in filtro_categorias %}checked{% endif %}>
+                <label class="form-check-label" for="cat{{ cat.id }}">{{ cat.nombre }}</label>
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+      <!-- Estado -->
+      <div class="dropdown">
+        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+          Estado
+        </button>
+        <ul class="dropdown-menu p-2">
+          <li>
+            <div class="form-check mb-0">
+              <input class="form-check-input" type="checkbox" name="estado" value="activos" id="estado_activos" {% if filtro_estado == 'activos' %}checked{% endif %}>
+              <label class="form-check-label" for="estado_activos">Activos</label>
+            </div>
+          </li>
+          <li>
+            <div class="form-check mb-0">
+              <input class="form-check-input" type="checkbox" name="estado" value="inactivos" id="estado_inactivos" {% if filtro_estado == 'inactivos' %}checked{% endif %}>
+              <label class="form-check-label" for="estado_inactivos">Inactivos</label>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <!-- Buscador -->
+      <div class="d-flex align-items-end gap-2">
+        <input type="text" name="buscar" class="form-control form-control-sm" placeholder="Buscar proveedor..." value="{{ buscar }}">
+      </div>
+  <button type="submit" class="btn btn-primary btn-sm mb-0 px-4" style="height: 38px;">Filtrar</button>
+      {% if filtros_activos or buscar %}
+        <a href="{% url 'mis_proveedores' %}" class="btn btn-outline-danger btn-sm" title="Restablecer filtros">
+          <i class="fa-solid fa-rotate-left"></i>
+        </a>
       {% endif %}
-      
-      {% if filtro_estado %}
-        {% if filtro_empresa or filtro_categorias %}, {% endif %}
-        Estado: <span><strong>{% if filtro_estado == 'activos' %}Activos{% elif filtro_estado == 'inactivos' %}Inactivos{% endif %}</strong></span>
-      {% endif %}
-      {% if buscar %}
-        {% if filtro_empresa or filtro_categorias or filtro_estado %}, {% endif %}
-        Búsqueda de texto: <span><strong>"{{ buscar }}"</strong></span>
-      {% endif %}
-    </div>
-  {% endif %}
-    </div>
+    </form>
   </div>
-  <!-- Fin fila funciones generales y filtros -->
-
+  <div>
+    {% if filtros_activos or buscar %}
+      <div class="text-secondary small mt-3">
+        <strong>Se está filtrando por:</strong>
+        {% if filtro_estado %}
+          Estado:
+          <span>
+            {% if filtro_estado == 'activos' %}<strong>Activos</strong>{% endif %}
+            {% if filtro_estado == 'inactivos' %}<strong>Inactivos</strong>{% endif %}
+          </span>
+        {% endif %}
+        {% if filtro_categorias %}
+          {% if filtro_estado %}, {% endif %}
+          Categoría/s:
+          <span>
+            {% for id in filtro_categorias %}
+              {% for cat in categorias %}
+                {% if cat.id|stringformat:"s" == id %}
+                  <strong>{{ cat.nombre }}</strong>{% if not forloop.last or not forloop.parentloop.last %}, {% endif %}
+                {% endif %}
+              {% endfor %}
+            {% endfor %}
+          </span>
+        {% endif %}
+        {% if filtro_empresa %}
+          {% if filtro_estado or filtro_categorias %}, {% endif %}
+          Empresa:
+          <span>
+            <strong>{{ filtro_empresa }}</strong>
+          </span>
+        {% endif %}
+        {% if buscar %}
+          {% if filtro_estado or filtro_categorias or filtro_empresa %}, {% endif %}
+          Búsqueda de texto: <span><strong>"{{ buscar }}"</strong></span>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
   <hr style="height: 5px; background-color: black; border: none" />
-
-  <table class="table table-striped text-center align-middle">
+  <table class="table table-striped table-bordered text-center">
     <thead>
       <tr>
         {% if request.user.is_staff %}
@@ -68,7 +127,7 @@
         {% endif %}
         <th class="text-center">Empresa</th>
         <th class="text-center">Nombre del proveedor</th>
-        <th class="text-center">Categorias asociadas</th>
+        <th class="text-center">Categorías asociadas</th>
         <th class="text-center">Estado</th>
       </tr>
     </thead>
@@ -77,7 +136,6 @@
         {% for p in proveedores %}
         <tr>
           {% if request.user.is_staff %}
-          <!-- Columna de acciones -->
           <td class="text-center">
             <a href="{% url 'detalles_de_proveedor' p.id %}" class="btn btn-outline-primary mt-2"
               style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
@@ -92,8 +150,6 @@
               <i class="fa fa-trash fa-sm" title="Eliminar"></i>
             </a>
           </td>
-
-          <!-- Columna de contacto -->
           <td class="text-center">
             <a href="https://wa.me/{{ p.telefono }}" target="_blank"
               class="btn btn-outline-success mt-2 me-1"
