@@ -50,7 +50,7 @@ class ArticuloList(LoginRequiredMixin, ListView):
     model = Producto
     template_name = "articulos/articulo_list.html"
     context_object_name = "articulos"
-    paginate_by = 50  # Display 50 articles per page
+    paginate_by = 25  # <-- Aca se setea la cantidad de articulos a mostrar
 
     def get_queryset(self):
         queryset = super().get_queryset().order_by("id")
@@ -79,7 +79,7 @@ class ArticuloList(LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         request = self.request
 
-        # Pagination logic
+        # Paginacion de articulos
         queryset = self.get_queryset()
         paginator = Paginator(queryset, self.paginate_by)
         page = request.GET.get('page')
@@ -92,13 +92,13 @@ class ArticuloList(LoginRequiredMixin, ListView):
             articulos_paginated = paginator.page(paginator.num_pages)
 
         context["page_obj"] = articulos_paginated
-        context["articulos"] = articulos_paginated.object_list  # Paginated articles
+        context["articulos"] = articulos_paginated.object_list 
 
-        # Add categories and providers for filters
+        # Filtros
         context["categorias"] = Categoria.objects.all()
         context["proveedores"] = Proveedor.objects.all()
 
-        # Active filters
+        # Filtros activos
         context["filtro_estados"] = request.GET.getlist("estado")
         context["filtro_categorias"] = request.GET.getlist("categoria")
         context["filtro_proveedores"] = request.GET.getlist("proveedor")
@@ -116,11 +116,21 @@ class ArticuloCreate(LoginRequiredMixin, CreateView):
     template_name = "articulos/articulo_form.html"
     success_url = reverse_lazy("mis_articulos")
 
+    def form_valid(self, form):
+        estado = self.request.POST.get('estado', 'True')
+        form.instance.activo = True if estado == 'True' else False
+        return super().form_valid(form)
+
 class ArticuloUpdate(LoginRequiredMixin, UpdateView):
     model = Producto
     form_class = ProductoForm
     template_name = "articulos/articulo_form.html"
     success_url = reverse_lazy("mis_articulos")
+
+    def form_valid(self, form):
+        estado = self.request.POST.get('estado', 'True')
+        form.instance.activo = True if estado == 'True' else False
+        return super().form_valid(form)
 
 class ArticuloDelete(LoginRequiredMixin,DeleteView):
      model=Producto
@@ -354,27 +364,57 @@ class ProveedorDetail(DetailView):
      template_name="proveedores/proveedor_details.html"
      context_object_name = 'elProveedor'
 
-class ProveedorList(LoginRequiredMixin,ListView):
+
+class ProveedorList(LoginRequiredMixin, ListView):
     model = Proveedor
     template_name = "proveedores/proveedor_list.html"
     context_object_name = "proveedores"
+    paginate_by = 20
 
     def get_queryset(self):
         queryset = super().get_queryset().order_by("id")
-        buscar = self.request.GET.get("buscar")
-        #proveedor_id = self.request.GET.get("proveedor")
+        request = self.request
 
+        # Filtro por empresa
+        empresa = request.GET.get('empresa', '').strip()
+        if empresa:
+            queryset = queryset.filter(nombreEmpresa__icontains=empresa)
+
+        # Filtro por categoría (ManyToMany)
+        categorias = request.GET.getlist('categoria')
+        if categorias:
+            queryset = queryset.filter(categoria__id__in=categorias)
+
+        # Filtro por estado
+        estado = request.GET.get('estado')
+        if estado == 'activos':
+            queryset = queryset.filter(estado=True)
+        elif estado == 'inactivos':
+            queryset = queryset.filter(estado=False)
+
+        # Buscador por texto
+        buscar = request.GET.get('buscar', '').strip()
         if buscar:
-            queryset = queryset.filter(nombreEmpresa__icontains=buscar)
+            queryset = queryset.filter(
+                models.Q(nombreEmpresa__icontains=buscar) |
+                models.Q(nombreProv__icontains=buscar) |
+                models.Q(mail__icontains=buscar) |
+                models.Q(ciudad__icontains=buscar)
+            )
 
-        #if proveedor_id:
-        #    queryset = queryset.filter(proveedor_id=proveedor_id)
-
+        queryset = queryset.distinct()
         return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        #context["proveedores"] = Proveedor.objects.all().order_by("nombreEmpresa")
+        request = self.request
+        context['empresas'] = Proveedor.objects.values_list('nombreEmpresa', flat=True).distinct().order_by('nombreEmpresa')
+        context['categorias'] = Categoria.objects.all()
+        context['filtro_empresa'] = request.GET.get('empresa', '')
+        context['filtro_categorias'] = request.GET.getlist('categoria')
+        context['filtro_estado'] = request.GET.get('estado', '')
+        context['buscar'] = request.GET.get('buscar', '')
+        context['filtros_activos'] = bool(context['filtro_empresa'] or context['filtro_categorias'] or context['filtro_estado'] or context['buscar'])
         return context
 
 #______ Estacionalidad
