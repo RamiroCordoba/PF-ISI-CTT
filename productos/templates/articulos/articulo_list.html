@@ -6,7 +6,6 @@
     });
   });
 </script>
-
 <div class="container-fluid px-4">
   <h1 class="mt-4">Mis articulos</h1>
   <hr style="height: 5px; background-color: black; border: none" />
@@ -115,47 +114,48 @@
   <!-- Aca esta el mostrador de porque se esta filtrando -->
   <div>
   {% if filtros_activos or request.GET.buscar %}
-  <div class="text-secondary small mt-3">
-    Se está filtrando por
-
-    {# Estado #}
-    {% if filtro_estados %}
-      {% if "activos" in filtro_estados %} productos activos{% endif %}
-      {% if "inactivos" in filtro_estados %}
-        {% if "activos" in filtro_estados %} y{% endif %} productos inactivos
+    <div class="text-secondary small mt-3">
+      <strong>Se está filtrando por:</strong>
+      {% comment %} Estados {% endcomment %}
+      {% if filtro_estados %}
+        Estado:
+        <span>
+          {% if "activos" in filtro_estados %}<strong>Activos</strong>{% endif %}
+          {% if "activos" in filtro_estados and "inactivos" in filtro_estados %} y {% endif %}
+          {% if "inactivos" in filtro_estados %}<strong>Inactivos</strong>{% endif %}
+        </span>
       {% endif %}
-    {% endif %}
-
-    {# Categorías #}
-    {% if filtro_categorias %}
-      {% if filtro_estados %},{% endif %} en la categoría/s
-      {% for id in filtro_categorias %}
-        {% for cat in categorias %}
-          {% if cat.id|stringformat:"s" == id %}
-            {{ cat.nombre }}{% if not forloop.last %}, {% endif %}
-          {% endif %}
-        {% endfor %}
-      {% endfor %}
-    {% endif %}
-
-    {# Proveedores #}
-    {% if filtro_proveedores %}
-      {% if filtro_estados or filtro_categorias %},{% endif %} con proveedor/es
-      {% for id in filtro_proveedores %}
-        {% for prov in proveedores %}
-          {% if prov.id|stringformat:"s" == id %}
-            {{ prov.nombreEmpresa }}{% if not forloop.last %}, {% endif %}
-          {% endif %}
-        {% endfor %}
-      {% endfor %}
-    {% endif %}
-
-    {# Búsqueda de texto #}
-    {% if request.GET.buscar %}
-      {% if filtro_estados or filtro_categorias or filtro_proveedores %},{% endif %}
-      que coinciden con: "<strong>{{ request.GET.buscar }}</strong>"
-    {% endif %}.
-  </div>
+      {% if filtro_categorias %}
+        {% if filtro_estados %}, {% endif %}
+        Categoría/s:
+        <span>
+          {% for id in filtro_categorias %}
+            {% for cat in categorias %}
+              {% if cat.id|stringformat:"s" == id %}
+                <strong>{{ cat.nombre }}</strong>{% if not forloop.last or not forloop.parentloop.last %}, {% endif %}
+              {% endif %}
+            {% endfor %}
+          {% endfor %}
+        </span>
+      {% endif %}
+      {% if filtro_proveedores %}
+        {% if filtro_estados or filtro_categorias %}, {% endif %}
+        Proveedor/es:
+        <span>
+          {% for id in filtro_proveedores %}
+            {% for prov in proveedores %}
+              {% if prov.id|stringformat:"s" == id %}
+                <strong>{{ prov.nombreEmpresa }}</strong>{% if not forloop.last or not forloop.parentloop.last %}, {% endif %}
+              {% endif %}
+            {% endfor %}
+          {% endfor %}
+        </span>
+      {% endif %}
+      {% if request.GET.buscar %}
+        {% if filtro_estados or filtro_categorias or filtro_proveedores %}, {% endif %}
+        Búsqueda de texto: <span><strong>"{{ request.GET.buscar }}"</strong></span>
+      {% endif %}
+    </div>
   {% endif %}
 </div>
 
@@ -192,11 +192,11 @@
             <i class="fa-solid fa-eye" title="Ver"></i>
           </a> 
         </td>
-        <td>{{ p.nombre|default:"" }}</td>
-        <td class="text-center">{{ p.marca|default:"" }}</td>
-        <td class="text-center">{{ p.precio|default:"0" }}</td>
-        <td class="text-center">{{ p.stock|default:"0" }}</td>
-        <td class="text-center">{{ p.categoria|default:"" }}</td>
+        <td>{{p.nombre}}</td>
+        <td class="text-center">{{p.marca}}</td>
+        <td class="text-center">{{p.precio}}</td>
+        <td class="text-center">{{p.stock}}</td>
+        <td class="text-center">{{p.categoria}}</td>
         <td>
           {% if p.proveedores.exists %}
             {% for pro in p.proveedores.all %}
@@ -206,7 +206,7 @@
             <em>Sin proveedor</em>
           {% endif %}
         </td>
-        <td class="text-center">{{ p.fecha_ultimo_ingreso|default:""|date:"d/m/Y" }}</td>
+        <td class="text-center">{{ p.fecha_ultimo_ingreso|date:"d/m/Y" }}</td>
         <td>
           {% if p.activo %}
             <i class="fas fa-check-square text-success"></i>
@@ -220,3 +220,96 @@
   </table>
 </div>
 {% endblock Contenido %}
+
+{% block footer %}
+<tfoot>
+  <tr>
+    <td colspan="9">
+      <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center mb-0">
+
+          <!-- Flecha anterior -->
+          {% if page_obj.has_previous %}
+          <li class="page-item">
+            <a class="page-link"
+               href="?{% if request.GET %}{{ request.GET.urlencode|cut:'page='|cut:'&page=' }}&{% endif %}page={{ page_obj.previous_page_number }}"
+               aria-label="Anterior">
+              &laquo;
+            </a>
+          </li>
+          {% else %}
+          <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+          {% endif %}
+
+          <!-- Primera página -->
+          {% if page_obj.number != 1 %}
+          <li class="page-item">
+            <a class="page-link"
+               href="?{% if request.GET %}{{ request.GET.urlencode|cut:'page='|cut:'&page=' }}&{% endif %}page=1">
+              1
+            </a>
+          </li>
+          {% else %}
+          <li class="page-item active"><span class="page-link">1</span></li>
+          {% endif %}
+
+          <!-- Puntos suspensivos si hay más de 3 páginas antes del bloque -->
+          {% if page_obj.number > 4 %}
+          <li class="page-item disabled"><span class="page-link">...</span></li>
+          {% endif %}
+
+          <!-- Bloque central (páginas cercanas) -->
+          {% for num in page_obj.paginator.page_range %}
+            {% if num != 1 and num != page_obj.paginator.num_pages %}
+              {% if num >= page_obj.number|add:"-2" and num <= page_obj.number|add:"2" %}
+                {% if num == page_obj.number %}
+                  <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                {% else %}
+                  <li class="page-item">
+                    <a class="page-link"
+                       href="?{% if request.GET %}{{ request.GET.urlencode|cut:'page='|cut:'&page=' }}&{% endif %}page={{ num }}">
+                      {{ num }}
+                    </a>
+                  </li>
+                {% endif %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+
+          <!-- Puntos suspensivos si hay más de 3 páginas después del bloque -->
+          {% if page_obj.number < page_obj.paginator.num_pages|add:"-3" %}
+          <li class="page-item disabled"><span class="page-link">...</span></li>
+          {% endif %}
+
+          <!-- Última página -->
+          {% if page_obj.number != page_obj.paginator.num_pages %}
+          <li class="page-item">
+            <a class="page-link"
+               href="?{% if request.GET %}{{ request.GET.urlencode|cut:'page='|cut:'&page=' }}&{% endif %}page={{ page_obj.paginator.num_pages }}">
+              {{ page_obj.paginator.num_pages }}
+            </a>
+          </li>
+          {% else %}
+          <li class="page-item active"><span class="page-link">{{ page_obj.paginator.num_pages }}</span></li>
+          {% endif %}
+
+          <!-- Flecha siguiente -->
+          {% if page_obj.has_next %}
+          <li class="page-item">
+            <a class="page-link"
+               href="?{% if request.GET %}{{ request.GET.urlencode|cut:'page='|cut:'&page=' }}&{% endif %}page={{ page_obj.next_page_number }}"
+               aria-label="Siguiente">
+              &raquo;
+            </a>
+          </li>
+          {% else %}
+          <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+          {% endif %}
+
+        </ul>
+      </nav>
+    </td>
+  </tr>
+</tfoot>
+{% endblock footer %}
+

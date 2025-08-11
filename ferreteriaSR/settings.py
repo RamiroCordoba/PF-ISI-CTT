@@ -34,7 +34,6 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'usuarios',
   #____ App de defecto que trae Django
     'django.contrib.admin',
     'django.contrib.auth',
@@ -42,10 +41,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
   #____ Nuestras app de la ferreteria
     'home',
     'dashboard',
     'productos',
+    'reporte',
+    'usuarios',
 
 ]
 
