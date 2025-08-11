@@ -22,7 +22,7 @@ class Producto(models.Model):
   stock_maximo = models.PositiveIntegerField(null=True, blank=True)
   stock_minimo = models.PositiveIntegerField(null=True, blank=True)
   categoria = models.ForeignKey('Categoria', on_delete=models.PROTECT, related_name='productos')
-  marca = models.CharField(max_length=50, blank=True, null=True)
+  marca = models.CharField(max_length=50, blank=True, null=True, default='')
   fecha_registro = models.DateTimeField(auto_now_add=True)
   fecha_ultimo_ingreso = models.DateTimeField(null=True, blank=True)
   activo = models.BooleanField(default=True)
@@ -63,7 +63,7 @@ class Estacionalidad(models.Model):
   estacion = models.CharField(max_length= 50)
   mesDesde = models.PositiveIntegerField(verbose_name='Mes Hasta',null=False, blank=False,validators=[MinValueValidator(1),MaxValueValidator(12)])
   diaHasta = models.PositiveIntegerField(verbose_name='Dia Hasta',null=False, blank=False,validators=[MinValueValidator(1),MaxValueValidator(31)])
-  diaDesde = models.PositiveIntegerField(verbose_name='Dia Hasta',null=False, blank=False,validators=[MinValueValidator(1),MaxValueValidator(31)])#igual creo q deberia ser mes y dia porque las estacionalidades es la misma cada año (periodo) y no algo de un año particular
+  diaDesde = models.PositiveIntegerField(verbose_name='Dia Hasta',null=False, blank=False,validators=[MinValueValidator(1),MaxValueValidator(31)])
   mesHasta = models.PositiveIntegerField(verbose_name='Mes Hasta',null=False, blank=False,validators=[MinValueValidator(1),MaxValueValidator(12)])
   stockMin   = models.PositiveIntegerField(null=True, blank=True)
   stockMax   = models.PositiveIntegerField(null=True, blank=True)
@@ -76,3 +76,23 @@ class Estacionalidad(models.Model):
   
   def __str__(self):
     return self.nombre
+
+
+class Pedido(models.Model):
+    proveedor = models.ForeignKey('Proveedor', on_delete=models.PROTECT, related_name='pedidos')
+    fecha = models.DateField(auto_now_add=True)
+    fechaIngreso = models.DateField(null=True, blank=True)
+    comentarios = models.TextField(null=True, blank=True)
+    completado = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Pedido #{self.id} a {self.proveedor.nombreEmpresa}"
+
+class PedidoItem(models.Model):
+    pedido = models.ForeignKey(Pedido, related_name='items', on_delete=models.CASCADE)
+    producto = models.ForeignKey('Producto', on_delete=models.PROTECT)
+    cantidad = models.PositiveIntegerField()
+    precio = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.producto.nombre} x {self.cantidad}"

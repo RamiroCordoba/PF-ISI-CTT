@@ -1,6 +1,7 @@
 from django import forms
-from .models import Proveedor,Producto
+from .models import Proveedor,Producto,Pedido,PedidoItem
 import datetime
+from django.forms import inlineformset_factory
 
 #_______ Formulario de proveedor
 class ProveedorForm(forms.ModelForm):
@@ -63,4 +64,64 @@ class CargaMasivaProductosForm(forms.Form):
         if not archivo.name.endswith('.xlsx'):
             raise forms.ValidationError("El archivo debe tener extensión .xlsx")
         return archivo
+    
 
+#_______ Pedidos
+
+class PedidoItemForm(forms.ModelForm):
+    class Meta:
+        model = PedidoItem
+        fields = ['producto', 'cantidad', 'precio']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['producto'].empty_label = ''
+
+class PedidoForm(forms.ModelForm):
+    class Meta:
+        model = Pedido
+        fields = ['proveedor', 'comentarios', 'completado', 'fechaIngreso']
+        widgets = {
+            'comentarios': forms.Textarea(attrs={'rows': 3}),
+            'fechaIngreso': forms.DateInput(attrs={'type': 'date'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if self.instance and self.instance.pk:
+            self.fields['completado'] = forms.BooleanField(
+                required=False,
+                label='¿Completado?'
+            )
+            self.fields['fechaIngreso'] = forms.DateField(
+                required=False,
+                widget=forms.DateInput(attrs={'type': 'date'}),
+                label='Fecha de ingreso'
+            )
+            self.fields['proveedor'].widget.attrs.pop('disabled', None)
+        else:
+            pass
+
+    def clean(self):
+        cleaned_data = super().clean()
+        completado = cleaned_data.get('completado')
+        fecha_ingreso = cleaned_data.get('fechaIngreso')
+
+        if completado and not fecha_ingreso:
+            self.add_error('fechaIngreso', 'Debe ingresar una fecha si el pedido está marcado como completado.')
+        if self.instance.pk:
+            proveedor_enviado = cleaned_data.get('proveedor')
+            if proveedor_enviado != self.instance.proveedor:
+                self.add_error('proveedor', 'No se puede modificar el proveedor de un pedido ya creado.')
+
+
+
+PedidoItemFormSet = inlineformset_factory(
+    Pedido,
+    PedidoItem,
+    form=PedidoItemForm, 
+    fields=['producto', 'cantidad', 'precio'],
+    extra=1,
+    can_delete=True
+)

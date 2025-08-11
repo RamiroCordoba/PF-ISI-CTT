@@ -97,7 +97,6 @@
         <!-- Buscador -->
         <div class="d-flex align-items-end gap-2">
           <input type="text" name="buscar" class="form-control form-control-sm" placeholder="Buscar artículo..." value="{{ request.GET.buscar }}">
-          <!--<button class="btn btn-primary btn-sm px-4" type="submit">Buscar</button>-->
         </div>
 
         <!-- Botón filtrar -->
@@ -178,51 +177,45 @@
       </tr>
     <thead>
     <tbody> 
-      {% if articulos %}
-        {% for p in articulos %}
-        <tr>
-          <td class="text-center">
-            {% if request.user.is_staff %}
-                <a href="{% url 'editar_articulo' p.id %}" class="btn btn-outline-success mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
-                    <i class="fa fa-edit fa-sm" title="Editar"></i>
-                </a>
-                <a href="{% url 'eliminar_articulo' p.id %}" class="btn btn-outline-danger mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
-                    <i class="fa fa-trash fa-sm" title="Eliminar"></i>
-                </a> 
-            {% endif %}
-            <a href="{% url 'detalles_de_articulo' p.id %}" class="btn btn-outline-primary mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
-              <i class="fa-solid fa-eye" title="Ver"></i>
-            </a> 
-          </td>
-          <td>{{p.nombre}}</td>
-          <td class="text-center">{{p.marca}}</td>
-          <td class="text-center">{{p.precio}}</td>
-          <td class="text-center">{{p.stock}}</td>
-          <td class="text-center">{{p.categoria}}</td>
-          <td>
-            {% if p.proveedores.exists %}
-              {% for pro in p.proveedores.all %}
-                {{ pro.nombreEmpresa }}{% if not forloop.last %}, {% endif %}
-              {% endfor %}
-            {% else %}
-              <em>Sin proveedor</em>
-            {% endif %}
-          </td>
-          <td class="text-center">{{ p.fecha_ultimo_ingreso|date:"d/m/Y" }}</td>
-          <td>
-            {% if p.activo %}
-              <i class="fas fa-check-square text-success"></i>
-            {% else %}
-              <i class="fas fa-times-square text-danger"></i>
-            {% endif %}
-          </td>
-        </tr>
-        {% endfor %}
-      {% else %}
-        <tr>
-          <td colspan="9" class="text-center">No se encontraron artículos.</td>
-        </tr>
-      {% endif %}
+      {% for p in articulos %}
+      <tr>
+        <td class="text-center">
+          {% if request.user.is_staff %}
+              <a href="{% url 'editar_articulo' p.id %}" class="btn btn-outline-success mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
+                  <i class="fa fa-edit fa-sm" title="Editar"></i>
+              </a>
+              <a href="{% url 'eliminar_articulo' p.id %}" class="btn btn-outline-danger mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
+                  <i class="fa fa-trash fa-sm" title="Eliminar"></i>
+              </a> 
+          {% endif %}
+          <a href="{% url 'detalles_de_articulo' p.id %}" class="btn btn-outline-primary mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
+            <i class="fa-solid fa-eye" title="Ver"></i>
+          </a> 
+        </td>
+        <td>{{p.nombre}}</td>
+        <td class="text-center">{{p.marca}}</td>
+        <td class="text-center">{{p.precio}}</td>
+        <td class="text-center">{{p.stock}}</td>
+        <td class="text-center">{{p.categoria}}</td>
+        <td>
+          {% if p.proveedores.exists %}
+            {% for pro in p.proveedores.all %}
+              {{ pro.nombreEmpresa }}{% if not forloop.last %}, {% endif %}
+            {% endfor %}
+          {% else %}
+            <em>Sin proveedor</em>
+          {% endif %}
+        </td>
+        <td class="text-center">{{ p.fecha_ultimo_ingreso|date:"d/m/Y" }}</td>
+        <td>
+          {% if p.activo %}
+            <i class="fas fa-check-square text-success"></i>
+          {% else %}
+            <i class="fas fa-times-square text-danger"></i>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
     </tbody>
   </table>
 </div>

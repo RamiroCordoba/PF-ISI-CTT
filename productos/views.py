@@ -1,15 +1,20 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect ,get_object_or_404
 from django.urls import reverse_lazy
 from django.views.generic import ListView,CreateView,UpdateView,DeleteView,DetailView
 from .models import *
 from django.contrib.auth.mixins import LoginRequiredMixin
-from .forms import ProveedorForm, CargaMasivaProductosForm, ProductoForm
+from .forms import ProveedorForm, CargaMasivaProductosForm, ProductoForm,PedidoForm, PedidoItemFormSet,inlineformset_factory
+
 from django.views import View
 from django.contrib import messages
 from django.http import HttpResponse
 import pandas as pd
 from django.utils.timezone import now
 from datetime import datetime
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from django.urls import reverse
+
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 #______ Categorias CRUD
@@ -98,7 +103,6 @@ class ArticuloList(LoginRequiredMixin, ListView):
         context["categorias"] = Categoria.objects.all()
         context["proveedores"] = Proveedor.objects.all()
 
-        # Filtros activos
         context["filtro_estados"] = request.GET.getlist("estado")
         context["filtro_categorias"] = request.GET.getlist("categoria")
         context["filtro_proveedores"] = request.GET.getlist("proveedor")
@@ -137,10 +141,58 @@ class ArticuloDelete(LoginRequiredMixin,DeleteView):
      template_name="articulos/articulo_confirm_delete.html"
      success_url = reverse_lazy("mis_articulos")
 
-class ArticuloDetail(DetailView):
-     model=Producto
-     template_name="articulos/articulo_details.html"
-     context_object_name = 'elArticulo'
+class ArticuloDetail(LoginRequiredMixin, DetailView):
+    model = Producto
+    template_name = "articulos/articulo_details.html"
+    context_object_name = 'elArticulo'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["todos_proveedores"] = Proveedor.objects.exclude(id__in=self.object.proveedores.all())
+        return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        proveedor_id = request.POST.get("proveedor_id")
+        if proveedor_id:
+            proveedor = Proveedor.objects.get(id=proveedor_id)
+            self.object.proveedores.add(proveedor)
+            messages.success(request, "Proveedor agregado correctamente.")
+        quitar_id = request.POST.get("quitar_proveedor_id")
+        if quitar_id:
+            proveedor = Proveedor.objects.get(id=quitar_id)
+            self.object.proveedores.remove(proveedor)
+            messages.success(request, "Proveedor quitado correctamente.")
+        return redirect(f"{reverse('detalles_de_articulo', args=[self.object.pk])}#proveedores")
+
+@login_required
+def proveedores_grilla(request, pk):
+    producto = get_object_or_404(Producto, pk=pk)
+    proveedores = producto.proveedores.all()
+    todos_proveedores = Proveedor.objects.exclude(id__in=proveedores)
+
+    if request.method == "POST":
+        proveedor_id = request.POST.get("proveedor_id")
+        if proveedor_id:
+            proveedor = get_object_or_404(Proveedor, id=proveedor_id)
+            producto.proveedores.add(proveedor)
+            messages.success(request, "Proveedor agregado correctamente.")
+            return redirect('proveedores_grilla', pk=pk)
+
+    return render(request, "articulos/proveedores_grilla.html", {
+        "producto": producto,
+        "proveedores": proveedores,
+        "todos_proveedores": todos_proveedores,
+    })
+
+@login_required
+def quitar_proveedor(request, pk, proveedor_id):
+    producto = get_object_or_404(Producto, pk=pk)
+    proveedor = get_object_or_404(Proveedor, id=proveedor_id)
+    producto.proveedores.remove(proveedor)
+    messages.success(request, "Proveedor quitado correctamente.")
+    return redirect('proveedores_grilla', pk=pk)
+
 
 class CargaMasivaProductosView(View):
     template_name = 'articulos/carga_masiva_productos.html'
@@ -181,7 +233,7 @@ class CargaMasivaProductosView(View):
                         raise ValueError("El campo 'nombre' está vacío")
 
                     descripcion = str(fila.get('descripcion', '')).strip()
-                    precio = float(fila['precio'])
+                    precio = float(str(fila['precio']).replace(',', '.'))
                     stock = int(fila['stock'])
                     stock_optimo = int(fila['stock_optimo'])
                     stock_maximo = int(fila.get('stock_maximo')) if not pd.isna(fila.get('stock_maximo')) else None
@@ -394,6 +446,8 @@ class ProveedorList(LoginRequiredMixin, ListView):
 
         # Buscador por texto
         buscar = request.GET.get('buscar', '').strip()
+        buscar = self.request.GET.get("buscar")
+
         if buscar:
             queryset = queryset.filter(
                 models.Q(nombreEmpresa__icontains=buscar) |
@@ -448,17 +502,173 @@ class EstacionalidadList(LoginRequiredMixin,ListView):
     def get_queryset(self):
         queryset = super().get_queryset().order_by("id")
         buscar = self.request.GET.get("buscar")
-        #estacionalidad_id = self.request.GET.get("estacionalidad")
 
         if buscar:
             queryset = queryset.filter(nombre__icontains=buscar)
-
-        #if estacionalidad_id:
-        #    queryset = queryset.filter(estacionalidad_id=estacionalidad_id)
 
         return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        #context["estacionalidades"] = Estacionalidad.objects.all().order_by("nombre")
         return context
+
+class PedidoCreateView(LoginRequiredMixin, View):
+    def get(self, request):
+        form = PedidoForm()
+        formset = PedidoItemFormSet()
+        return render(request, 'pedidos/pedido_form.html', {'form': form, 'formset': formset})
+
+    def post(self, request):
+        form = PedidoForm(request.POST)
+        formset = PedidoItemFormSet(request.POST)
+        if form.is_valid() and formset.is_valid():
+            pedido = form.save()
+            items = formset.save(commit=False)
+            for item in items:
+                item.pedido = pedido
+                item.save()
+            return redirect('listar_pedidos')
+        return render(request, 'pedidos/pedido_form.html', {'form': form, 'formset': formset})
+
+"""def listar_pedidos(request):
+    pedidos = Pedido.objects.select_related('proveedor').all().order_by('-fecha')
+    return render(request, 'pedidos/listar_pedidos.html', {'pedidos': pedidos})"""
+
+
+class PedidosList(LoginRequiredMixin, ListView):
+    model = Pedido
+    template_name = 'pedidos/pedido_list.html'
+    context_object_name = 'pedidos'
+    paginate_by = 10  
+
+    def get_queryset(self):
+        qs = super().get_queryset().select_related('proveedor')
+        request = self.request
+        filtro_estados = request.GET.getlist('estado')
+        filtro_proveedores = request.GET.getlist('proveedor')
+        fecha_inicio = request.GET.get('fecha_inicio')
+        fecha_fin = request.GET.get('fecha_fin')
+        buscar = request.GET.get('buscar')
+
+        if filtro_estados:
+            if "completado" in filtro_estados:
+                qs = qs.filter(completado=True)
+            if "pendiente" in filtro_estados:
+                qs = qs.filter(completado=False)
+
+        if filtro_proveedores:
+            qs = qs.filter(proveedor__id__in=filtro_proveedores)
+
+        if fecha_inicio:
+            qs = qs.filter(fecha__gte=fecha_inicio)
+
+        if fecha_fin:
+            qs = qs.filter(fecha__lte=fecha_fin)
+
+        if buscar:
+            qs = qs.filter(comentarios__icontains=buscar)
+
+        return qs.order_by('-id')
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        request = self.request
+
+        context['proveedores'] = Proveedor.objects.all()  
+        context['filtro_estados'] = request.GET.getlist('estado')
+        context['filtro_proveedores'] = request.GET.getlist('proveedor')
+        context['filtros_activos'] = bool(
+            context['filtro_estados'] or context['filtro_proveedores'] or
+            request.GET.get('fecha_inicio') or request.GET.get('fecha_fin') or
+            request.GET.get('buscar')
+        )
+        context['request'] = request 
+
+        return context
+
+
+
+def autocomplete_productos(request):
+    term = request.GET.get('term', '')
+    proveedor_id = request.GET.get('proveedor_id')
+    productos = Producto.objects.all()
+    if proveedor_id:
+        productos = productos.filter(proveedores__id=proveedor_id)
+    if term:
+        productos = productos.filter(nombre__icontains=term)
+    productos = productos[:10]
+    results = []
+    for producto in productos:
+        results.append({'id': producto.id, 'label': producto.nombre, 'value': producto.nombre})
+    return JsonResponse(results, safe=False)
+
+def productos_por_proveedor(request):
+    proveedor_id = request.GET.get('proveedor_id')
+    productos = []
+    if proveedor_id:
+        productos_qs = Producto.objects.filter(proveedores__id=proveedor_id)
+        productos = list(productos_qs.values('id', 'nombre'))
+    return JsonResponse({'productos': productos})
+
+class PedidoDetailView(LoginRequiredMixin, DetailView):
+    model = Pedido
+    template_name = "pedidos/pedido_details.html"
+    context_object_name = "pedido"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        items = PedidoItem.objects.filter(pedido=self.object)
+        for item in items:
+            item.subtotal = (item.precio or 0) * item.cantidad
+
+        context["items"] = items
+        context["total"] = sum(item.subtotal for item in items)
+        return context
+
+
+
+class PedidoUpdateView(LoginRequiredMixin, UpdateView):
+    model = Pedido
+    form_class = PedidoForm
+    template_name = "pedidos/pedido_form.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        if self.request.POST:
+            formset = PedidoItemFormSet(self.request.POST, instance=self.object)
+        else:
+           
+            PedidoItemFormSetNoExtra = inlineformset_factory(
+                Pedido,
+                PedidoItem,
+                fields=["producto", "cantidad", "precio"],
+                extra=0,
+                can_delete=True
+            )
+            formset = PedidoItemFormSetNoExtra(instance=self.object)
+
+        context["formset"] = formset
+        return context
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        formset = context["formset"]
+
+        if form.is_valid() and formset.is_valid():
+            self.object = form.save()
+            formset.instance = self.object
+            formset.save()
+            return redirect("listar_pedidos")
+        else:
+            return self.render_to_response(self.get_context_data(form=form))
+
+
+
+class PedidoDelete(DeleteView):
+    model = Pedido
+    template_name = 'pedidos/pedido_confirm_delete.html'
+    success_url = reverse_lazy('listar_pedidos')
+
+    def delete(self, request, *args, **kwargs):
+        messages.success(request, "Pedido eliminado correctamente.")
+        return super().delete(request, *args, **kwargs)
