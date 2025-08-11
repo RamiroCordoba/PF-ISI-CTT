@@ -104,6 +104,13 @@ class UsuarioUpdateView(UpdateView):
         self.object.groups.set(form.cleaned_data['grupos'])
         return response
 
+    def get_success_url(self):
+        next_url = self.request.GET.get('next')
+        from django.urls import reverse
+        if next_url == 'mi_perfil':
+            return reverse('usuarios:mi_perfil')
+        return super().get_success_url()
+
 class UsuarioDeleteView(DeleteView):
     model = UsuarioPersonalizado
     template_name = 'usuarios/usuario_confirm_delete.html'

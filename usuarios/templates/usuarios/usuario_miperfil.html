@@ -97,10 +97,10 @@
         <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary perfil-btn-volver">
           <i class="fa fa-arrow-left me-1"></i> Volver
         </a>
-        <a href="{% url 'usuarios:editar_usuario' user.pk %}" class="btn btn-outline-success perfil-btn-editar">
+        <a href="{% url 'usuarios:editar_usuario' user.pk %}?next=mi_perfil" class="btn btn-outline-success perfil-btn-editar">
           <i class="fa fa-edit me-1"></i> Editar
         </a>
-        <a href="#" class="btn btn-outline-warning perfil-btn-cambiar" style="color: #ff8800; border-color: #ff8800; background: #fff;">
+        <a href="{% url 'usuarios:cambiar_contrasena' %}" class="btn btn-outline-warning perfil-btn-cambiar" style="color: #ff8800; border-color: #ff8800; background: #fff;">
           <i class="fa fa-key me-1"></i> Cambiar contraseña
         </a>
       </div>
@@ -113,8 +113,9 @@
         <input type="text" class="perfil-form-input" value="{{ user.username }}" disabled>
         <label class="perfil-form-label">Email</label>
         <input type="email" class="perfil-form-input" value="{{ user.email }}" disabled>
-        <label class="perfil-form-label">Rol/es</label>
-        <input type="text" class="perfil-form-input" value="{% if user.is_staff %}Administrador{% else %}Vendedor{% endif %}" disabled>
+  <label class="perfil-form-label">Rol/es</label>
+  <input type="text" class="perfil-form-input" disabled
+    value="{% if user.is_superuser %}👑 Superadmin{% endif %}{% if user.is_superuser and user.is_staff %}, {% endif %}{% if user.is_staff %}Administrador{% endif %}{% if not user.is_superuser and not user.is_staff %}Vendedor{% endif %}">
         <div class="text-center my-3">
           {% if user.is_active %}
             <span class="badge bg-success px-3 py-2" style="font-size:1rem; font-weight:600; letter-spacing:1px;">

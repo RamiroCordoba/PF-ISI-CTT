@@ -81,7 +81,8 @@
               <button class="btn px-4 text-white" style="background: #ff8800;" type="submit">
                 <i class="fa fa-save me-1"></i>Guardar
               </button>
-              <button class="btn btn-secondary px-4" type="button" onclick="window.location.href='{% url 'usuarios:listar_usuarios' %}'">
+              <button class="btn btn-secondary px-4" type="button"
+                onclick="window.location.href='{% if request.GET.next == 'mi_perfil' %}{% url 'usuarios:mi_perfil' %}{% else %}{% url 'usuarios:listar_usuarios' %}{% endif %}'">
                 <i class="fa fa-times me-1"></i>Cancelar
               </button>
             </div>
