@@ -55,7 +55,7 @@ class ArticuloList(LoginRequiredMixin, ListView):
     model = Producto
     template_name = "articulos/articulo_list.html"
     context_object_name = "articulos"
-    paginate_by = 25  # <-- Aca se setea la cantidad de articulos a mostrar
+    paginate_by = 25  
 
     def get_queryset(self):
         queryset = super().get_queryset().order_by("id")
@@ -631,13 +631,27 @@ class PedidoUpdateView(LoginRequiredMixin, UpdateView):
     form_class = PedidoForm
     template_name = "pedidos/pedido_form.html"
 
+    """def dispatch(self, request, *args, **kwargs):
+        pedido = self.get_object()
+        if pedido.completado:
+            messages.warning(request, "Este pedido ya fue confirmado y no puede editarse.")
+            return redirect("listar_pedidos")
+        return super().dispatch(request, *args, **kwargs)"""
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        if self.get_object().completado:
+            for field in form.fields.values():
+                field.disabled = True
+        return form
+
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
+        pedido = self.object
+        
         if self.request.POST:
-            formset = PedidoItemFormSet(self.request.POST, instance=self.object)
+            formset = PedidoItemFormSet(self.request.POST, instance=pedido)
         else:
-           
             PedidoItemFormSetNoExtra = inlineformset_factory(
                 Pedido,
                 PedidoItem,
@@ -645,10 +659,16 @@ class PedidoUpdateView(LoginRequiredMixin, UpdateView):
                 extra=0,
                 can_delete=True
             )
-            formset = PedidoItemFormSetNoExtra(instance=self.object)
+            formset = PedidoItemFormSetNoExtra(instance=pedido)
+
+            if pedido.completado:
+                for form in formset.forms:
+                    for field in form.fields.values():
+                        field.disabled = True
 
         context["formset"] = formset
         return context
+
 
     def form_valid(self, form):
         context = self.get_context_data()
@@ -658,9 +678,16 @@ class PedidoUpdateView(LoginRequiredMixin, UpdateView):
             self.object = form.save()
             formset.instance = self.object
             formset.save()
+
+            if self.object.completado:
+                messages.success(self.request, "El pedido fue confirmado correctamente.")
+            else:
+                messages.success(self.request, "El pedido fue guardado correctamente.")
+
             return redirect("listar_pedidos")
         else:
             return self.render_to_response(self.get_context_data(form=form))
+
 
 
 

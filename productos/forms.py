@@ -90,18 +90,10 @@ class PedidoForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         if self.instance and self.instance.pk:
-            self.fields['completado'] = forms.BooleanField(
-                required=False,
-                label='¿Completado?'
-            )
-            self.fields['fechaIngreso'] = forms.DateField(
-                required=False,
-                widget=forms.DateInput(attrs={'type': 'date'}),
-                label='Fecha de ingreso'
-            )
+            self.fields['completado'].label = '¿Completado?'
+            self.fields['fechaIngreso'].label = 'Fecha de ingreso'
             self.fields['proveedor'].widget.attrs.pop('disabled', None)
-        else:
-            pass
+
 
     def clean(self):
         cleaned_data = super().clean()

@@ -52,7 +52,9 @@
           <th>Cantidad</th>
           <th>Precio (opcional)</th>
           <th>Subtotal</th>
-          <th>Acciones</th>
+          {% if not form.instance.completado %}
+           <th>Acciones</th>
+          {% endif %}
         </tr>
       </thead>
       <tbody>
@@ -61,13 +63,21 @@
         <tr class="pedido-item-row">
           <td>{{ item_form.producto }}</td>
           <td>{{ item_form.cantidad }}</td>
-          <td>{{ item_form.precio }}</td>
-          <td class="subtotal-cell">0</td>
           <td>
-            <button type="button" class="btn btn-danger btn-sm eliminar-fila" title="Eliminar">
-              &times;
-            </button>
+            <div class="input-group">
+              <span class="input-group-text">$</span>
+              {{ item_form.precio }}
+            </div>
           </td>
+          <td class="subtotal-cell">0</td>
+          {% if not form.instance.completado %}
+            <td>
+              <button type="button" class="btn btn-danger btn-sm eliminar-fila" title="Eliminar">
+                &times;
+              </button>
+            </td>
+          {% endif %}
+
         </tr>
       {% endfor %}
 
@@ -78,11 +88,19 @@
       <strong>Total del pedido: $<span id="total-pedido">0</span></strong>
     </div>
 
-    <button type="button" class="btn btn-success my-2" id="add-item-btn">
-      + Agregar producto
-    </button>
+    {% if not form.instance.completado %}
+      <button type="button" class="btn btn-success my-2" id="add-item-btn">
+        + Agregar producto
+      </button>
+    {% endif %}
+
     <br>
-    <input class="btn btn-primary" type="submit" value="Guardar" />
+    {% if not form.instance.completado %}
+      <input class="btn btn-primary" type="submit" value="Guardar" />
+    {% else %}
+      <button class="btn btn-secondary" type="button" disabled>Pedido confirmado</button>
+    {% endif %}
+
     <button
       class="btn btn-secondary"
       type="button"
@@ -98,6 +116,9 @@
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
 <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+<script>
+  const pedidoCompletado = {{ form.instance.completado|yesno:"true,false" }};
+</script>
 
 <script>
 $(function() {
@@ -131,6 +152,9 @@ $(function() {
           $select.val(ui.item.id);
         }
       });
+      if (pedidoCompletado) {
+        $input.prop("disabled", true); // Desactiva el input de texto
+      } 
     });
   }
 
@@ -205,7 +229,7 @@ function calcularTotales() {
     var cantidad = parseFloat($row.find("input[name$='-cantidad']").val()) || 0;
     var precio = parseFloat($row.find("input[name$='-precio']").val()) || 0;
     var subtotal = cantidad * precio;
-    $row.find(".subtotal-cell").text(subtotal.toFixed(2));
+    $row.find(".subtotal-cell").text(`$${subtotal.toFixed(2)}`);
     total += subtotal;
   });
   $("#total-pedido").text(total.toFixed(2));
@@ -283,6 +307,16 @@ $(document).on("click", ".eliminar-fila", function() {
   <div class="alert alert-danger">
     {{ form.errors }}
   </div>
+{% endif %}
+{% if form.instance.completado %}
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    // Desactivar botones dinámicos
+    document.querySelectorAll("#add-item-btn, .eliminar-fila").forEach(btn => {
+      btn.disabled = true;
+    });
+  });
+</script>
 {% endif %}
 
 {% endblock Contenido %}
