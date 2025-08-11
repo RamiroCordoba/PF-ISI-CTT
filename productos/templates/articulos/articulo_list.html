@@ -98,7 +98,6 @@
         <!-- Buscador -->
         <div class="d-flex align-items-end gap-2">
           <input type="text" name="buscar" class="form-control form-control-sm" placeholder="Buscar artículo..." value="{{ request.GET.buscar }}">
-          <!--<button class="btn btn-primary btn-sm px-4" type="submit">Buscar</button>-->
         </div>
 
         <!-- Botón filtrar -->
@@ -193,11 +192,11 @@
             <i class="fa-solid fa-eye" title="Ver"></i>
           </a> 
         </td>
-        <td>{{p.nombre}}</td>
-        <td class="text-center">{{p.marca}}</td>
-        <td class="text-center">{{p.precio}}</td>
-        <td class="text-center">{{p.stock}}</td>
-        <td class="text-center">{{p.categoria}}</td>
+        <td>{{ p.nombre|default:"" }}</td>
+        <td class="text-center">{{ p.marca|default:"" }}</td>
+        <td class="text-center">{{ p.precio|default:"0" }}</td>
+        <td class="text-center">{{ p.stock|default:"0" }}</td>
+        <td class="text-center">{{ p.categoria|default:"" }}</td>
         <td>
           {% if p.proveedores.exists %}
             {% for pro in p.proveedores.all %}
@@ -207,7 +206,7 @@
             <em>Sin proveedor</em>
           {% endif %}
         </td>
-        <td class="text-center">{{ p.fecha_ultimo_ingreso|date:"d/m/Y" }}</td>
+        <td class="text-center">{{ p.fecha_ultimo_ingreso|default:""|date:"d/m/Y" }}</td>
         <td>
           {% if p.activo %}
             <i class="fas fa-check-square text-success"></i>

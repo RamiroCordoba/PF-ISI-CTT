@@ -155,14 +155,39 @@
                   <a class="nav-link" href="{% url 'mis_articulos' %}"
                     >Lista de productos</a
                   >
-                  <!--<a class="nav-link" href="{% url 'nuevo_articulo' %}"
-                    >Ingresar nuevo producto</a
-                  >-->
                   <a class="nav-link" href="{% url 'categorias'%}"
                     >Categorias de productos</a
                   >
                 </nav>
               </div>
+              <a
+              class="nav-link collapsed"
+              href="#"
+              data-bs-toggle="collapse"
+              data-bs-target="#collapsePedidos"
+              aria-expanded="false"
+              aria-controls="collapsePedidos"
+            >
+              <div class="sb-nav-link-icon">
+                <i class="fas fa-truck"></i>
+              </div>
+              Pedidos
+              <div class="sb-sidenav-collapse-arrow">
+                <i class="fas fa-angle-down"></i>
+              </div>
+            </a>
+            <div
+              class="collapse"
+              id="collapsePedidos"
+              aria-labelledby="headingPedidos"
+              data-bs-parent="#sidenavAccordion"
+            >
+              <nav class="sb-sidenav-menu-nested nav">
+                <a class="nav-link" href="{% url 'listar_pedidos' %}">
+                  Lista de pedidos
+                </a>
+              </nav>
+            </div>
               <a
                 class="nav-link collapsed"
                 href="#"

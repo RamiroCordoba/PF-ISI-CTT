@@ -118,11 +118,101 @@
 
           <!-- Proveedores -->
           <div class="tab-pane fade" id="proveedores" role="tabpanel" aria-labelledby="proveedores-tab">
-            <h5>Aca va la lista de proveedores</h5>
+            <h5>Proveedores asociados</h5>
+            <!-- Formulario para agregar proveedor -->
+            <form method="post" class="mb-3 d-flex align-items-end gap-2">
+              {% csrf_token %}
+              <div>
+                <label for="proveedor_id" class="form-label mb-0">Agregar proveedor:</label>
+                <select name="proveedor_id" id="proveedor_id" class="form-select" required>
+                  <option value="">Seleccione...</option>
+                  {% for proveedor in todos_proveedores %}
+                    <option value="{{ proveedor.id }}">{{ proveedor.nombreEmpresa }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <button type="submit" class="btn btn-success">Agregar</button>
+            </form>
+
+            <!-- Grilla de proveedores asociados -->
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>Empresa</th>
+                  <th>Proveedor</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+<tbody>
+  {% for proveedor in elArticulo.proveedores.all %}
+    <tr>
+<td class="text-center align-middle">
+  <div class="d-flex justify-content-center">
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="quitar_proveedor_id" value="{{ proveedor.id }}">
+      <button type="submit"
+              class="btn btn-outline-danger d-flex align-items-center justify-content-center"
+              style="width: 36px; height: 36px; font-size: 1rem; border-radius: 6px;"
+              title="Quitar proveedor"
+              onclick="return confirm('¿Seguro que deseas quitar este proveedor?');">
+        <i class="fa-solid fa-xmark m-0"></i>
+      </button>
+    </form>
+  </div>
+</td>
+
+
+      <!-- Empresa y Proveedor -->
+      <td class="align-middle">{{ proveedor.nombreEmpresa }}</td>
+      <td class="align-middle">{{ proveedor.nombreProv }}</td>
+
+      <!-- Acciones centradas -->
+      <td class="text-center align-middle">
+        <div class="d-flex justify-content-center flex-wrap gap-2">
+          <a href="https://wa.me/{{ proveedor.telefono }}" target="_blank"
+             class="btn btn-outline-success d-flex align-items-center justify-content-center"
+             style="width: 36px; height: 36px; font-size: 1rem;"
+             title="WhatsApp">
+            <i class="fab fa-whatsapp fa-sm"></i>
+          </a>
+
+          <a href="mailto:{{ proveedor.mail }}?subject=Solicitud%20de%20Ferreteria%20Santa%20Rita%20-%20Rosario&body=--%0D%0ASaludos,%20Ferreteria%20Santa%20Rita."
+             class="btn btn-outline-primary d-flex align-items-center justify-content-center"
+             style="width: 36px; height: 36px; font-size: 1rem;"
+             title="Enviar correo">
+            <i class="fa-solid fa-envelope"></i>
+          </a>
+        </div>
+      </td>
+    </tr>
+  {% empty %}
+    <tr>
+      <td colspan="4" class="text-center text-muted">No hay proveedores asociados.</td>
+    </tr>
+  {% endfor %}
+</tbody>
+
+            </table>
           </div>
         </div>
+
       </div>
     </div>
   </div>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    if(window.location.hash === "#proveedores") {
+      var tabBtn = document.querySelector('button[data-bs-target="#proveedores"]');
+      if(tabBtn){
+        var tab = new bootstrap.Tab(tabBtn);
+        tab.show();
+      }
+    }
+  });
+</script>
   {% endblock Contenido %}
 </div>
+
+
