@@ -123,7 +123,7 @@ class UsuarioDetailView(DetailView):
 
 class UsuarioPerfilView(DetailView):
     model = UsuarioPersonalizado
-    template_name = 'usuarios/usuario_miperfil.html'
+    template_name = 'usuarios/usuario_myprofile.html'
     context_object_name = 'usuario'
 
     def get_object(self, queryset=None):
