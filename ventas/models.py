@@ -2,7 +2,8 @@ from django.db import models
 from productos.models import Producto
 
 class LineaPedido(models.Model):
-    producto = models.ForeignKey(Producto, on_delete=models.PROTECT, related_name='lineas_pedido')
+    producto = models.ForeignKey(Producto, on_delete=models.PROTECT, related_name='lineasPedido') #FK a Producto 1..* 
+    venta = models.ForeignKey('Venta', on_delete=models.CASCADE, related_name='lineasPedido')  #FK a Venta 1..*
     cantidad = models.PositiveIntegerField()
     observacion = models.CharField(max_length=250, blank=True, null=True)
 
