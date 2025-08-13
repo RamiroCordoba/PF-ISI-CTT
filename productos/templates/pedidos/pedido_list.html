@@ -142,6 +142,11 @@
              style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
             <i class="fa-solid fa-eye" title="Ver"></i>
           </a>
+          <a href="{% url 'pedido_pdf' pedido.id %}" class="btn btn-outline-dark mt-2"
+            style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;"
+            title="Descargar PDF" target="_blank">
+            <i class="fa-solid fa-download"></i>
+          </a>
         {% endif %}
         </td>
         <td>{{ pedido.id }}</td>

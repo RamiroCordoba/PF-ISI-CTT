@@ -78,5 +78,8 @@
       <h5><span class="badge bg-dark">Total: ${{ total|floatformat:2 }}</span></h5>
     </div>
   </div>
+  <a href="{% url 'pedido_pdf' pedido.id %}" class="btn btn-outline-primary" target="_blank">
+    Descargar PDF
+</a>
 </div>
 {% endblock %}

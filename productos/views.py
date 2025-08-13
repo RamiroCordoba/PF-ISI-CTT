@@ -4,7 +4,6 @@ from django.views.generic import ListView,CreateView,UpdateView,DeleteView,Detai
 from .models import *
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .forms import ProveedorForm, CargaMasivaProductosForm, ProductoForm,PedidoForm, PedidoItemFormSet,inlineformset_factory
-
 from django.views import View
 from django.contrib import messages
 from django.http import HttpResponse
@@ -14,8 +13,22 @@ from datetime import datetime
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
-
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.views import View
+from django.views import View
+from .models import Pedido, PedidoItem
+from .utils import render_to_pdf  
+from django.http import HttpResponse
+from django.template.loader import get_template
+from .models import Pedido
+import pdfkit
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+from django.http import HttpResponse
+from django.template.loader import get_template
+import pdfkit  
+from django.template.loader import render_to_string
+
 
 #______ Categorias CRUD
 class CategoriaList(LoginRequiredMixin, ListView):
@@ -674,21 +687,32 @@ class PedidoUpdateView(LoginRequiredMixin, UpdateView):
         context = self.get_context_data()
         formset = context["formset"]
 
+        # Obtener el estado anterior del pedido
+        pedido_original = Pedido.objects.get(pk=self.object.pk) if self.object.pk else None
+        estaba_completado = pedido_original.completado if pedido_original else False
+
         if form.is_valid() and formset.is_valid():
             self.object = form.save()
             formset.instance = self.object
             formset.save()
 
+            # Solo actualizar stock si el pedido fue marcado como completado ahora
+            if self.object.completado and not estaba_completado:
+                items = PedidoItem.objects.filter(pedido=self.object)
+                for item in items:
+                    producto = item.producto
+                    #stock_anterior = producto.stock
+                    producto.stock = producto.stock + item.cantidad
+                    producto.save()
+
             if self.object.completado:
-                messages.success(self.request, "El pedido fue confirmado correctamente.")
+                messages.success(self.request, "El pedido fue confirmado y el stock actualizado.")
             else:
                 messages.success(self.request, "El pedido fue guardado correctamente.")
 
             return redirect("listar_pedidos")
         else:
             return self.render_to_response(self.get_context_data(form=form))
-
-
 
 
 class PedidoDelete(DeleteView):
@@ -699,3 +723,43 @@ class PedidoDelete(DeleteView):
     def delete(self, request, *args, **kwargs):
         messages.success(request, "Pedido eliminado correctamente.")
         return super().delete(request, *args, **kwargs)
+
+
+import pdfkit
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+from .models import Pedido
+
+def pedido_pdf_view(request, pk):
+    pedido = Pedido.objects.get(pk=pk)
+
+    # Calcular subtotales y total
+    items = []
+    total = 0
+    for item in pedido.items.all():
+        subtotal = item.cantidad * (item.precio or 0)
+        total += subtotal
+        items.append({
+            'producto': item.producto.nombre,
+            'cantidad': item.cantidad,
+            'precio': item.precio,
+            'subtotal': subtotal
+        })
+
+    html = render_to_string('pedidos/pedido_pdf.html', {
+        'pedido': pedido,
+        'items': items,
+        'total': total
+    })
+
+    # Ruta del ejecutable wkhtmltopdf en Windows
+    path_wkhtmltopdf = r"C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe"
+    config = pdfkit.configuration(wkhtmltopdf=path_wkhtmltopdf)
+
+    # Generar PDF usando la configuración
+    pdf = pdfkit.from_string(html, False, configuration=config)
+
+    response = HttpResponse(pdf, content_type='application/pdf')
+    filename = f"pedido_{pedido.id}.pdf"
+    response['Content-Disposition'] = f'inline; filename="{filename}"'
+    return response

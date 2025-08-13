@@ -43,4 +43,5 @@ urlpatterns = [
     path('pedidos/editar_pedidos/<int:pk>/', PedidoUpdateView.as_view(), name='editar_pedido'),
     path('pedidos/informacion/<int:pk>/', PedidoDetailView.as_view(), name='detalle_de_pedido'),
     path('pedidos/eliminar_pedido/<int:pk>/', PedidoDelete.as_view(), name='eliminar_pedido'),
+    path('productos/productos/pedido/<int:pk>/pdf/', pedido_pdf_view, name='pedido_pdf'),
 ]
