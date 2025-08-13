@@ -9,7 +9,6 @@ En este repositorio se encuentra el código principal de nuestro proyecto final 
 ## Autores
 - Córdoba, Ramiro Emiliano (L:46824)
 - Tomas, Alexis José (L:47241)
-- Tombolini, Santiago Alfredo (L:47431)
 ## Documentación del proyecto
 [Documentación proyecto final](https://docs.google.com/document/d/1PzV5yPfaBflleSD59RS7iYweBbXODihujllTpp99GxU/edit?usp=sharing)
 
