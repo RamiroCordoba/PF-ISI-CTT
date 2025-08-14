@@ -19,21 +19,20 @@
       <form method="get" class="d-flex align-items-end gap-3 flex-wrap">
         <!-- Estado -->
         <div class="dropdown">
-          <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+          <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown"
+            aria-expanded="false">
             Estado
           </button>
           <ul class="dropdown-menu p-2">
             <li>
               <div class="form-check mb-0">
-                <input class="form-check-input" type="checkbox" name="estado" value="activos"
-                id="estado_activos" {% if "activos" in filtro_estados %}checked{% endif %}>
+                <input class="form-check-input" type="checkbox" name="estado" value="activos" id="estado_activos" {%if "activos" in filtro_estados %}checked{% endif %}>
                 <label class="form-check-label" for="estado_activos">Activos</label>
               </div>
             </li>
             <li>
               <div class="form-check mb-0">
-                <input class="form-check-input" type="checkbox" name="estado" value="inactivos"
-                id="estado_inactivos" {% if "inactivos" in filtro_estados %}checked{% endif %}>
+                <input class="form-check-input" type="checkbox" name="estado" value="inactivos" id="estado_inactivos" {%if "inactivos" in filtro_estados %}checked{% endif %}>
                 <label class="form-check-label" for="estado_inactivos">Inactivos</label>
               </div>
             </li>
@@ -42,31 +41,32 @@
 
         <!-- Roles -->
         <div class="dropdown">
-          <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+          <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown"
+            aria-expanded="false">
             Roles
           </button>
           <ul class="dropdown-menu p-2" style="max-height: 200px; overflow-y: auto;">
             {% for rol in roles %}
-              <li>
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" name="rol" value="{{ rol.id }}"
-                  id="rol{{ rol.id }}" {% if rol.id|stringformat:"s" in filtro_roles %}checked{% endif %}>
-                  <label class="form-check-label" for="rol{{ rol.id }}">
-                    {% if rol.name == 'Superadmin' %}
-                      <span title="Superadmin" style="color: #f7b731;">&#x1F451;</span> Superadmin
-                    {% else %}
-                      {{ rol.name }}
-                    {% endif %}
-                  </label>
-                </div>
-              </li>
+            <li>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="rol" value="{{ rol.id }}" id="rol{{ rol.id }}" {%if rol.id|stringformat:"s" in filtro_roles %}checked{% endif %}>
+                <label class="form-check-label" for="rol{{ rol.id }}">
+                  {% if rol.name == 'Superadmin' %}
+                  <span title="Superadmin" style="color: #f7b731;">&#x1F451;</span> Superadmin
+                  {% else %}
+                  {{ rol.name }}
+                  {% endif %}
+                </label>
+              </div>
+            </li>
             {% endfor %}
           </ul>
         </div>
 
         <!-- Buscador -->
         <div class="d-flex align-items-end gap-2">
-          <input type="text" name="buscar" class="form-control form-control-sm" placeholder="Buscar usuario..." value="{{ buscar }}">
+          <input type="text" name="buscar" class="form-control form-control-sm" placeholder="Buscar usuario..."
+            value="{{ buscar }}">
         </div>
 
         <!-- Botón filtrar -->
@@ -74,43 +74,44 @@
 
         <!-- Botón restablecer filtros -->
         {% if filtros_activos or buscar %}
-          <a href="{% url 'usuarios:listar_usuarios' %}" class="btn btn-outline-danger btn-sm" title="Restablecer filtros">
-            <i class="fa-solid fa-rotate-left"></i>
-          </a>
+        <a href="{% url 'usuarios:listar_usuarios' %}" class="btn btn-outline-danger btn-sm"
+          title="Restablecer filtros">
+          <i class="fa-solid fa-rotate-left"></i>
+        </a>
         {% endif %}
       </form>
     </div>
   </div>
   <!-- Mostrador de filtros activos -->
   {% if filtros_activos or buscar %}
-    <div class="text-secondary small mt-3">
-      <strong>Se está filtrando por:</strong>
-      {% if filtro_estados %}
-        Estado:
-        <span>
-          {% if "activos" in filtro_estados %}<strong>Activos</strong>{% endif %}
-          {% if "activos" in filtro_estados and "inactivos" in filtro_estados %} y {% endif %}
-          {% if "inactivos" in filtro_estados %}<strong>Inactivos</strong>{% endif %}
-        </span>
+  <div class="text-secondary small mt-3">
+    <strong>Se está filtrando por:</strong>
+    {% if filtro_estados %}
+    Estado:
+    <span>
+      {% if "activos" in filtro_estados %}<strong>Activos</strong>{% endif %}
+      {% if "activos" in filtro_estados and "inactivos" in filtro_estados %} y {% endif %}
+      {% if "inactivos" in filtro_estados %}<strong>Inactivos</strong>{% endif %}
+    </span>
+    {% endif %}
+    {% if filtro_roles %}
+    {% if filtro_estados %}, {% endif %}
+    Rol/es:
+    <span>
+      {% for id in filtro_roles %}
+      {% for rol in roles %}
+      {% if rol.id|stringformat:"s" == id %}
+      <strong>{{ rol.name }}</strong>{% if not forloop.last or not forloop.parentloop.last %}, {% endif %}
       {% endif %}
-      {% if filtro_roles %}
-        {% if filtro_estados %}, {% endif %}
-        Rol/es:
-        <span>
-          {% for id in filtro_roles %}
-            {% for rol in roles %}
-              {% if rol.id|stringformat:"s" == id %}
-                <strong>{{ rol.name }}</strong>{% if not forloop.last or not forloop.parentloop.last %}, {% endif %}
-              {% endif %}
-            {% endfor %}
-          {% endfor %}
-        </span>
-      {% endif %}
-      {% if buscar %}
-        {% if filtro_estados or filtro_roles %}, {% endif %}
-        Búsqueda de texto: <span><strong>"{{ buscar }}"</strong></span>
-      {% endif %}
-    </div>
+      {% endfor %}
+      {% endfor %}
+    </span>
+    {% endif %}
+    {% if buscar %}
+    {% if filtro_estados or filtro_roles %}, {% endif %}
+    Búsqueda de texto: <span><strong>"{{ buscar }}"</strong></span>
+    {% endif %}
+  </div>
   {% endif %}
 
   <hr style="height: 5px; background-color: black; border: none" />
@@ -127,50 +128,80 @@
     </thead>
     <tbody>
       {% if usuarios %}
-        {% for user in usuarios %}
-        <tr>
-          <td class="text-center">
+      {% for user in usuarios %}
+      <tr id="usuario-{{ user.pk }}">
+        <td class="text-center">
+          <div class="d-flex justify-content-center align-items-center gap-2 flex-wrap">
             {% if request.user.is_staff %}
-                <a href="{% url 'usuarios:editar_usuario' user.pk %}" class="btn btn-outline-success mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
-                    <i class="fa fa-edit fa-sm" title="Editar"></i>
-                </a>
-                <a href="{% url 'usuarios:eliminar_usuario' user.pk %}" class="btn btn-outline-danger mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
-                    <i class="fa fa-trash fa-sm" title="Eliminar"></i>
-                </a> 
+            <a href="{% url 'usuarios:editar_usuario' user.pk %}" class="btn btn-outline-success btn-sm" title="Editar">
+              <i class="fa fa-edit fa-fw fa-sm"></i>
+            </a>
+
+            <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal"
+              data-bs-target="#modalEliminarUsuario{{ user.pk }}" data-id="{{ user.pk }}"
+              data-nombre="{{ user.username }}" title="Eliminar">
+              <i class="fa fa-trash fa-fw fa-sm"></i>
+            </button>
+
+            <!-- Modal -->
+            <div class="modal fade" id="modalEliminarUsuario{{ user.pk }}" tabindex="-1" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title">¿Eliminar usuario?</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                  </div>
+                  <div class="modal-body">
+                    ¿Seguro que querés eliminar a <strong>{{ user.username }}</strong>?
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-danger btn-confirmar-eliminar-usuario" data-id="{{ user.pk }}"
+                      data-bs-dismiss="modal">
+                      Eliminar
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                  </div>
+                </div>
+              </div>
+            </div>
             {% endif %}
-            <a href="{% url 'usuarios:detalle_usuario' user.pk %}" class="btn btn-outline-primary mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
-              <i class="fa-solid fa-eye" title="Ver"></i>
-            </a> 
-          </td>
-          <td class="text-center">{{ user.username }}</td>
-          <td class="text-center">{{ user.first_name }} {{ user.last_name }}</td>
-          <td class="text-center">{{ user.email }}</td>
-          <td class="text-center">
-            {% if user.is_superuser %}
-              <span title="Superadmin" style="color: #f7b731; font-size: 1.2em;">&#x1F451;</span> <strong>Superadmin</strong>
-              {% if user.groups.count > 1 %}, {% endif %}
-            {% endif %}
-            {% for group in user.groups.all %}
-              {% if not user.is_superuser or group.name != 'Superadmin' %}
-                {{ group.name }}{% if not forloop.last %}, {% endif %}
-              {% endif %}
-            {% empty %}
-              {% if not user.is_superuser %}Sin grupo{% endif %}
-            {% endfor %}
-          </td>
-          <td class="text-center">
-            {% if user.is_active %}
-              <span class="badge bg-success">Activo</span>
-            {% else %}
-              <span class="badge bg-danger">Inactivo</span>
-            {% endif %}
-          </td>
-        </tr>
-        {% endfor %}
+
+            <a href="{% url 'usuarios:detalle_usuario' user.pk %}" class="btn btn-outline-primary btn-sm" title="Ver">
+              <i class="fa fa-eye fa-fw fa-sm"></i>
+            </a>
+          </div>
+        </td>
+
+        <td class="text-center">{{ user.username }}</td>
+        <td class="text-center">{{ user.first_name }} {{ user.last_name }}</td>
+        <td class="text-center">{{ user.email }}</td>
+        <td class="text-center">
+          {% if user.is_superuser %}
+          <span title="Superadmin" style="color: #f7b731; font-size: 1.2em;">&#x1F451;</span>
+          <strong>Superadmin</strong>
+          {% if user.groups.count > 1 %}, {% endif %}
+          {% endif %}
+          {% for group in user.groups.all %}
+          {% if not user.is_superuser or group.name != 'Superadmin' %}
+          {{ group.name }}{% if not forloop.last %}, {% endif %}
+          {% endif %}
+          {% empty %}
+          {% if not user.is_superuser %}Sin grupo{% endif %}
+          {% endfor %}
+        </td>
+        <td class="text-center">
+          {% if user.is_active %}
+          <span class="badge bg-success">Activo</span>
+          {% else %}
+          <span class="badge bg-danger">Inactivo</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
       {% else %}
-        <tr>
-          <td colspan="6" class="text-center">No se encontraron usuarios.</td>
-        </tr>
+      <tr>
+        <td colspan="6" class="text-center">No se encontraron usuarios.</td>
+      </tr>
       {% endif %}
     </tbody>
   </table>
@@ -182,8 +213,8 @@
       {% if page_obj.has_previous %}
       <li class="page-item">
         <a class="page-link"
-           href="?{% if request.GET %}{{ request.GET.urlencode|cut:'page='|cut:'&page=' }}&{% endif %}page={{ page_obj.previous_page_number }}"
-           aria-label="Anterior">
+          href="?{% if request.GET %}{{ request.GET.urlencode|cut:'page='|cut:'&page=' }}&{% endif %}page={{ page_obj.previous_page_number }}"
+          aria-label="Anterior">
           &laquo;
         </a>
       </li>
@@ -194,7 +225,7 @@
       {% if page_obj.number != 1 %}
       <li class="page-item">
         <a class="page-link"
-           href="?{% if request.GET %}{{ request.GET.urlencode|cut:'page='|cut:'&page=' }}&{% endif %}page=1">
+          href="?{% if request.GET %}{{ request.GET.urlencode|cut:'page='|cut:'&page=' }}&{% endif %}page=1">
           1
         </a>
       </li>
@@ -207,50 +238,80 @@
       {% endif %}
 
       {% for num in page_obj.paginator.page_range %}
-        {% if num != 1 and num != page_obj.paginator.num_pages %}
-          {% if num >= page_obj.number|add:"-2" and num <= page_obj.number|add:"2" %}
-            {% if num == page_obj.number %}
-              <li class="page-item active"><span class="page-link">{{ num }}</span></li>
-            {% else %}
-              <li class="page-item">
-                <a class="page-link"
-                   href="?{% if request.GET %}{{ request.GET.urlencode|cut:'page='|cut:'&page=' }}&{% endif %}page={{ num }}">
-                  {{ num }}
-                </a>
-              </li>
+            {% if num != 1 and num != page_obj.paginator.num_pages %}
+              {% if num >= page_obj.number|add:"-2" and num <= page_obj.number|add:"2" %}
+                {% if num == page_obj.number %}
+                  <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                {% else %}
+                  <li class="page-item">
+                    <a class="page-link"
+                      href="?{% if request.GET %}{{ request.GET.urlencode|cut:'page='|cut:'&page=' }}&{% endif %}page={{ num }}">
+                      {{ num }}
+                    </a>
+                  </li>
+                {% endif %}
+              {% endif %}
             {% endif %}
+       {% endfor %}
+
+        {% if page_obj.number < page_obj.paginator.num_pages|add:"-3" %} <li class="page-item disabled"><span
+            class="page-link">...</span></li>
           {% endif %}
-        {% endif %}
-      {% endfor %}
 
-      {% if page_obj.number < page_obj.paginator.num_pages|add:"-3" %}
-      <li class="page-item disabled"><span class="page-link">...</span></li>
-      {% endif %}
+          {% if page_obj.number != page_obj.paginator.num_pages %}
+          <li class="page-item">
+            <a class="page-link"
+              href="?{% if request.GET %}{{ request.GET.urlencode|cut:'page='|cut:'&page=' }}&{% endif %}page={{ page_obj.paginator.num_pages }}">
+              {{ page_obj.paginator.num_pages }}
+            </a>
+          </li>
+          {% else %}
+          <li class="page-item active"><span class="page-link">{{ page_obj.paginator.num_pages }}</span></li>
+          {% endif %}
 
-      {% if page_obj.number != page_obj.paginator.num_pages %}
-      <li class="page-item">
-        <a class="page-link"
-           href="?{% if request.GET %}{{ request.GET.urlencode|cut:'page='|cut:'&page=' }}&{% endif %}page={{ page_obj.paginator.num_pages }}">
-          {{ page_obj.paginator.num_pages }}
-        </a>
-      </li>
-      {% else %}
-      <li class="page-item active"><span class="page-link">{{ page_obj.paginator.num_pages }}</span></li>
-      {% endif %}
-
-      {% if page_obj.has_next %}
-      <li class="page-item">
-        <a class="page-link"
-           href="?{% if request.GET %}{{ request.GET.urlencode|cut:'page='|cut:'&page=' }}&{% endif %}page={{ page_obj.next_page_number }}"
-           aria-label="Siguiente">
-          &raquo;
-        </a>
-      </li>
-      {% else %}
-      <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
-      {% endif %}
+          {% if page_obj.has_next %}
+          <li class="page-item">
+            <a class="page-link"
+              href="?{% if request.GET %}{{ request.GET.urlencode|cut:'page='|cut:'&page=' }}&{% endif %}page={{ page_obj.next_page_number }}"
+              aria-label="Siguiente">
+              &raquo;
+            </a>
+          </li>
+          {% else %}
+          <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+          {% endif %}
     </ul>
   </nav>
   {% endif %}
 </div>
+
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".btn-confirmar-eliminar-usuario").forEach(btn => {
+      btn.addEventListener("click", function () {
+        const id = this.dataset.id;
+
+        fetch("{% url 'usuarios:eliminar_usuario' 0 %}".replace("/0/", `/${id}/`), {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": "{{ csrf_token }}",
+            "X-Requested-With": "XMLHttpRequest"
+          }
+        })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              const fila = document.getElementById(`usuario-${id}`);
+              if (fila) fila.remove();
+            } else {
+              alert("Error al eliminar el usuario.");
+            }
+          });
+      });
+    });
+  });
+</script>
+
+
 {% endblock Contenido %}

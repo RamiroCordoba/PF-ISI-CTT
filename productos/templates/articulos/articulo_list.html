@@ -178,20 +178,59 @@
     <thead>
     <tbody> 
       {% for p in articulos %}
-      <tr>
-        <td class="text-center">
-          {% if request.user.is_staff %}
-              <a href="{% url 'editar_articulo' p.id %}" class="btn btn-outline-success mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
-                  <i class="fa fa-edit fa-sm" title="Editar"></i>
-              </a>
-              <a href="{% url 'eliminar_articulo' p.id %}" class="btn btn-outline-danger mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
-                  <i class="fa fa-trash fa-sm" title="Eliminar"></i>
-              </a> 
-          {% endif %}
-          <a href="{% url 'detalles_de_articulo' p.id %}" class="btn btn-outline-primary mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
-            <i class="fa-solid fa-eye" title="Ver"></i>
-          </a> 
-        </td>
+      <tr id="articulo-{{ p.id }}">
+<td class="text-center">
+  {% if request.user.is_staff %}
+    <a href="{% url 'usuarios:editar_usuario' user.pk %}"
+       class="btn btn-outline-success mt-2"
+       style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;"
+       title="Editar">
+      <i class="fa fa-edit fa-sm"></i>
+    </a>
+
+    <button type="button"
+            class="btn btn-outline-danger mt-2"
+            data-bs-toggle="modal"
+            data-bs-target="#modalEliminarUsuario{{ user.pk }}"
+            data-id="{{ user.pk }}"
+            data-nombre="{{ user.username }}"
+            style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;"
+            title="Eliminar">
+      <i class="fa fa-trash fa-sm"></i>
+    </button>
+
+    <!-- Modal -->
+    <div class="modal fade" id="modalEliminarUsuario{{ user.pk }}" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">¿Eliminar usuario?</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            ¿Seguro que querés eliminar a <strong>{{ user.username }}</strong>?
+          </div>
+          <div class="modal-footer">
+            <button type="button"
+                    class="btn btn-danger btn-confirmar-eliminar-usuario"
+                    data-id="{{ user.pk }}"
+                    data-bs-dismiss="modal">
+              Eliminar
+            </button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <a href="{% url 'usuarios:detalle_usuario' user.pk %}"
+     class="btn btn-outline-primary mt-2"
+     style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;"
+     title="Ver">
+    <i class="fa fa-eye fa-sm"></i>
+  </a>
+</td>
         <td>{{p.nombre}}</td>
         <td class="text-center">{{p.marca}}</td>
         <td class="text-center">{{p.precio}}</td>
@@ -311,5 +350,32 @@
     </td>
   </tr>
 </tfoot>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll(".btn-confirmar-eliminar").forEach(btn => {
+    btn.addEventListener("click", function () {
+      const id = this.dataset.id;
+
+      fetch("{% url 'eliminar_articulo' 0 %}".replace("/0/", `/${id}/`), {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": "{{ csrf_token }}",
+          "X-Requested-With": "XMLHttpRequest"
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          document.getElementById(`articulo-${id}`).remove();
+        } else {
+          alert("Error al eliminar el artículo.");
+        }
+      });
+    });
+  });
+});
+</script>
+
 {% endblock footer %}
 

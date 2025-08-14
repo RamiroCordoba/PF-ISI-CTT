@@ -14,20 +14,12 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.views import View
-from django.views import View
 from .models import Pedido, PedidoItem
 from .utils import render_to_pdf  
-from django.http import HttpResponse
-from django.template.loader import get_template
-from .models import Pedido
 import pdfkit
-from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
-from django.http import HttpResponse
-from django.template.loader import get_template
-import pdfkit  
 from django.template.loader import render_to_string
+from django.views.decorators.http import require_POST
+from django.db.models import Count
 
 
 #______ Categorias CRUD
@@ -149,10 +141,23 @@ class ArticuloUpdate(LoginRequiredMixin, UpdateView):
         form.instance.activo = True if estado == 'True' else False
         return super().form_valid(form)
 
-class ArticuloDelete(LoginRequiredMixin,DeleteView):
-     model=Producto
-     template_name="articulos/articulo_confirm_delete.html"
-     success_url = reverse_lazy("mis_articulos")
+class ArticuloDelete(LoginRequiredMixin, DeleteView):
+    model = Producto
+    template_name = "articulos/articulo_confirm_delete.html"
+    success_url = reverse_lazy("mis_articulos")
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.delete()
+
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'success': True})
+
+        return super().delete(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        return self.delete(request, *args, **kwargs)
+
 
 class ArticuloDetail(LoginRequiredMixin, DetailView):
     model = Producto
@@ -470,7 +475,17 @@ class ProveedorList(LoginRequiredMixin, ListView):
             )
 
         queryset = queryset.distinct()
+        #return queryset
+    
+      # Annotate para contar relaciones
+        queryset = queryset.annotate(
+            cantidad_productos=Count('productos', distinct=True),
+            cantidad_pedidos=Count('pedidos', distinct=True)
+        )
+
         return queryset
+
+
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -534,13 +549,21 @@ class PedidoCreateView(LoginRequiredMixin, View):
     def post(self, request):
         form = PedidoForm(request.POST)
         formset = PedidoItemFormSet(request.POST)
+        
         if form.is_valid() and formset.is_valid():
-            pedido = form.save()
             items = formset.save(commit=False)
-            for item in items:
+            items_validos = [item for item in items if item.producto and item.cantidad]
+
+            if not items_validos:
+                formset._non_form_errors = formset.error_class(["Debe agregar al menos un producto con cantidad."])
+                return render(request, 'pedidos/pedido_form.html', {'form': form, 'formset': formset})
+
+            pedido = form.save()
+            for item in items_validos:
                 item.pedido = pedido
                 item.save()
             return redirect('listar_pedidos')
+
         return render(request, 'pedidos/pedido_form.html', {'form': form, 'formset': formset})
 
 """def listar_pedidos(request):
@@ -715,20 +738,15 @@ class PedidoUpdateView(LoginRequiredMixin, UpdateView):
             return self.render_to_response(self.get_context_data(form=form))
 
 
-class PedidoDelete(DeleteView):
-    model = Pedido
-    template_name = 'pedidos/pedido_confirm_delete.html'
+class PedidoDelete(DeleteView): 
+    model = Pedido 
+    template_name = 'pedidos/pedido_confirm_delete.html' 
     success_url = reverse_lazy('listar_pedidos')
-
+    
     def delete(self, request, *args, **kwargs):
         messages.success(request, "Pedido eliminado correctamente.")
         return super().delete(request, *args, **kwargs)
 
-
-import pdfkit
-from django.http import HttpResponse
-from django.template.loader import render_to_string
-from .models import Pedido
 
 def pedido_pdf_view(request, pk):
     pedido = Pedido.objects.get(pk=pk)
