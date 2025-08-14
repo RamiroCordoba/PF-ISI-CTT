@@ -61,8 +61,18 @@
       {% for item_form in formset %}
         {{ item_form.id }}  
         <tr class="pedido-item-row">
-          <td>{{ item_form.producto }}</td>
-          <td>{{ item_form.cantidad }}</td>
+            <td>
+              {{ item_form.producto }}
+              {% if item_form.producto.errors %}
+                <div class="text-danger small">{{ item_form.producto.errors }}</div>
+              {% endif %}
+            </td>
+            <td>
+              {{ item_form.cantidad }}
+              <div class="error-cantidad text-danger small" style="display:none;"></div>
+            </td>
+
+
           <td>
             <div class="input-group">
               <span class="input-group-text">$</span>
@@ -153,7 +163,7 @@ $(function() {
         }
       });
       if (pedidoCompletado) {
-        $input.prop("disabled", true); // Desactiva el input de texto
+        $input.prop("disabled", true); 
       } 
     });
   }
@@ -291,18 +301,21 @@ $(document).on("click", ".eliminar-fila", function() {
   });
 </script>
 {% if formset.non_form_errors %}
-  <div class="alert alert-danger">
+  <div class="alert alert-danger" id="formset-errors">
     {{ formset.non_form_errors }}
   </div>
+{% else %}
+  <div class="alert alert-danger d-none" id="formset-errors"></div>
 {% endif %}
 
-{% for item_form in formset %}
+
+<!--{% for item_form in formset %}
   {% for field in item_form %}
     {% if field.errors %}
       <div class="text-danger">{{ field.label }}: {{ field.errors }}</div>
     {% endif %}
   {% endfor %}
-{% endfor %}
+{% endfor %}-->
 {% if form.errors %}
   <div class="alert alert-danger">
     {{ form.errors }}
@@ -311,12 +324,100 @@ $(document).on("click", ".eliminar-fila", function() {
 {% if form.instance.completado %}
 <script>
   document.addEventListener("DOMContentLoaded", function() {
-    // Desactivar botones dinámicos
+
     document.querySelectorAll("#add-item-btn, .eliminar-fila").forEach(btn => {
       btn.disabled = true;
     });
   });
 </script>
 {% endif %}
+
+<script>
+function validarItems() {
+  let hayItemValido = false;
+
+  $("#pedido-items-table tbody tr").each(function() {
+    const producto = $(this).find("select[name$='-producto']").val();
+    const cantidad = parseFloat($(this).find("input[name$='-cantidad']").val()) || 0;
+
+    if (producto && cantidad > 0) {
+      hayItemValido = true;
+    }
+  });
+
+  const errorDiv = $("#formset-errors");
+  if (hayItemValido) {
+    errorDiv.fadeOut(200, function() {
+      errorDiv.addClass("d-none").text("");
+    });
+  } else {
+    errorDiv.removeClass("d-none").text("Debe agregar al menos un producto con cantidad.").fadeIn();
+  }
+}
+
+
+$(document).on("change input", "select[name$='-producto'], input[name$='-cantidad']", validarItems);
+
+
+$("#add-item-btn").click(function() {
+  setTimeout(validarItems, 100);
+});
+
+// Validar antes de enviar el formulario
+$("#pedidoForm").on("submit", function(e) {
+  let hayItemValido = false;
+
+  $("#pedido-items-table tbody tr").each(function() {
+    const producto = $(this).find("select[name$='-producto']").val();
+    const cantidad = parseFloat($(this).find("input[name$='-cantidad']").val()) || 0;
+
+    if (producto && cantidad > 0) {
+      hayItemValido = true;
+    }
+  });
+
+  const errorDiv = $("#formset-errors");
+  if (!hayItemValido) {
+    e.preventDefault();
+    errorDiv.removeClass("d-none").text("Debe agregar al menos un producto con cantidad.").fadeIn();
+  }
+});
+</script>
+
+<script>
+function validarCantidadPorProducto() {
+  $("#pedido-items-table tbody tr").each(function() {
+    const $row = $(this);
+    const producto = $row.find("select[name$='-producto']").val();
+    const cantidadInput = $row.find("input[name$='-cantidad']");
+    const cantidad = cantidadInput.val().trim();
+    const errorDiv = $row.find(".error-cantidad");
+
+    if (producto && cantidad === "") {
+      errorDiv.text("Este campo es obligatorio.").show();
+    } else {
+      errorDiv.hide();
+    }
+  });
+}
+
+// Validar al escribir o cambiar producto
+$(document).on("input change", "input[name$='-cantidad'], select[name$='-producto']", validarCantidadPorProducto);
+
+// Validar al agregar fila
+$("#add-item-btn").click(function() {
+  setTimeout(validarCantidadPorProducto, 100);
+});
+
+// Validar al enviar
+$("#pedidoForm").on("submit", function(e) {
+  validarCantidadPorProducto();
+  const hayErrores = $(".error-cantidad:visible").length > 0;
+  if (hayErrores) {
+    e.preventDefault();
+  }
+});
+</script>
+
 
 {% endblock Contenido %}

@@ -6,6 +6,7 @@ from .forms import RegistroForm, UsuarioEditForm
 from .models import UsuarioPersonalizado
 from django.db.models import Q
 from django.contrib.auth.models import Group
+from django.http import JsonResponse
 
 #________ Usuarios del sistema
 def get_or_create_superadmin_group():
@@ -115,6 +116,19 @@ class UsuarioDeleteView(DeleteView):
     model = UsuarioPersonalizado
     template_name = 'usuarios/usuario_confirm_delete.html'
     success_url = reverse_lazy('usuarios:listar_usuarios')
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.delete()
+
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'success': True})
+
+        return super().delete(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        return self.delete(request, *args, **kwargs)
+
 
 class UsuarioDetailView(DetailView):
     model = UsuarioPersonalizado

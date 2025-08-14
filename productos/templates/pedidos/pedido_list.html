@@ -134,11 +134,39 @@
             <a href="{% url 'editar_pedido' pedido.id %}" class="btn btn-outline-success mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
           <i class="fa fa-edit fa-sm" title="Editar"></i>
           </a>
-          <a href="{% url 'eliminar_pedido' pedido.id %}" class="btn btn-outline-danger mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;"
-          onclick="return confirm('¿Seguro que deseas eliminar este pedido?');">
-          <i class="fa fa-trash fa-sm" title="Eliminar"></i>
-          </a>
-                    <a href="{% url 'detalle_de_pedido' pedido.id %}" class="btn btn-outline-primary mt-2"
+<!-- Botón que abre el modal -->
+<button type="button"
+        class="btn btn-outline-danger mt-2"
+        data-bs-toggle="modal"
+        data-bs-target="#modalEliminarPedido{{ pedido.id }}"
+        style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;"
+        title="Eliminar">
+  <i class="fa fa-trash fa-sm"></i>
+</button>
+
+<!-- Modal de confirmación -->
+<div class="modal fade" id="modalEliminarPedido{{ pedido.id }}" tabindex="-1" aria-labelledby="modalEliminarPedidoLabel{{ pedido.id }}" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalEliminarPedidoLabel{{ pedido.id }}">Confirmar eliminación</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        ¿Estás seguro de que querés eliminar el pedido <strong>#{{ pedido.id }}</strong>?
+      </div>
+      <div class="modal-footer">
+        <form method="post" action="{% url 'eliminar_pedido' pedido.id %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">Eliminar</button>
+        </form>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+          <a href="{% url 'detalle_de_pedido' pedido.id %}" class="btn btn-outline-primary mt-2"
              style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
             <i class="fa-solid fa-eye" title="Ver"></i>
           </a>
