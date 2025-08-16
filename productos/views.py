@@ -764,10 +764,18 @@ def pedido_pdf_view(request, pk):
             'subtotal': subtotal
         })
 
+
+    # Convertir logo a base64
+    import base64
+    logo_path = r"C:\Users\Ramiro\Desktop\UTN_materias\5to año\Proyecto Final\Construccion_proyecto\ferreteriaSR\productos\static\pdf\assets\img\logoFerre.png"
+    with open(logo_path, "rb") as image_file:
+        logo_base64 = base64.b64encode(image_file.read()).decode("utf-8")
+
     html = render_to_string('pedidos/pedido_pdf.html', {
         'pedido': pedido,
         'items': items,
-        'total': total
+        'total': total,
+        'logo_base64': logo_base64,
     })
 
     # Ruta del ejecutable wkhtmltopdf en Windows
