@@ -7,14 +7,14 @@
 
     <style>
     .logo-bg {
-        position: absolute;
-        left: 30px;
-        top: 0px;
-        width: 120px;
-        height: 170px;
-        background: #ffd699;
-        border-radius: 0px;
-        z-index: 1;
+    position: absolute;
+    left: 30px;
+    top: 0px;
+    width: 120px;
+    height: 170px;
+    background: #ff9933;
+    border-radius: 0px;
+    z-index: 1;
     }
     .logo {
         position: absolute;
@@ -131,8 +131,8 @@
         margin-top: 1.5em;
     }
     .qr img {
-        width: 90px;
-        height: 90px;
+        width: 150px;
+        height: 150px;
     }
     .footer-bar {
         background: linear-gradient(90deg, #c15a00 0%, #f36f25 100%);
@@ -218,6 +218,14 @@
                     <span style="color:#aaa;">Sin observaciones.</span>
                 {% endif %}
             </div>
+        </div>
+
+        <!-- QR -->
+        <div class="qr" style="display:flex;flex-direction:column;align-items:center;justify-content:center;margin-top:10em; text-align:center;">
+            <img src="data:image/png;base64,{{ qr_base64 }}" alt="QR Pedido" width="200" height="200" style="margin-bottom:10px;" />
+        </div>
+        <div class="qr" style="display:flex;flex-direction:column;align-items:center;justify-content:center;margin-top:0.5em; text-align:center;">
+            <h3>Pedido digital</h3>
         </div>
     </div>
     <!-- FOOTER -->
