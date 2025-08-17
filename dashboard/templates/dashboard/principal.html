@@ -271,19 +271,19 @@
         <main>
           {% block Contenido %}
           <div class="container-fluid px-4">
-            <h1 class="mt-4">Dashboard</h1>
+            <h1 class="mt-4">Bienvenido, {{ user.first_name }} {{ user.last_name }}</h1>
             <ol class="breadcrumb mb-4">
-              <li class="breadcrumb-item active">Bienvenido</li>
             </ol>
+            <hr style="height: 5px; background-color: black; border: none" />
             <div class="row">
               <div class="col-xl-3 col-md-6">
                 <div class="card bg-primary text-white mb-4">
-                  <div class="card-body">Primary Card</div>
+                  <div class="card-body"><strong>Articulos</strong></div>
                   <div
                     class="card-footer d-flex align-items-center justify-content-between"
                   >
-                    <a class="small text-white stretched-link" href="#"
-                      >View Details</a
+                    <a class="small text-white stretched-link" href="{% url 'mis_articulos' %}"
+                      >Ver lista</a
                     >
                     <div class="small text-white">
                       <i class="fas fa-angle-right"></i>
@@ -293,12 +293,12 @@
               </div>
               <div class="col-xl-3 col-md-6">
                 <div class="card bg-warning text-white mb-4">
-                  <div class="card-body">Warning Card</div>
+                  <div class="card-body"><strong>Proveedores</strong></div>
                   <div
                     class="card-footer d-flex align-items-center justify-content-between"
                   >
-                    <a class="small text-white stretched-link" href="#"
-                      >View Details</a
+                    <a class="small text-white stretched-link" href="{% url 'mis_proveedores' %}"
+                      >Ver lista</a
                     >
                     <div class="small text-white">
                       <i class="fas fa-angle-right"></i>
@@ -308,12 +308,12 @@
               </div>
               <div class="col-xl-3 col-md-6">
                 <div class="card bg-success text-white mb-4">
-                  <div class="card-body">Success Card</div>
+                  <div class="card-body"><strong>Reportes</strong></div>
                   <div
                     class="card-footer d-flex align-items-center justify-content-between"
                   >
                     <a class="small text-white stretched-link" href="#"
-                      >View Details</a
+                      >Ver reportes</a
                     >
                     <div class="small text-white">
                       <i class="fas fa-angle-right"></i>
@@ -323,12 +323,12 @@
               </div>
               <div class="col-xl-3 col-md-6">
                 <div class="card bg-danger text-white mb-4">
-                  <div class="card-body">Danger Card</div>
+                  <div class="card-body"><strong>Hacer un pedido</strong></div>
                   <div
                     class="card-footer d-flex align-items-center justify-content-between"
                   >
-                    <a class="small text-white stretched-link" href="#"
-                      >View Details</a
+                    <a class="small text-white stretched-link" href="{% url 'nuevo_pedido' %}"
+                      >Crear un pedido</a
                     >
                     <div class="small text-white">
                       <i class="fas fa-angle-right"></i>
@@ -339,7 +339,7 @@
             </div>
             <div class="row">
               <div class="col-xl-6">
-                <div class="card mb-4">
+                <div class="card mb-4" style="height: 370px; display: flex; flex-direction: column;">
                   <div class="card-header">
                     <i class="fas fa-chart-area me-1"></i>
                     Top 10 Productos Más Pedidos
@@ -350,13 +350,28 @@
                 </div>
               </div>
               <div class="col-xl-6">
-                <div class="card mb-4">
+                <div class="card mb-4" style="height: 370px; display: flex; flex-direction: column;">
                   <div class="card-header">
-                    <i class="fas fa-chart-bar me-1"></i>
-                    Barras
+                    <i class="fas fa-table me-1"></i>
+                    Productos por debajo del stock mínimo
                   </div>
                   <div class="card-body">
-                    <canvas id="myBarChart" width="100%" height="40"></canvas>
+                    <div class="table-responsive" style="flex: 1 1 auto; max-height: 250px; overflow-y: auto;">
+                      <table class="table table-bordered mb-0">
+                        <thead style="background-color: orange; color: white;">
+                          <tr>
+                            <th style="background-color: orange; color: white;">Producto</th>
+                            <th style="background-color: orange; color: white;">Stock actual</th>
+                            <th style="background-color: orange; color: white;">Stock mínimo</th>
+                          </tr>
+                        </thead>
+                        <tbody id="tabla-stock-minimo">
+                          <tr id="mensaje-stock-vacio">
+                            <td colspan="3" class="text-center">Todos los productos están por encima del stock mínimo</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -401,35 +416,67 @@
     <script src="{% static 'principal/js/datatables-simple-demo.js'%}"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
+  // Top 10 productos más pedidos (se mantiene el gráfico horizontal)
   fetch('/dashboard/top-10-productos/')
     .then(response => response.json())
     .then(({ labels, data }) => {
       const ctx = document.getElementById('myAreaChart').getContext('2d');
       new Chart(ctx, {
-        type: 'line',
+        type: 'bar',
         data: {
           labels: labels,
           datasets: [{
             label: 'Cantidad Pedida',
             data: data,
-            fill: true,
-            backgroundColor: 'rgba(75,192,192,0.2)',
+            backgroundColor: 'rgba(75,192,192,0.7)',
             borderColor: 'rgba(75,192,192,1)',
-            tension: 0.3
+            borderWidth: 1
           }]
         },
         options: {
+          indexAxis: 'y',
           responsive: true,
           plugins: {
+            legend: { display: false },
             tooltip: { mode: 'index', intersect: false },
-            legend: { display: false }
+            datalabels: {
+              anchor: 'end',
+              align: 'right',
+              color: '#000',
+              font: { weight: 'bold' },
+              formatter: function(value) {
+                return value;
+              }
+            }
           },
-          interaction: { mode: 'nearest', axis: 'x', intersect: false },
-          scales: { y: { beginAtZero: true } }
-        }
+          scales: {
+            x: { beginAtZero: true },
+            y: { beginAtZero: true }
+          }
+        },
+        plugins: [ChartDataLabels]
       });
+    });
+
+  // Tabla de productos por debajo del stock mínimo
+  fetch('/dashboard/productos-stock-minimo/')
+    .then(response => response.json())
+    .then(productos => {
+      const tbody = document.getElementById('tabla-stock-minimo');
+      const mensajeVacio = document.getElementById('mensaje-stock-vacio');
+      if (productos.length === 0) {
+        if (mensajeVacio) mensajeVacio.style.display = '';
+      } else {
+        if (mensajeVacio) mensajeVacio.style.display = 'none';
+        productos.forEach(prod => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>${prod.nombre}</td><td>${prod.stock_actual}</td><td>${prod.stock_minimo}</td>`;
+          tbody.appendChild(tr);
+        });
+      }
     });
 });
 </script>
