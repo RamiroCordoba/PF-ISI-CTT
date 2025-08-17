@@ -86,7 +86,7 @@
         <p><strong>Email:</strong> {{ elProveedor.mail }}</p>
         <p><strong>Dirección:</strong> {{ elProveedor.direccion }}</p>
         <p><strong>Provincia:</strong> {{ elProveedor.provincia }}</p>
-        <p><strong>Ciudad:</strong> {{ elProveedor.Ciudad }}</p>
+        <p><strong>Ciudad:</strong> {{ elProveedor.ciudad }}</p>
         <p><strong>Categorías:</strong>
         {% for cat in elProveedor.categoria.all %}
           {{ cat.nombre }}{% if not forloop.last %}, {% endif %}

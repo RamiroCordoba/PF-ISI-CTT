@@ -158,18 +158,18 @@
     </div>
     <hr style="height: 5px; background-color: black; border: none" />
     <!-- DATOS DEL PROVEEDOR -->
-    <div class="supplier-info" style="margin: 20px 30px; text-align:left; position:relative; top:150px;">
+    <div class="supplier-info" style="margin: 20px 10px; text-align:left; position:relative; top:150px;">
         <hr style="height: 5px; background-color: #f36f25; border: none;" />
-
-        <span class="section-title"><strong>NOMBRE EMPRESA PROVEEDORA</strong></span><br>
+        <div style="height: 20px;"></div>
+    <span class="section-title"><strong>Proveedor: {{ pedido.proveedor }}</strong></span><br>
         <p><strong>Dirección:</strong> {{ pedido.proveedor.direccion }}</p>
-        <p><strong>CUIT:</strong> {{ pedido.proveedor.cuit }}</p>
         <p><strong>TEL:</strong> {{ pedido.proveedor.telefono }}</p>
         <p><strong>Email de contacto:</strong> {{ pedido.proveedor.mail }}</p>
     </div>
 
-    <div class="contenedor" style="position:relative; top:200px;">
+    <div class="contenedor" style="position:relative; top:160px;">
         <!-- FECHA -->
+        <hr style="height: 5px; background-color: #f36f25; border: none;" />
         <div class="order-info" style="margin: 20px 30px;">
             <p><strong>FECHA PEDIDO:</strong> {{ pedido.fecha }}</p>
         </div>
@@ -180,11 +180,11 @@
             <table>
                 <thead>
                     <tr>
-                        <th>#</th>
-                        <th>Producto</th>
-                        <th>Precio</th>
-                        <th>Cantidad</th>
-                        <th>Subtotal</th>
+                            <th style="background:#f36f25;color:#fff;font-weight:bold;">#</th>
+                            <th style="background:#f36f25;color:#fff;font-weight:bold;">Producto</th>
+                            <th style="background:#f36f25;color:#fff;font-weight:bold;">Precio</th>
+                            <th style="background:#f36f25;color:#fff;font-weight:bold;">Cantidad</th>
+                            <th style="background:#f36f25;color:#fff;font-weight:bold;">Subtotal</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -202,8 +202,8 @@
 
             <table>
                 <tr class="total-row">
-                    <td colspan="4" class="total-label">TOTAL:</td>
-                    <td class="total-value">${{ total }}</td>
+                            <td colspan="4" style="background:#f36f25;color:#fff;font-weight:bold;text-align:right;width:120px;padding:8px 10px;">TOTAL:</td>
+                            <td style="background:#f36f25;color:#fff;font-weight:bold;text-align:right;width:80px;padding:8px 10px;">${{ total }}</td>
                 </tr>
             </table>
         </div>
@@ -211,14 +211,13 @@
         <!-- OBSERVACIONES -->
         <div class="observaciones" style="margin: 30px 30px;">
             <div class="observaciones-title">OBSERVACIONES</div>
-            <div class="observaciones-lines"></div>
-            <div class="observaciones-lines"></div>
-            <div class="observaciones-lines"></div>
-        </div>
-
-        <!-- QR -->
-        <div class="qr">
-            <div style="width:90px;height:90px;background:#c15a00;border-radius:10px;display:inline-block;"></div>
+            <div style="margin-top:10px; color:#333; font-size:1em;">
+                {% if pedido.comentarios %}
+                    {{ pedido.comentarios|linebreaksbr }}
+                {% else %}
+                    <span style="color:#aaa;">Sin observaciones.</span>
+                {% endif %}
+            </div>
         </div>
     </div>
     <!-- FOOTER -->
