@@ -142,79 +142,86 @@
     </style>
 </head>
 <body>
-    <div style="width:100%;height:100px;background:#f36f25;margin-bottom:0px;position:relative;">
-        <div class="logo-bg"></div>
-    <img class="logo" src="data:image/png;base64,{{ logo_base64 }}" alt="Logo Santa Rita" width="120" height="100" style="width:120px;height:100px;">
-        <div class="pedido-num"><strong>Nº PEDIDO: {{ pedido.id|stringformat:"04d" }}</strong></div>
-    </div>
-    <div class="header-bar">
-        <div class="header-info">
+    <div style="width:100%;height:100px;background:#f36f25;margin-bottom:0px;position:relative;display:flex;align-items:center;justify-content:space-between;">
+        <div style="position:relative;">
+            <div class="logo-bg"></div>
+            <img class="logo" src="data:image/png;base64,{{ logo_base64 }}" alt="Logo Santa Rita" width="120" height="100" style="width:120px;height:100px;">
+        </div>
+        <div class="header-info" style="margin-right:10px; text-align:right; position:relative; top:120px;">
             <h1>FERRETERIA SANTA RITA</h1>
             <p>Baigorria 1990, Rosario, Santa Fe. CP:2000<br>
             CUIT: 23-16275962-9<br>
             TEL: (341) 3591328<br>
             proyectoferreretiasr@gmail.com</p>
         </div>
+        <div class="pedido-num"><strong>Nº PEDIDO: {{ pedido.id|stringformat:"04d" }}</strong></div>
     </div>
-    
+    <hr style="height: 5px; background-color: black; border: none" />
+    <!-- DATOS DEL PROVEEDOR -->
+    <div class="supplier-info" style="margin: 20px 30px; text-align:left; position:relative; top:150px;">
+        <hr style="height: 5px; background-color: #f36f25; border: none;" />
 
-    <div class="supplier-info">
-        <span class="section-title">NOMBRE EMPRESA PROVEEDORA</span><br>
+        <span class="section-title"><strong>NOMBRE EMPRESA PROVEEDORA</strong></span><br>
         <p><strong>Dirección:</strong> {{ pedido.proveedor.direccion }}</p>
         <p><strong>CUIT:</strong> {{ pedido.proveedor.cuit }}</p>
         <p><strong>TEL:</strong> {{ pedido.proveedor.telefono }}</p>
         <p><strong>Email de contacto:</strong> {{ pedido.proveedor.mail }}</p>
     </div>
 
-    <div class="section-title">FECHA PEDIDO:</div>
-    <div class="supplier-info">
-        <p>{{ pedido.fecha }}</p>
-    </div>
+    <div class="contenedor" style="position:relative; top:200px;">
+        <!-- FECHA -->
+        <div class="order-info" style="margin: 20px 30px;">
+            <p><strong>FECHA PEDIDO:</strong> {{ pedido.fecha }}</p>
+        </div>
 
-    <div class="table-container">
-        <table>
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Producto</th>
-                    <th>Precio</th>
-                    <th>Cantidad</th>
-                    <th>Subtotal</th>
+        <!-- TABLA DE PRODUCTOS -->
+
+        <div class="table-container" style="margin: 20px 30px;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Producto</th>
+                        <th>Precio</th>
+                        <th>Cantidad</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ item.producto }}</td>
+                        <td>${{ item.precio }}</td>
+                        <td>{{ item.cantidad }}</td>
+                        <td>${{ item.subtotal }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <table>
+                <tr class="total-row">
+                    <td colspan="4" class="total-label">TOTAL:</td>
+                    <td class="total-value">${{ total }}</td>
                 </tr>
-            </thead>
-            <tbody>
-                {% for item in items %}
-                <tr>
-                    <td>{{ forloop.counter }}</td>
-                    <td>{{ item.producto }}</td>
-                    <td>${{ item.precio }}</td>
-                    <td>{{ item.cantidad }}</td>
-                    <td>${{ item.subtotal }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        <table>
-            <tr class="total-row">
-                <td colspan="4" class="total-label">TOTAL:</td>
-                <td class="total-value">${{ total }}</td>
-            </tr>
-        </table>
-    </div>
+            </table>
+        </div>
 
-    <div class="observaciones">
-        <div class="observaciones-title">OBSERVACIONES</div>
-        <div class="observaciones-lines"></div>
-        <div class="observaciones-lines"></div>
-        <div class="observaciones-lines"></div>
-    </div>
+        <!-- OBSERVACIONES -->
+        <div class="observaciones" style="margin: 30px 30px;">
+            <div class="observaciones-title">OBSERVACIONES</div>
+            <div class="observaciones-lines"></div>
+            <div class="observaciones-lines"></div>
+            <div class="observaciones-lines"></div>
+        </div>
 
-    <!-- Sustituido QR por cuadrado -->
-    <div class="qr">
-        <div style="width:90px;height:90px;background:#c15a00;border-radius:10px;display:inline-block;"></div>
+        <!-- QR -->
+        <div class="qr">
+            <div style="width:90px;height:90px;background:#c15a00;border-radius:10px;display:inline-block;"></div>
+        </div>
     </div>
-
-        <div style="width:100%;height:30px;background:#f36f25;margin-top:30px;"></div>
+    <!-- FOOTER -->
     <div class="footer-bar"></div>
 </body>
 </html>
