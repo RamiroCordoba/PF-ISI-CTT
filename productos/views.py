@@ -767,7 +767,7 @@ def pedido_pdf_view(request, pk):
 
     # Convertir logo a base64
     import base64
-    logo_path = r"C:\Users\Ramiro\Desktop\UTN_materias\5to año\Proyecto Final\Construccion_proyecto\ferreteriaSR\productos\static\pdf\assets\img\logoFerre.png"
+    logo_path = r"productos\static\pdf\assets\img\logoFerre.png"
     with open(logo_path, "rb") as image_file:
         logo_base64 = base64.b64encode(image_file.read()).decode("utf-8")
 
@@ -800,3 +800,48 @@ def pedido_pdf_view(request, pk):
     filename = f"pedido_{pedido.id}.pdf"
     response['Content-Disposition'] = f'inline; filename="{filename}"'
     return response
+
+#Forma de pago
+
+class FormaPagoCreate(LoginRequiredMixin,CreateView):
+     model=FormaPago
+     fields=["nombre","activo"]
+     template_name="formasdepago/formasdepago_form.html"
+     success_url = reverse_lazy("mis_formasdepago")
+     
+class FormaPagoUpdate(LoginRequiredMixin,UpdateView):
+     model=FormaPago
+     fields=["nombre","activo"]
+     template_name="formasdepago/formasdepago_form.html"
+     success_url = reverse_lazy("mis_formasdepago")
+
+class FormaPagoDisable(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        formapago = get_object_or_404(FormaPago, pk=pk)
+        formapago.activo = False
+        formapago.save()
+        return redirect(reverse_lazy("mis_formasdepago"))
+
+
+class FormaPagoDetail(DetailView):
+     model=FormaPago
+     template_name="formasdepago/formasdepago_details.html"
+     context_object_name = 'laformaPago'
+
+class FormaPagoList(LoginRequiredMixin,ListView):
+    model = FormaPago
+    template_name = "formasdepago/formasdepago_list.html"
+    context_object_name = "formasdepagos"
+
+    def get_queryset(self):
+        queryset = super().get_queryset().order_by("id")
+        buscar = self.request.GET.get("buscar")
+
+        if buscar:
+            queryset = queryset.filter(nombre__icontains=buscar)
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return context

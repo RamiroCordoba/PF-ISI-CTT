@@ -248,6 +248,38 @@
                   </a>
                 </nav>
               </div>
+              <a
+  class="nav-link collapsed"
+  href="#"
+  data-bs-toggle="collapse"
+  data-bs-target="#collapseFormasPago"
+  aria-expanded="false"
+  aria-controls="collapseFormasPago"
+>
+  <div class="sb-nav-link-icon">
+    <i class="fas fa-credit-card"></i>
+  </div>
+  Formas de Pago
+  <div class="sb-sidenav-collapse-arrow">
+    <i class="fas fa-angle-down"></i>
+  </div>
+</a>
+<div
+  class="collapse"
+  id="collapseFormasPago"
+  aria-labelledby="headingFormasPago"
+  data-bs-parent="#sidenavAccordion"
+>
+  <nav class="sb-sidenav-menu-nested nav">
+    <a class="nav-link" href="{% url 'mis_formasdepago' %}">
+      Lista de formas de pago
+    </a>
+    <a class="nav-link" href="{% url 'nueva_formadepago' %}">
+      Nueva forma de pago
+    </a>
+  </nav>
+</div>
+
               <div class="sb-sidenav-menu-heading">Registros</div>
               <a class="nav-link" href="charts.html">
                 <div class="sb-nav-link-icon">

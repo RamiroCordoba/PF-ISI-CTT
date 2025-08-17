@@ -24,6 +24,22 @@
       {{ form.proveedor.label_tag }} {{ form.proveedor }}
     </div>
   {% endif %}
+<div class="mb-3">
+  {{ form.forma_pago.label_tag }} {{ form.forma_pago }}
+</div>
+
+{% if not form.instance.pk %}
+  <div class="mb-3">
+    <label for="{{ form.fechaEstimadaEntrega.id_for_label }}" class="form-label">
+      {{ form.fechaEstimadaEntrega.label }}
+    </label>
+    {{ form.fechaEstimadaEntrega }}
+    {% if form.fechaEstimadaEntrega.errors %}
+      <div class="text-danger">{{ form.fechaEstimadaEntrega.errors }}</div>
+    {% endif %}
+  </div>
+{% endif %}
+
 
   <div class="mb-3">
     {{ form.comentarios.label_tag }} {{ form.comentarios }}
