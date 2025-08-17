@@ -1,134 +1,234 @@
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <title>Pedido #{{ pedido.id }}</title>
+
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 30px;
-            color: #333;
-        }
-        .header, .footer {
-            width: 100%;
-            text-align: center;
-        }
-        .header h1 {
-            font-size: 28px;
-            margin-bottom: 5px;
-        }
-        .header p {
-            font-size: 12px;
-            color: #666;
-            margin-top: 0;
-        }
-        .invoice-details {
-            margin: 20px 0;
-            display: flex;
-            justify-content: space-between;
-        }
-        .invoice-details div {
-            width: 45%;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-        table th, table td {
-            border: 1px solid #ddd;
-            padding: 8px;
-        }
-        table th {
-            background-color: #f36f25;
-            color: white;
-        }
-        table td {
-            text-align: center;
-        }
-        .totals {
-            margin-top: 20px;
-            width: 100%;
-            display: flex;
-            justify-content: flex-end;
-        }
-        .totals div {
-            width: 300px;
-        }
-        .totals div p {
-            display: flex;
-            justify-content: space-between;
-            font-weight: bold;
-        }
-        .footer {
-            margin-top: 40px;
-            font-size: 12px;
-            color: #666;
-        }
-        .thank-you {
-            background-color: #f36f25;
-            color: white;
-            text-align: center;
-            padding: 10px;
-            margin-top: 30px;
-            border-radius: 5px;
-        }
+    .logo-bg {
+    position: absolute;
+    left: 30px;
+    top: 0px;
+    width: 120px;
+    height: 170px;
+    background: #ff9933;
+    border-radius: 0px;
+    z-index: 1;
+    }
+    .logo {
+        position: absolute;
+        left: 0px;
+        top: 40px;
+        object-fit: cover;
+        aspect-ratio: 1/1;
+        display: block;
+        z-index: 2;
+    }
+    .pedido-num {
+        position: absolute;
+        right: 50px;
+        top: 40px;
+        text-align: right;
+        color: #fff;
+        font-size: 1.3em;
+        font-weight: bold;
+        background: none;
+    }
+    body {
+        font-family: 'Arial', sans-serif;
+        margin: 0;
+        color: #333;
+        background: #fff;
+    }
+    .header-bar {
+        background: linear-gradient(90deg, #c15a00 0%, #f36f25 100%);
+        color: #fff;
+        padding: 0.5em 0 0.5em 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .logo {
+        width: 90px;
+        height: 90px;
+        margin-left: 30px;
+    }
+    .header-info {
+        text-align: right;
+        margin-right: 30px;
+    }
+    .header-info h1 {
+        font-size: 2.2em;
+        font-weight: bold;
+        margin: 0 0 0.2em 0;
+    }
+    .header-info p {
+        margin: 0;
+        font-size: 1em;
+        font-weight: 500;
+    }
+
+    .supplier-info {
+        margin-left: 30px;
+        font-size: 1em;
+        margin-bottom: 0.5em;
+    }
+    .supplier-info p {
+        margin: 0.2em 0;
+    }
+    .table-container {
+        margin: 0 30px;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 0.5em;
+        font-size: 1em;
+    }
+    table th, table td {
+        border: 1px solid #d6d6d6;
+        padding: 8px;
+        text-align: center;
+    }
+    table th {
+        background: linear-gradient(90deg, #c15a00 0%, #f36f25 100%);
+        color: #fff;
+        font-weight: bold;
+    }
+    table td {
+        background: #fff;
+    }
+    .total-row {
+        background: linear-gradient(90deg, #c15a00 0%, #f36f25 100%);
+        color: #fff;
+        font-weight: bold;
+        text-align: right;
+    }
+    .total-label {
+        padding-right: 20px;
+    }
+    .total-value {
+        padding-left: 20px;
+    }
+    .observaciones {
+        margin: 2em 30px 0 30px;
+    }
+    .observaciones-title {
+        color: #a85a0a;
+        font-size: 1.2em;
+        font-weight: bold;
+        margin-bottom: 0.5em;
+    }
+    .observaciones-lines {
+        border-top: 1px dashed #a85a0a;
+        margin-bottom: 0.5em;
+        height: 2em;
+    }
+    .qr {
+        display: flex;
+        justify-content: center;
+        margin-top: 1.5em;
+    }
+    .qr img {
+        width: 150px;
+        height: 150px;
+    }
+    .footer-bar {
+        background: linear-gradient(90deg, #c15a00 0%, #f36f25 100%);
+        height: 30px;
+        margin-top: 2em;
+    }
     </style>
 </head>
 <body>
-
-    <div class="header">
-        <h1>Santa Rita Ferreteria<h1>
-        <!--<p>Tagline goes here</p>-->
+    <div style="width:100%;height:100px;background:#f36f25;margin-bottom:0px;position:relative;display:flex;align-items:center;justify-content:space-between;">
+        <div style="position:relative;">
+            <div class="logo-bg"></div>
+            <img class="logo" src="data:image/png;base64,{{ logo_base64 }}" alt="Logo Santa Rita" width="120" height="100" style="width:120px;height:100px;">
+        </div>
+        <div class="header-info" style="margin-right:10px; text-align:right; position:relative; top:120px;">
+            <h1>FERRETERIA SANTA RITA</h1>
+            <p>Baigorria 1990, Rosario, Santa Fe. CP:2000<br>
+            CUIT: 23-16275962-9<br>
+            TEL: (341) 3591328<br>
+            proyectoferreretiasr@gmail.com</p>
+        </div>
+        <div class="pedido-num"><strong>Nº PEDIDO: {{ pedido.id|stringformat:"04d" }}</strong></div>
+    </div>
+    <hr style="height: 5px; background-color: black; border: none" />
+    <!-- DATOS DEL PROVEEDOR -->
+    <div class="supplier-info" style="margin: 20px 10px; text-align:left; position:relative; top:150px;">
+        <hr style="height: 5px; background-color: #f36f25; border: none;" />
+        <div style="height: 20px;"></div>
+    <span class="section-title"><strong>Proveedor: {{ pedido.proveedor }}</strong></span><br>
+        <p><strong>Dirección:</strong> {{ pedido.proveedor.direccion }}</p>
+        <p><strong>TEL:</strong> {{ pedido.proveedor.telefono }}</p>
+        <p><strong>Email de contacto:</strong> {{ pedido.proveedor.mail }}</p>
     </div>
 
-    <div class="invoice-details">
-        <div>
-            <p><strong>Pedido #:</strong> {{ pedido.id }}</p>
-            <p><strong>Fecha:</strong> {{ pedido.fecha }}</p>
-            <p><strong>Proveedor:</strong> {{ pedido.proveedor.nombreEmpresa }}<br>
-               {{ pedido.proveedor.direccion }}</p>
+    <div class="contenedor" style="position:relative; top:160px;">
+        <!-- FECHA -->
+        <hr style="height: 5px; background-color: #f36f25; border: none;" />
+        <div class="order-info" style="margin: 20px 30px;">
+            <p><strong>FECHA PEDIDO:</strong> {{ pedido.fecha }}</p>
+        </div>
+
+        <!-- TABLA DE PRODUCTOS -->
+
+        <div class="table-container" style="margin: 20px 30px;">
+            <table>
+                <thead>
+                    <tr>
+                            <th style="background:#f36f25;color:#fff;font-weight:bold;">#</th>
+                            <th style="background:#f36f25;color:#fff;font-weight:bold;">Producto</th>
+                            <th style="background:#f36f25;color:#fff;font-weight:bold;">Precio</th>
+                            <th style="background:#f36f25;color:#fff;font-weight:bold;">Cantidad</th>
+                            <th style="background:#f36f25;color:#fff;font-weight:bold;">Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ item.producto }}</td>
+                        <td>${{ item.precio }}</td>
+                        <td>{{ item.cantidad }}</td>
+                        <td>${{ item.subtotal }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <table>
+                <tr class="total-row">
+                            <td colspan="4" style="background:#f36f25;color:#fff;font-weight:bold;text-align:right;width:120px;padding:8px 10px;">TOTAL:</td>
+                            <td style="background:#f36f25;color:#fff;font-weight:bold;text-align:right;width:80px;padding:8px 10px;">${{ total }}</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- OBSERVACIONES -->
+        <div class="observaciones" style="margin: 30px 30px;">
+            <div class="observaciones-title">OBSERVACIONES</div>
+            <div style="margin-top:10px; color:#333; font-size:1em;">
+                {% if pedido.comentarios %}
+                    {{ pedido.comentarios|linebreaksbr }}
+                {% else %}
+                    <span style="color:#aaa;">Sin observaciones.</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- QR -->
+        <div class="qr" style="display:flex;flex-direction:column;align-items:center;justify-content:center;margin-top:10em; text-align:center;">
+            <img src="data:image/png;base64,{{ qr_base64 }}" alt="QR Pedido" width="200" height="200" style="margin-bottom:10px;" />
+        </div>
+        <div class="qr" style="display:flex;flex-direction:column;align-items:center;justify-content:center;margin-top:0.5em; text-align:center;">
+            <h3>Pedido digital</h3>
         </div>
     </div>
-
-    <table>
-        <thead>
-            <tr>
-                <th>-</th>
-                <th>Producto</th>
-                <th>Precio</th>
-                <th>cantidad</th>
-                <th>Subtotal</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in items %}
-            <tr>
-                <td>{{ forloop.counter }}</td>
-                <td>{{ item.producto }}</td>
-                <td>${{ item.precio }}</td>
-                <td>{{ item.cantidad }}</td>
-                <td>${{ item.subtotal }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-    <div class="totals">
-        <div>
-           <!--<p>Tax: <span>0.00%</span></p>-->
-            <p>Total: <span>${{ total }}</span></p>
-        </div>
-    </div>
-
-    <!--<div class="footer">
-        <p>Payment Info: Account #: 123 456 789 | IBAN: DE123456789</p>
-        <p>Terms & Conditions: Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-    </div>
-
-    <div class="thank-you">
-        Thank you for your business
-    </div>-->
-
+    <!-- FOOTER -->
+    <div class="footer-bar"></div>
 </body>
 </html>

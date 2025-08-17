@@ -20,7 +20,8 @@ import pdfkit
 from django.template.loader import render_to_string
 from django.views.decorators.http import require_POST
 from django.db.models import Count
-
+import qrcode
+import io
 
 #______ Categorias CRUD
 class CategoriaList(LoginRequiredMixin, ListView):
@@ -183,7 +184,6 @@ class ArticuloDetail(LoginRequiredMixin, DetailView):
             messages.success(request, "Proveedor quitado correctamente.")
         return redirect(f"{reverse('detalles_de_articulo', args=[self.object.pk])}#proveedores")
 
-@login_required
 def proveedores_grilla(request, pk):
     producto = get_object_or_404(Producto, pk=pk)
     proveedores = producto.proveedores.all()
@@ -764,10 +764,29 @@ def pedido_pdf_view(request, pk):
             'subtotal': subtotal
         })
 
+
+    # Convertir logo a base64
+    import base64
+    logo_path = r"C:\Users\Ramiro\Desktop\UTN_materias\5to año\Proyecto Final\Construccion_proyecto\ferreteriaSR\productos\static\pdf\assets\img\logoFerre.png"
+    with open(logo_path, "rb") as image_file:
+        logo_base64 = base64.b64encode(image_file.read()).decode("utf-8")
+
+    # Construccion de URL para el QR
+    pdf_url = request.build_absolute_uri(f'/productos/productos/productos/pedido/{pedido.id}/pdf/')
+    qr = qrcode.QRCode(box_size=4, border=2)
+    qr.add_data(pdf_url)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+    buffer = io.BytesIO()
+    img.save(buffer, format="PNG")
+    qr_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
+
     html = render_to_string('pedidos/pedido_pdf.html', {
         'pedido': pedido,
         'items': items,
-        'total': total
+        'total': total,
+        'logo_base64': logo_base64,
+        'qr_base64': qr_base64,
     })
 
     # Ruta del ejecutable wkhtmltopdf en Windows
