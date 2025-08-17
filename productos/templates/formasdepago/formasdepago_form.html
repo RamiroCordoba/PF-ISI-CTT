@@ -1,0 +1,28 @@
+{% extends 'dashboard/principal.html' %}
+{% block Contenido %}
+<div class="container-fluid px-4">
+  <h1 class="mt-4">Nueva forma de pago</h1>
+  <hr style="height: 5px; background-color: black; border: none" />
+
+  <form method="post" class="bg-light p-4 rounded shadow-sm">
+    {% csrf_token %}
+    
+    <div class="row g-3">
+      {% for field in form %}
+      <div class="col-md-6">
+        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}
+        <div class="text-danger small">{{ field.errors|striptags }}</div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="mt-4 d-flex gap-2">
+      <input class="btn btn-primary" type="submit" value="Guardar" />
+      <a href="{% url 'mis_formasdepago' %}" class="btn btn-secondary">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock Contenido %}

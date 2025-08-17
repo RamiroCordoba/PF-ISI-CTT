@@ -36,7 +36,9 @@
   <!-- Información del pedido -->
   <div class="container mt-4">
     <p><strong>Proveedor:</strong> {{ pedido.proveedor.nombreEmpresa }}</p>
+    <p><strong>Forma de pago:</strong> {{ pedido.forma_pago.nombre|default:"-" }}</p>
     <p><strong>Fecha:</strong> {{ pedido.fecha|date:"d/m/Y" }}</p>
+    <p><strong>Fecha estimada entrega:</strong> {{ pedido.fechaEstimadaEntrega|date:"d/m/Y"|default:"-" }}</p>
     <p><strong>Fecha de ingreso:</strong> {{ pedido.fechaIngreso|default:"-" }}</p>
     <p><strong>Comentarios:</strong> {{ pedido.comentarios|default:"-" }}</p>
     <p><strong>Completado:</strong>

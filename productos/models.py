@@ -84,7 +84,8 @@ class Pedido(models.Model):
     fechaIngreso = models.DateField(null=True, blank=True)
     comentarios = models.TextField(null=True, blank=True)
     completado = models.BooleanField(default=False)
-
+    forma_pago = models.ForeignKey('FormaPago', on_delete=models.PROTECT, null=True, blank=True)
+    fechaEstimadaEntrega = models.DateField(null=True, blank=True)
     def __str__(self):
         return f"Pedido #{self.id} a {self.proveedor.nombreEmpresa}"
 
@@ -96,3 +97,16 @@ class PedidoItem(models.Model):
 
     def __str__(self):
         return f"{self.producto.nombre} x {self.cantidad}"
+    
+
+class FormaPago(models.Model):
+    nombre = models.CharField(max_length=50, unique=True)
+    activo = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = 'Forma de Pago'
+        verbose_name_plural = 'Formas de Pago'
+        ordering = ['nombre']
+
+    def __str__(self):
+        return self.nombre  

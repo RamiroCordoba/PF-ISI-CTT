@@ -80,11 +80,21 @@ class PedidoItemForm(forms.ModelForm):
 class PedidoForm(forms.ModelForm):
     class Meta:
         model = Pedido
-        fields = ['proveedor', 'comentarios', 'completado', 'fechaIngreso']
+        fields = [
+            'proveedor',
+            'comentarios',
+            'completado',
+            'fechaIngreso',
+            'forma_pago',
+            'fechaEstimadaEntrega'
+        ]
         widgets = {
             'comentarios': forms.Textarea(attrs={'rows': 3}),
             'fechaIngreso': forms.DateInput(attrs={'type': 'date'}),
+            'fechaEstimadaEntrega': forms.DateInput(attrs={'type': 'date'},
+            format='%Y-%m-%d'),
         }
+
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -93,6 +103,7 @@ class PedidoForm(forms.ModelForm):
             self.fields['completado'].label = '¿Completado?'
             self.fields['fechaIngreso'].label = 'Fecha de ingreso'
             self.fields['proveedor'].widget.attrs.pop('disabled', None)
+        self.fields['fechaEstimadaEntrega'].label = 'Fecha estimada entrega'
 
 
     def clean(self):

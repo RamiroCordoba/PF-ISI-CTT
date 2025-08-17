@@ -44,4 +44,11 @@ urlpatterns = [
     path('pedidos/informacion/<int:pk>/', PedidoDetailView.as_view(), name='detalle_de_pedido'),
     path('pedidos/eliminar_pedido/<int:pk>/', PedidoDelete.as_view(), name='eliminar_pedido'),
     path('productos/productos/pedido/<int:pk>/pdf/', pedido_pdf_view, name='pedido_pdf'),
+
+            #__________ Formas de pago
+    path('formasdepago/', FormaPagoList.as_view(), name='mis_formasdepago'),
+    path('formasdepago/nueva_formadepago/', FormaPagoCreate.as_view(), name='nueva_formadepago'),
+    path('formasdepago/editar_formadepago/<int:pk>/', FormaPagoUpdate.as_view(), name='editar_formadepago'),
+    path('formasdepago/desactivar/<int:pk>/', FormaPagoDisable.as_view(), name='desactivar_formapago'),
+    path('formasdepago/informacion/<int:pk>/', FormaPagoDetail.as_view(), name='detalles_de_formapago'),
 ]
