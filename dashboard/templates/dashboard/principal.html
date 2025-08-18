@@ -52,7 +52,6 @@
               aria-labelledby="navbarDropdown"
             >
               <li><a class="dropdown-item" href="{% url 'usuarios:mi_perfil' %}">Mi Perfil</a></li>
-              <li><a class="dropdown-item" href="#!">Configuraciones</a></li>
               <li><hr class="dropdown-divider" /></li>
               <li>
                 <a class="dropdown-item" href="{% url 'logout' %}"
@@ -77,6 +76,7 @@
                 >
                   <div class="input-group">
                     <input
+                      id="navbarSearch"
                       class="form-control"
                       type="text"
                       placeholder="Buscar"
@@ -249,36 +249,36 @@
                 </nav>
               </div>
               <a
-  class="nav-link collapsed"
-  href="#"
-  data-bs-toggle="collapse"
-  data-bs-target="#collapseFormasPago"
-  aria-expanded="false"
-  aria-controls="collapseFormasPago"
->
-  <div class="sb-nav-link-icon">
-    <i class="fas fa-credit-card"></i>
-  </div>
-  Formas de Pago
-  <div class="sb-sidenav-collapse-arrow">
-    <i class="fas fa-angle-down"></i>
-  </div>
-</a>
-<div
-  class="collapse"
-  id="collapseFormasPago"
-  aria-labelledby="headingFormasPago"
-  data-bs-parent="#sidenavAccordion"
->
-  <nav class="sb-sidenav-menu-nested nav">
-    <a class="nav-link" href="{% url 'mis_formasdepago' %}">
-      Lista de formas de pago
-    </a>
-    <a class="nav-link" href="{% url 'nueva_formadepago' %}">
-      Nueva forma de pago
-    </a>
-  </nav>
-</div>
+                class="nav-link collapsed"
+                href="#"
+                data-bs-toggle="collapse"
+                data-bs-target="#collapseFormasPago"
+                aria-expanded="false"
+                aria-controls="collapseFormasPago"
+              >
+                <div class="sb-nav-link-icon">
+                  <i class="fas fa-credit-card"></i>
+                </div>
+                Formas de Pago
+                <div class="sb-sidenav-collapse-arrow">
+                  <i class="fas fa-angle-down"></i>
+                </div>
+              </a>
+              <div
+                class="collapse"
+                id="collapseFormasPago"
+                aria-labelledby="headingFormasPago"
+                data-bs-parent="#sidenavAccordion"
+              >
+                <nav class="sb-sidenav-menu-nested nav">
+                  <a class="nav-link" href="{% url 'mis_formasdepago' %}">
+                    Lista de formas de pago
+                  </a>
+                  <a class="nav-link" href="{% url 'nueva_formadepago' %}">
+                    Nueva forma de pago
+                  </a>
+                </nav>
+              </div>
 
               <div class="sb-sidenav-menu-heading">Registros</div>
               <a class="nav-link" href="charts.html">
@@ -423,6 +423,35 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
     <script>
     document.addEventListener("DOMContentLoaded", function() {
+      // Filtro de menú lateral mejorado
+      const searchInput = document.getElementById('navbarSearch');
+      const searchButton = document.getElementById('btnNavbarSearch');
+
+      function filtrarMenu() {
+        const search = searchInput.value.toLowerCase();
+        document.querySelectorAll('.sb-sidenav-menu .nav-link, .sb-sidenav-menu-nested .nav-link').forEach(function(link) {
+          const text = link.textContent.toLowerCase();
+          if (text.includes(search)) {
+            link.style.display = '';
+          } else {
+            link.style.display = 'none';
+          }
+        });
+        document.querySelectorAll('.collapse').forEach(function(collapse) {
+          const visible = Array.from(collapse.querySelectorAll('.nav-link')).some(l => l.style.display !== 'none');
+          if (visible) {
+            collapse.classList.add('show');
+            collapse.style.display = '';
+          } else {
+            collapse.classList.remove('show');
+            collapse.style.display = 'none';
+          }
+        });
+      }
+
+      searchInput.addEventListener('input', filtrarMenu);
+      searchButton.addEventListener('click', filtrarMenu);
+
       // Top 10 productos más pedidos (se mantiene el gráfico horizontal)
       fetch('/dashboard/top-10-productos/')
         .then(response => response.json())
