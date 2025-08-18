@@ -52,7 +52,6 @@
               aria-labelledby="navbarDropdown"
             >
               <li><a class="dropdown-item" href="{% url 'usuarios:mi_perfil' %}">Mi Perfil</a></li>
-              <li><a class="dropdown-item" href="#!">Configuraciones</a></li>
               <li><hr class="dropdown-divider" /></li>
               <li>
                 <a class="dropdown-item" href="{% url 'logout' %}"
@@ -77,6 +76,7 @@
                 >
                   <div class="input-group">
                     <input
+                      id="navbarSearch"
                       class="form-control"
                       type="text"
                       placeholder="Buscar"
@@ -249,36 +249,36 @@
                 </nav>
               </div>
               <a
-  class="nav-link collapsed"
-  href="#"
-  data-bs-toggle="collapse"
-  data-bs-target="#collapseFormasPago"
-  aria-expanded="false"
-  aria-controls="collapseFormasPago"
->
-  <div class="sb-nav-link-icon">
-    <i class="fas fa-credit-card"></i>
-  </div>
-  Formas de Pago
-  <div class="sb-sidenav-collapse-arrow">
-    <i class="fas fa-angle-down"></i>
-  </div>
-</a>
-<div
-  class="collapse"
-  id="collapseFormasPago"
-  aria-labelledby="headingFormasPago"
-  data-bs-parent="#sidenavAccordion"
->
-  <nav class="sb-sidenav-menu-nested nav">
-    <a class="nav-link" href="{% url 'mis_formasdepago' %}">
-      Lista de formas de pago
-    </a>
-    <a class="nav-link" href="{% url 'nueva_formadepago' %}">
-      Nueva forma de pago
-    </a>
-  </nav>
-</div>
+                class="nav-link collapsed"
+                href="#"
+                data-bs-toggle="collapse"
+                data-bs-target="#collapseFormasPago"
+                aria-expanded="false"
+                aria-controls="collapseFormasPago"
+              >
+                <div class="sb-nav-link-icon">
+                  <i class="fas fa-credit-card"></i>
+                </div>
+                Formas de Pago
+                <div class="sb-sidenav-collapse-arrow">
+                  <i class="fas fa-angle-down"></i>
+                </div>
+              </a>
+              <div
+                class="collapse"
+                id="collapseFormasPago"
+                aria-labelledby="headingFormasPago"
+                data-bs-parent="#sidenavAccordion"
+              >
+                <nav class="sb-sidenav-menu-nested nav">
+                  <a class="nav-link" href="{% url 'mis_formasdepago' %}">
+                    Lista de formas de pago
+                  </a>
+                  <a class="nav-link" href="{% url 'nueva_formadepago' %}">
+                    Nueva forma de pago
+                  </a>
+                </nav>
+              </div>
 
               <div class="sb-sidenav-menu-heading">Registros</div>
               <a class="nav-link" href="charts.html">
@@ -303,75 +303,53 @@
         <main>
           {% block Contenido %}
           <div class="container-fluid px-4">
-            <h1 class="mt-4">Dashboard</h1>
+            <h1 class="mt-4">Bienvenido, {{ user.first_name }} {{ user.last_name }}</h1>
             <ol class="breadcrumb mb-4">
-              <li class="breadcrumb-item active">Bienvenido</li>
             </ol>
+            <hr style="height: 5px; background-color: black; border: none" />
             <div class="row">
-              <div class="col-xl-3 col-md-6">
-                <div class="card bg-primary text-white mb-4">
-                  <div class="card-body">Primary Card</div>
-                  <div
-                    class="card-footer d-flex align-items-center justify-content-between"
-                  >
-                    <a class="small text-white stretched-link" href="#"
-                      >View Details</a
-                    >
-                    <div class="small text-white">
-                      <i class="fas fa-angle-right"></i>
+              <div class="dashboard-cards row" style="margin-bottom: 30px;">
+                <div class="col-xl-3 col-md-6">
+                  <div class="dashboard-card dashboard-card-articulos text-center" style="background:#7AC943;padding:20px 0;border-radius:8px;">
+                    <div style="display:flex;align-items:center;justify-content:center;">
+                      <i class="fas fa-box" style="font-size:2.5rem;color:#fff;"></i>
+                      <span class="dashboard-card-number" style="font-size:2.5rem;font-weight:bold;color:#fff;margin-left:15px;">{{ total_productos }}</span>
                     </div>
+                    <div class="dashboard-card-label" style="font-size:1rem;color:#fff;margin-top:10px;">Productos totales</div>
                   </div>
                 </div>
-              </div>
-              <div class="col-xl-3 col-md-6">
-                <div class="card bg-warning text-white mb-4">
-                  <div class="card-body">Warning Card</div>
-                  <div
-                    class="card-footer d-flex align-items-center justify-content-between"
-                  >
-                    <a class="small text-white stretched-link" href="#"
-                      >View Details</a
-                    >
-                    <div class="small text-white">
-                      <i class="fas fa-angle-right"></i>
+                <div class="col-xl-3 col-md-6">
+                  <div class="dashboard-card dashboard-card-categorias text-center" style="background:#F15A29;padding:20px 0;border-radius:8px;">
+                    <div style="display:flex;align-items:center;justify-content:center;">
+                      <i class="fas fa-building" style="font-size:2.5rem;color:#fff;"></i>
+                      <span class="dashboard-card-number" style="font-size:2.5rem;font-weight:bold;color:#fff;margin-left:15px;">{{ total_proveedores }}</span>
                     </div>
+                    <div class="dashboard-card-label" style="font-size:1rem;color:#fff;margin-top:10px;">Proveedores registrados</div>
                   </div>
                 </div>
-              </div>
-              <div class="col-xl-3 col-md-6">
-                <div class="card bg-success text-white mb-4">
-                  <div class="card-body">Success Card</div>
-                  <div
-                    class="card-footer d-flex align-items-center justify-content-between"
-                  >
-                    <a class="small text-white stretched-link" href="#"
-                      >View Details</a
-                    >
-                    <div class="small text-white">
-                      <i class="fas fa-angle-right"></i>
+                <div class="col-xl-3 col-md-6">
+                  <div class="dashboard-card dashboard-card-productos text-center" style="background:#29ABE2;padding:20px 0;border-radius:8px;">
+                    <div style="display:flex;align-items:center;justify-content:center;">
+                      <i class="fa-solid fa-file-invoice-dollar" style="font-size:2.5rem;color:#fff;"></i>
+                      <span class="dashboard-card-number" style="font-size:2.5rem;font-weight:bold;color:#fff;margin-left:15px;">200</span>
                     </div>
+                    <div class="dashboard-card-label" style="font-size:1rem;color:#fff;margin-top:10px;">Ganancias del mes (miles ARS)</div>
                   </div>
                 </div>
-              </div>
-              <div class="col-xl-3 col-md-6">
-                <div class="card bg-danger text-white mb-4">
-                  <div class="card-body">Danger Card</div>
-                  <div
-                    class="card-footer d-flex align-items-center justify-content-between"
-                  >
-                    <a class="small text-white stretched-link" href="#"
-                      >View Details</a
-                    >
-                    <div class="small text-white">
-                      <i class="fas fa-angle-right"></i>
+                <div class="col-xl-3 col-md-6">
+                  <div class="dashboard-card dashboard-card-ventas text-center" style="background:#FBB03B;padding:20px 0;border-radius:8px;">
+                    <div style="display:flex;align-items:center;justify-content:center;">
+                      <i class="fas fa-truck" style="font-size:2.5rem;color:#fff;"></i>
+                      <span class="dashboard-card-number" style="font-size:2.5rem;font-weight:bold;color:#fff;margin-left:15px;">{{ total_pedidos }}</span>
                     </div>
+                    <div class="dashboard-card-label" style="font-size:1rem;color:#fff;margin-top:10px;">Pedidos realizados</div>
                   </div>
                 </div>
               </div>
             </div>
             <div class="row">
               <div class="col-xl-6">
-                <div class="card mb-4">
+                <div class="card mb-4" style="height: 370px; display: flex; flex-direction: column;">
                   <div class="card-header">
                     <i class="fas fa-chart-area me-1"></i>
                     Top 10 Productos Más Pedidos
@@ -382,21 +360,30 @@
                 </div>
               </div>
               <div class="col-xl-6">
-                <div class="card mb-4">
+                <div class="card mb-4" style="height: 370px; display: flex; flex-direction: column;">
                   <div class="card-header">
-                    <i class="fas fa-chart-bar me-1"></i>
-                    Barras
+                    <i class="fas fa-table me-1"></i>
+                    Productos por debajo del stock mínimo
                   </div>
                   <div class="card-body">
-                    <canvas id="myBarChart" width="100%" height="40"></canvas>
+                    <div class="table-responsive" style="flex: 1 1 auto; max-height: 250px; overflow-y: auto;">
+                      <table class="table table-bordered mb-0">
+                        <thead style="background-color: orange; color: white;">
+                          <tr>
+                            <th style="background-color: orange; color: white;">Producto</th>
+                            <th style="background-color: orange; color: white;">Stock actual</th>
+                            <th style="background-color: orange; color: white;">Stock mínimo</th>
+                          </tr>
+                        </thead>
+                        <tbody id="tabla-stock-minimo">
+                          <tr id="mensaje-stock-vacio">
+                            <td colspan="3" class="text-center">Todos los productos están por encima del stock mínimo</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
-            <div class="card mb-4">
-              <div class="card-header">
-                <i class="fas fa-table me-1"></i>
-                DataTable Example
               </div>
             </div>
           </div>
@@ -432,39 +419,99 @@
     ></script>
     <script src="{% static 'principal/js/datatables-simple-demo.js'%}"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-  fetch('/dashboard/top-10-productos/')
-    .then(response => response.json())
-    .then(({ labels, data }) => {
-      const ctx = document.getElementById('myAreaChart').getContext('2d');
-      new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: 'Cantidad Pedida',
-            data: data,
-            fill: true,
-            backgroundColor: 'rgba(75,192,192,0.2)',
-            borderColor: 'rgba(75,192,192,1)',
-            tension: 0.3
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            tooltip: { mode: 'index', intersect: false },
-            legend: { display: false }
-          },
-          interaction: { mode: 'nearest', axis: 'x', intersect: false },
-          scales: { y: { beginAtZero: true } }
-        }
-      });
-    });
-});
-</script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      // Filtro de menú lateral mejorado
+      const searchInput = document.getElementById('navbarSearch');
+      const searchButton = document.getElementById('btnNavbarSearch');
 
+      function filtrarMenu() {
+        const search = searchInput.value.toLowerCase();
+        document.querySelectorAll('.sb-sidenav-menu .nav-link, .sb-sidenav-menu-nested .nav-link').forEach(function(link) {
+          const text = link.textContent.toLowerCase();
+          if (text.includes(search)) {
+            link.style.display = '';
+          } else {
+            link.style.display = 'none';
+          }
+        });
+        document.querySelectorAll('.collapse').forEach(function(collapse) {
+          const visible = Array.from(collapse.querySelectorAll('.nav-link')).some(l => l.style.display !== 'none');
+          if (visible) {
+            collapse.classList.add('show');
+            collapse.style.display = '';
+          } else {
+            collapse.classList.remove('show');
+            collapse.style.display = 'none';
+          }
+        });
+      }
+
+      searchInput.addEventListener('input', filtrarMenu);
+      searchButton.addEventListener('click', filtrarMenu);
+
+      // Top 10 productos más pedidos (se mantiene el gráfico horizontal)
+      fetch('/dashboard/top-10-productos/')
+        .then(response => response.json())
+        .then(({ labels, data }) => {
+          const ctx = document.getElementById('myAreaChart').getContext('2d');
+          new Chart(ctx, {
+            type: 'bar',
+            data: {
+              labels: labels,
+              datasets: [{
+                label: 'Cantidad Pedida',
+                data: data,
+                backgroundColor: 'rgba(255, 166, 0, 0.7)',
+                borderColor: 'rgba(255, 136, 0, 1)',
+                borderWidth: 1
+              }]
+            },
+            options: {
+              indexAxis: 'y',
+              responsive: true,
+              plugins: {
+                legend: { display: false },
+                tooltip: { mode: 'index', intersect: false },
+                datalabels: {
+                  anchor: 'end',
+                  align: 'right',
+                  color: '#000',
+                  font: { weight: 'bold' },
+                  formatter: function(value) {
+                    return value;
+                  }
+                }
+              },
+              scales: {
+                x: { beginAtZero: true },
+                y: { beginAtZero: true }
+              }
+            },
+            plugins: [ChartDataLabels]
+          });
+        });
+
+      // Tabla de productos por debajo del stock mínimo
+      fetch('/dashboard/productos-stock-minimo/')
+        .then(response => response.json())
+        .then(productos => {
+          const tbody = document.getElementById('tabla-stock-minimo');
+          const mensajeVacio = document.getElementById('mensaje-stock-vacio');
+          if (productos.length === 0) {
+            if (mensajeVacio) mensajeVacio.style.display = '';
+          } else {
+            if (mensajeVacio) mensajeVacio.style.display = 'none';
+            productos.forEach(prod => {
+              const tr = document.createElement('tr');
+              tr.innerHTML = `<td>${prod.nombre}</td><td>${prod.stock_actual}</td><td>${prod.stock_minimo}</td>`;
+              tbody.appendChild(tr);
+            });
+          }
+        });
+    });
+    </script>
   </body>
 </html>

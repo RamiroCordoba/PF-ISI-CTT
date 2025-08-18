@@ -181,7 +181,7 @@
       <tr id="articulo-{{ p.id }}">
 <td class="text-center">
   {% if request.user.is_staff %}
-    <a href="{% url 'usuarios:editar_usuario' user.pk %}"
+    <a href="{% url 'editar_articulo' p.pk %}"
        class="btn btn-outline-success mt-2"
        style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;"
        title="Editar">
@@ -191,29 +191,29 @@
     <button type="button"
             class="btn btn-outline-danger mt-2"
             data-bs-toggle="modal"
-            data-bs-target="#modalEliminarUsuario{{ user.pk }}"
-            data-id="{{ user.pk }}"
-            data-nombre="{{ user.username }}"
+            data-bs-target="#modalEliminarArticulo{{ p.pk }}"
+            data-id="{{ p.pk }}"
+            data-nombre="{{ p.nombre }}"
             style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;"
             title="Eliminar">
       <i class="fa fa-trash fa-sm"></i>
     </button>
 
     <!-- Modal -->
-    <div class="modal fade" id="modalEliminarUsuario{{ user.pk }}" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="modalEliminarArticulo{{ p.pk }}" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">¿Eliminar usuario?</h5>
+            <h5 class="modal-title">¿Eliminar artículo?</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
           <div class="modal-body">
-            ¿Seguro que querés eliminar a <strong>{{ user.username }}</strong>?
+            ¿Seguro que querés eliminar el artículo <strong>{{ p.nombre }}</strong>?
           </div>
           <div class="modal-footer">
             <button type="button"
-                    class="btn btn-danger btn-confirmar-eliminar-usuario"
-                    data-id="{{ user.pk }}"
+                    class="btn btn-danger btn-confirmar-eliminar"
+                    data-id="{{ p.pk }}"
                     data-bs-dismiss="modal">
               Eliminar
             </button>
@@ -224,7 +224,7 @@
     </div>
   {% endif %}
 
-  <a href="{% url 'usuarios:detalle_usuario' user.pk %}"
+  <a href="{% url 'detalles_de_articulo' p.pk %}"
      class="btn btn-outline-primary mt-2"
      style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;"
      title="Ver">
