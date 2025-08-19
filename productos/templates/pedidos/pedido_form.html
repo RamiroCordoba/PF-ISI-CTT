@@ -1,140 +1,208 @@
 {% extends 'dashboard/principal.html' %}
 {% load static %}
 {% block Contenido %}
-<div class="container-fluid px-4">
-    <h1 class="mt-4">
-    {% if form.instance.pk %}
-      Editar pedido
-    {% else %}
-      Nuevo pedido
-    {% endif %}
-  </h1>
-  <hr style="height: 5px; background-color: black; border: none" />
-
-  <form action="" method="post" id="pedidoForm">
-    {% csrf_token %}
-  {% if form.instance.pk %}
-    <div class="mb-3">
-      <label>Proveedor:</label>
-      <input type="hidden" name="proveedor" value="{{ form.instance.proveedor.id }}">
-      <input type="text" class="form-control" value="{{ form.instance.proveedor.nombreEmpresa }}" readonly>
-    </div>
-  {% else %}
-    <div class="mb-3">
-      {{ form.proveedor.label_tag }} {{ form.proveedor }}
-    </div>
-  {% endif %}
-<div class="mb-3">
-  {{ form.forma_pago.label_tag }} {{ form.forma_pago }}
-</div>
-
-{% if not form.instance.pk %}
-  <div class="mb-3">
-    <label for="{{ form.fechaEstimadaEntrega.id_for_label }}" class="form-label">
-      {{ form.fechaEstimadaEntrega.label }}
-    </label>
-    {{ form.fechaEstimadaEntrega }}
-    {% if form.fechaEstimadaEntrega.errors %}
-      <div class="text-danger">{{ form.fechaEstimadaEntrega.errors }}</div>
-    {% endif %}
-  </div>
-{% endif %}
 
 
-  <div class="mb-3">
-    {{ form.comentarios.label_tag }} {{ form.comentarios }}
-  </div>
-
-{% if form.instance.pk %}
-  <div class="mb-3" id="fechaIngresoContainer">
-    {{ form.fechaIngreso.label_tag }} {{ form.fechaIngreso }}
-    {% if form.fechaIngreso.errors %}
-      <div class="text-danger">{{ form.fechaIngreso.errors }}</div>
-    {% endif %}
-  </div>
-
-  <div class="mb-3">
-    {{ form.completado.label_tag }} {{ form.completado }}
-  </div>
-{% endif %}
-
-
-    <h5 class="mt-4">Productos del pedido:</h5>
-    <table class="table table-bordered" id="pedido-items-table">
-      {{ formset.management_form }}
-      <thead class="table-dark">
-        <tr>
-          <th>Producto</th>
-          <th>Cantidad</th>
-          <th>Precio (opcional)</th>
-          <th>Subtotal</th>
-          {% if not form.instance.completado %}
-           <th>Acciones</th>
-          {% endif %}
-        </tr>
-      </thead>
-      <tbody>
-      {% for item_form in formset %}
-        {{ item_form.id }}  
-        <tr class="pedido-item-row">
-            <td>
-              {{ item_form.producto }}
-              {% if item_form.producto.errors %}
-                <div class="text-danger small">{{ item_form.producto.errors }}</div>
-              {% endif %}
-            </td>
-            <td>
-              {{ item_form.cantidad }}
-              <div class="error-cantidad text-danger small" style="display:none;"></div>
-            </td>
-
-
-          <td>
-            <div class="input-group">
-              <span class="input-group-text">$</span>
-              {{ item_form.precio }}
+<div class="container-fluid px-4" style="background-color: #f5f6fa; min-height: 100vh;">
+  <div class="row justify-content-center">
+    <div class="col-12 col-lg-10">
+      <div class="card border-0 mt-4 shadow-lg" style="min-width: 900px; box-shadow: 0 6px 32px 0 rgba(0,0,0,0.10), 0 1.5px 6px 0 rgba(0,0,0,0.08);">
+        <div class="card-header text-white text-center py-3 rounded-top" style="background: #ff8800;">
+          <h3 class="mb-0">
+            {% if form.instance.pk %}
+              <i class="fa fa-edit me-2"></i>Editar pedido
+            {% else %}
+              <i class="fa fa-plus me-2"></i>Nuevo pedido
+            {% endif %}
+          </h3>
+        </div>
+        <div class="card-body bg-white">
+          <form action="" method="post" id="pedidoForm">
+            {% csrf_token %}
+            <div class="row">
+              <div class="col-md-6">
+                {% if form.instance.pk %}
+                  <div class="mb-4">
+                    <label class="form-label fw-semibold" style="color: #ff8800; font-size: 1.15em; letter-spacing: 0.5px;">
+                      <i class="fa fa-industry me-2"></i>Proveedor
+                    </label>
+                    <div style="position: relative; background: linear-gradient(90deg, #fff3e0 0%, #ffe0b2 100%); border-radius: 0.7rem; box-shadow: 0 2px 8px 0 rgba(255,136,0,0.08); border: 2px solid #ff8800; padding: 0.7rem;">
+                      <input type="hidden" name="proveedor" value="{{ form.instance.proveedor.id }}">
+                      <input type="text" class="form-control form-control-lg border-0" value="{{ form.instance.proveedor.nombreEmpresa }}" readonly style="background-color: transparent;">
+                    </div>
+                  </div>
+                {% else %}
+                  <div class="mb-4">
+                    <label class="form-label fw-semibold" style="color: #ff8800; font-size: 1.15em; letter-spacing: 0.5px;">
+                      <i class="fa fa-industry me-2"></i>Proveedor
+                    </label>
+                    <div style="position: relative; background: linear-gradient(90deg, #fff3e0 0%, #ffe0b2 100%); border-radius: 0.7rem; box-shadow: 0 2px 8px 0 rgba(255,136,0,0.08); border: 2px solid #ff8800; padding: 0.7rem;">
+                      <select name="proveedor" id="id_proveedor" class="form-select form-select-lg border-0" style="width: 100%; background: transparent; appearance: none; padding-right: 2.2em;">
+                        {% for option in form.proveedor.field.choices %}
+                          <option value="{{ option.0 }}" {% if option.0 == form.proveedor.value %}selected{% endif %}>{{ option.1 }}</option>
+                        {% endfor %}
+                      </select>
+                      <style>
+                        #id_proveedor.form-select,
+                        #id_forma_pago.form-select,
+                        input[type="date"].form-control {
+                          font-size: 1em !important;
+                          min-height: 2em !important;
+                          padding-top: 0.2em !important;
+                          padding-bottom: 0.2em !important;
+                        }
+                      </style>
+                      <span style="position: absolute; right: 1.2em; top: 50%; transform: translateY(-50%); pointer-events: none; font-size: 1.3em; color: #ff8800;">
+                        <i class="fa fa-chevron-down"></i>
+                      </span>
+                    </div>
+                  </div>
+                {% endif %}
+                <div class="mb-4">
+                  <label class="form-label fw-semibold" style="color: #ff8800; font-size: 1.15em; letter-spacing: 0.5px;">
+                    <i class="fa fa-credit-card me-2"></i>Forma de pago
+                  </label>
+                  <div style="position: relative; background: linear-gradient(90deg, #fff3e0 0%, #ffe0b2 100%); border-radius: 0.7rem; box-shadow: 0 2px 8px 0 rgba(255,136,0,0.08); border: 2px solid #ff8800; padding: 0.7rem;">
+                    <select name="forma_pago" id="id_forma_pago" class="form-select form-select-lg border-0" style="width: 100%; background: transparent; appearance: none; padding-right: 2.2em;">
+                      {% for option in form.forma_pago.field.choices %}
+                        <option value="{{ option.0 }}" {% if option.1|lower == 'efectivo' %}selected{% elif option.0 == form.forma_pago.value %}selected{% endif %}>{{ option.1 }}</option>
+                      {% endfor %}
+                    </select>
+                    <span style="position: absolute; right: 1.2em; top: 50%; transform: translateY(-50%); pointer-events: none; font-size: 1.3em; color: #ff8800;">
+                      <i class="fa fa-chevron-down"></i>
+                    </span>
+                  </div>
+                </div>
+                {% if not form.instance.pk %}
+                  <div class="mb-4">
+                    <label for="{{ form.fechaEstimadaEntrega.id_for_label }}" class="form-label fw-semibold" style="color: #ff8800; font-size: 1.15em; letter-spacing: 0.5px;">
+                      {{ form.fechaEstimadaEntrega.label }}
+                    </label>
+                    <div style="position: relative; background: linear-gradient(90deg, #fff3e0 0%, #ffe0b2 100%); border-radius: 0.7rem; box-shadow: 0 2px 8px 0 rgba(255,136,0,0.08); border: 2px solid #ff8800; padding: 0.7rem;">
+                      <input type="date" name="fechaEstimadaEntrega" id="{{ form.fechaEstimadaEntrega.id_for_label }}" class="form-control border-0" style="width: 100%; background: transparent; appearance: none; padding-right: 2.2em; color: #333;" value="{{ form.fechaEstimadaEntrega.value|default_if_none:'' }}">
+                    </div>
+                    {% if form.fechaEstimadaEntrega.errors %}
+                      <div class="text-danger small mt-1">{{ form.fechaEstimadaEntrega.errors }}</div>
+                    {% endif %}
+                  </div>
+                {% endif %}
+              </div>
             </div>
-          </td>
-          <td class="subtotal-cell">0</td>
-          {% if not form.instance.completado %}
-            <td>
-              <button type="button" class="btn btn-danger btn-sm eliminar-fila" title="Eliminar">
-                &times;
+            <!-- Comentarios mejorados -->
+            <div class="row">
+              <div class="col-12">
+                <div class="mb-4">
+                  <label for="id_comentarios" class="form-label fw-semibold" style="color: #ff8800; font-size: 1.15em; letter-spacing: 0.5px;">
+                    <i class="fa fa-comment-dots me-2"></i>Comentarios
+                  </label>
+                  <div style="background: linear-gradient(90deg, #fff3e0 0%, #ffe0b2 100%); border-radius: 0.7rem; box-shadow: 0 2px 8px 0 rgba(255,136,0,0.08); border: 2px solid #ff8800; padding: 1rem;">
+                    <textarea name="comentarios" class="form-control form-control-lg border-0" id="id_comentarios" rows="3" style="background: transparent; resize: vertical; font-size: 1.08em; color: #333; min-height: 60px;">{{ form.comentarios.value|default_if_none:'' }}</textarea>
+                  </div>
+                  {% if form.comentarios.errors %}
+                    <div class="text-danger small mt-1">{{ form.comentarios.errors }}</div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            <!-- Productos del pedido -->
+            <div class="row">
+              <div class="col-12">
+                <div class="mb-2">
+                  <h5 class="fw-bold" style="color: #ff8800; font-size: 1.18em;">
+                    <i class="fa fa-boxes me-2"></i>Productos del pedido
+                  </h5>
+                </div>
+                <div class="table-responsive" style="border-radius: 0.7rem; box-shadow: 0 2px 8px 0 rgba(255,136,0,0.08); border: 2px solid #ff8800; background: linear-gradient(90deg, #fff3e0 0%, #ffe0b2 100%); padding: 1rem;">
+                  <table class="table table-bordered align-middle mb-0" id="pedido-items-table" style="background: #fff; border-radius: 0.5rem; overflow: hidden;">
+                    {{ formset.management_form }}
+                    <thead class="table-dark">
+                      <tr style="font-size: 1.07em;">
+                        <th style="background: #ff8800; color: #fff; border: none;">Producto</th>
+                        <th style="background: #ff8800; color: #fff; border: none;">Cantidad</th>
+                        <th style="background: #ff8800; color: #fff; border: none;">Precio (opcional)</th>
+                        <th style="background: #ff8800; color: #fff; border: none;">Subtotal</th>
+                        {% if not form.instance.completado %}
+                         <th style="background: #ff8800; color: #fff; border: none;">Acciones</th>
+                        {% endif %}
+                      </tr>
+                    </thead>
+                    <tbody>
+                    {% for item_form in formset %}
+                      {{ item_form.id }}  
+                      <tr class="pedido-item-row" style="font-size: 1.05em;">
+                          <td>
+                            {{ item_form.producto }}
+                            {% if item_form.producto.errors %}
+                              <div class="text-danger small">{{ item_form.producto.errors }}</div>
+                            {% endif %}
+                          </td>
+                          <td>
+                            {{ item_form.cantidad }}
+                            <div class="error-cantidad text-danger small" style="display:none;"></div>
+                          </td>
+                        <td>
+                          <div class="input-group">
+                            <span class="input-group-text" style="background: #ffe0b2; color: #ff8800; border: none;">$</span>
+                            {{ item_form.precio }}
+                          </div>
+                        </td>
+                        <td class="subtotal-cell">0</td>
+                        {% if not form.instance.completado %}
+                          <td>
+                            <button type="button" class="btn btn-danger btn-sm eliminar-fila" title="Eliminar" style="background: #ff5252; border: none;">
+                              &times;
+                            </button>
+                          </td>
+                        {% endif %}
+                      </tr>
+                    {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+                <div class="mt-2 text-end">
+                  <strong style="font-size: 1.12em; color: #ff8800;">Total del pedido: $<span id="total-pedido">0</span></strong>
+                </div>
+                {% if not form.instance.completado %}
+                  <button type="button" class="btn my-2 px-4 text-white" id="add-item-btn" style="background: #298f29ff; font-weight: 500; font-size: 1.08em; border-radius: 0.5rem;">
+                    <i class="fa fa-plus me-1"></i>Agregar producto
+                  </button>
+                {% endif %}
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6">
+                {% if form.instance.pk %}
+                  <div class="mb-4" id="fechaIngresoContainer">
+                    {{ form.fechaIngreso.label_tag }} {{ form.fechaIngreso }}
+                    {% if form.fechaIngreso.errors %}
+                      <div class="text-danger small mt-1">{{ form.fechaIngreso.errors }}</div>
+                    {% endif %}
+                  </div>
+                {% endif %}
+                <div class="mb-4">
+                  <div class="d-flex align-items-center mb-4" style="justify-content: space-between;">
+                    <label class="form-label fw-semibold mb-0 d-flex align-items-center" style="color: #ff8800; font-size: 1.08em; letter-spacing: 0.5px;">
+                      <i class="fa fa-check-circle me-2"></i>Pedido completo&nbsp;{{ form.completado }}
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="d-flex justify-content-center gap-2 mt-4">
+              {% if not form.instance.completado %}
+                <input class="btn px-4 text-white" style="background: #ff8800;" type="submit" value="Guardar" />
+              {% else %}
+                <button class="btn btn-secondary px-4" type="button" disabled>Pedido confirmado</button>
+              {% endif %}
+              <button class="btn btn-secondary px-4" type="button" onclick="window.location.href='{% url "listar_pedidos" %}'">
+                Cancelar
               </button>
-            </td>
-          {% endif %}
-
-        </tr>
-      {% endfor %}
-
-      </tbody>
-    </table>
-
-    <div class="mt-2 text-end">
-      <strong>Total del pedido: $<span id="total-pedido">0</span></strong>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
-
-    {% if not form.instance.completado %}
-      <button type="button" class="btn btn-success my-2" id="add-item-btn">
-        + Agregar producto
-      </button>
-    {% endif %}
-
-    <br>
-    {% if not form.instance.completado %}
-      <input class="btn btn-primary" type="submit" value="Guardar" />
-    {% else %}
-      <button class="btn btn-secondary" type="button" disabled>Pedido confirmado</button>
-    {% endif %}
-
-    <button
-      class="btn btn-secondary"
-      type="button"
-      onclick="window.location.href='{% url "listar_pedidos" %}'"
-    >
-      Cancelar
-    </button>
-  </form>
+  </div>
 </div>
 
 
