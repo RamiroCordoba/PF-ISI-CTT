@@ -1,0 +1,170 @@
+
+{% extends 'dashboard/principal.html' %}
+{% load static %}
+{% block Contenido %}
+<!-- FontAwesome CDN for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+<style>
+  body {
+    background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%) !important;
+    font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+  }
+  .report-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 32px;
+    margin-bottom: 16px;
+  }
+  .report-logo {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #F15A29 60%, #a33510ff 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+  }
+  .report-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #22223b;
+    letter-spacing: 1px;
+    margin-bottom: 0;
+  }
+  .report-subtitle {
+    font-size: 1.1rem;
+    color: #4e4e4e;
+    margin-top: 4px;
+    text-align: center;
+  }
+  .tab-fichero {
+    border-radius: 12px 12px 0 0;
+    color: #fff;
+    font-weight: 600;
+    margin-right: 12px;
+    padding: 12px 32px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+    transition: background 0.3s, box-shadow 0.3s, transform 0.2s;
+    font-size: 1.1rem;
+    opacity: 0.92;
+    border: none;
+    outline: none;
+  }
+  .tab-fichero:hover {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.04);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.14);
+  }
+  .tab-fichero.active {
+    box-shadow: 0 6px 24px rgba(0,0,0,0.16);
+    border-bottom: 4px solid #fff;
+    opacity: 1;
+    transform: scale(1.06);
+  }
+  .tab-ventas { background: #F15A29; }
+  .tab-ventas.active { background: #c13e0f; }
+  .tab-estacionarios { background: #29ABE2; }
+  .tab-estacionarios.active { background: #1a7ca6; }
+  .tab-proyeccion { background: #7AC943; }
+  .tab-proyeccion.active { background: #4e8c1a; }
+  .tab-proveedores { background: #FBB03B; }
+  .tab-proveedores.active { background: #b8860b; }
+  .tab-financiero { background: #8e44ad; }
+  .tab-financiero.active { background: #5e3370; }
+  .tab-content-fichero {
+    background: #fff7e6;
+    border-radius: 0 0 18px 18px;
+    padding: 40px 32px;
+    margin-top: -8px;
+    min-height: 320px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.09);
+    animation: fadeIn 0.5s;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .tab-content-fichero h3 {
+    font-size: 2rem;
+    color: #22223b;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .tab-content-fichero p {
+    font-size: 1.15rem;
+    color: #444;
+    margin-bottom: 18px;
+  }
+  .tab-content-fichero hr {
+    height: 4px;
+    background: linear-gradient(90deg, #F15A29 60%, #29ABE2 100%);
+    border: none;
+    margin-bottom: 0;
+  }
+</style>
+<div class="container-fluid px-4" style="background: transparent; min-height: 100vh;">
+  <div class="row justify-content-center">
+    <div class="report-header">
+      <div class="report-logo">
+        <i class="fa-solid fa-chart-line"></i>
+      </div>
+      <div>
+        <div class="report-title">Generador de informes</div>
+        <div class="report-subtitle">Visualizá y descargá los reportes clave de la ferretería</div>
+      </div>
+    </div>
+    <div id="tabs-fichero" style="margin-bottom: 0;">
+      <span class="tab-fichero tab-ventas active" onclick="showTabFichero('ventas')"><i class="fa-solid fa-store"></i> Ventas generales</span>
+      <span class="tab-fichero tab-estacionarios" onclick="showTabFichero('estacionarios')"><i class="fa-solid fa-cube"></i> Productos estacionarios</span>
+      <span class="tab-fichero tab-proyeccion" onclick="showTabFichero('proyeccion')"><i class="fa-solid fa-chart-area"></i> Proyección de ventas</span>
+      <span class="tab-fichero tab-proveedores" onclick="showTabFichero('proveedores')"><i class="fa-solid fa-truck"></i> Proveedores</span>
+      <span class="tab-fichero tab-financiero" onclick="showTabFichero('financiero')"><i class="fa-solid fa-money-bill-trend-up"></i> Financiero</span>
+    </div>
+    <div id="tab-content-ventas" class="tab-content-fichero" style="display:block;">
+      <h3><i class="fa-solid fa-store"></i> Ventas generales</h3>
+      <p>Este informe contendrá un resumen de las ventas generales de la ferretería en el rango de fechas y categorías seleccionadas.</p>
+      <hr />
+    </div>
+    <div id="tab-content-estacionarios" class="tab-content-fichero" style="display:none;">
+      <h3><i class="fa-solid fa-cube"></i> Productos estacionarios</h3>
+      <p>Este informe contendrá un resumen de los productos estacionarios de la ferretería en el rango de fechas y categorías seleccionadas.</p>
+      <hr />
+    </div>
+    <div id="tab-content-proyeccion" class="tab-content-fichero" style="display:none;">
+      <h3><i class="fa-solid fa-chart-area"></i> Proyección de ventas</h3>
+      <p>Este informe contendrá un resumen de la proyección de ventas de la ferretería utilizando IA para mejorar la precisión de las predicciones en relación al histórico de ventas.</p>
+      <hr />
+    </div>
+    <div id="tab-content-proveedores" class="tab-content-fichero" style="display:none;">
+      <h3><i class="fa-solid fa-truck"></i> Proveedores</h3>
+      <p>Este informe contendrá un resumen de los proveedores de la ferretería en el rango de fechas y categorías seleccionadas.</p>
+      <hr />
+    </div>
+    <div id="tab-content-financiero" class="tab-content-fichero" style="display:none;">
+      <h3><i class="fa-solid fa-money-bill-trend-up"></i> Financiero</h3>
+      <p>Este informe contendrá un resumen financiero de la ferretería en el rango de fechas. Se tendrán en cuenta los ingresos, egresos y utilidades generadas.</p>
+      <hr />
+    </div>
+  </div>
+</div>
+<script>
+function showTabFichero(tab) {
+  const tabs = ['ventas','estacionarios','proyeccion','proveedores','financiero'];
+  tabs.forEach(t => {
+    document.getElementById('tab-content-' + t).style.display = (t === tab) ? 'block' : 'none';
+    document.querySelector('.tab-' + t).classList.toggle('active', t === tab);
+  });
+}
+</script>
+{% endblock Contenido %}

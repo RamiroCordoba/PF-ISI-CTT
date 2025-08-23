@@ -7,8 +7,5 @@ urlpatterns = [
     path('dashboard/', include('dashboard.urls')),
     path('productos/', include('productos.urls')),
     path('usuarios/', include('usuarios.urls', namespace='usuarios')),
-    #path('proveedores/', include('proveedores.urls')),
-    #path('pedidos/', include('pedidos.urls')),
-    #path('ventas/', include('ventas.urls')),
-    #path('informes/', include('informes.urls')),
+    path('informes/', include('reporte.urls')),
 ]
