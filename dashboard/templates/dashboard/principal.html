@@ -345,6 +345,37 @@
                   </a>
                 </nav>
               </div>
+                <a
+                class="nav-link collapsed"
+                href="#"
+                data-bs-toggle="collapse"
+                data-bs-target="#collapseCondicionFiscal"
+                aria-expanded="false"
+                aria-controls="collapseCondicionFiscal"
+              >
+                <div class="sb-nav-link-icon">
+                  <i class="fas fa-credit-card"></i>
+                </div>
+                Condicion Fiscal
+                <div class="sb-sidenav-collapse-arrow">
+                  <i class="fas fa-angle-down"></i>
+                </div>
+              </a>
+              <div
+                class="collapse"
+                id="collapseCondicionFiscal"
+                aria-labelledby="headingcCondicionFiscal"
+                data-bs-parent="#sidenavAccordion"
+              >
+                <nav class="sb-sidenav-menu-nested nav">
+                  <a class="nav-link" href="{% url 'mis_condiciones_ficales' %}">
+                    Lista de Condiciones Fiscales
+                  </a>
+                  <a class="nav-link" href="{% url 'nueva_condicion_fiscal' %}">
+                    Nueva Condicion Fiscal
+                  </a>
+                </nav>
+              </div>
 
               <div class="sb-sidenav-menu-heading">Registros</div>
               <a class="nav-link" href="charts.html">

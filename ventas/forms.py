@@ -32,3 +32,11 @@ class MonedaForm(forms.ModelForm):
             "simbolo": forms.TextInput(attrs={"class": "form-control"}),
             "activo": forms.CheckboxInput(attrs={"class": "form-check-input"})
         }
+class CondicionFiscalForm(forms.ModelForm):
+    class Meta:
+        model = Moneda
+        fields = ['nombre', 'activo']
+        widgets = {
+            "nombre": forms.TextInput(attrs={"class": "form-control"}),
+            "activo": forms.CheckboxInput(attrs={"class": "form-check-input"})
+        }

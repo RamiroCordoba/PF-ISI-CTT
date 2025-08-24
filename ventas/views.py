@@ -113,3 +113,57 @@ class MonedaDetail(DetailView):
      model=Moneda
      template_name="moneda/moneda_details.html"
      context_object_name = 'moneda'
+
+class CondicionFiscalList(LoginRequiredMixin, ListView):
+    model = CondicionFiscal
+    template_name = "moneda/moneda_list.html"
+    context_object_name = "monedas"
+
+    def get_queryset(self):
+        queryset = super().get_queryset().order_by("id")
+
+        buscar = self.request.GET.get("buscar", "").strip()
+        estados = self.request.GET.getlist("estado")  
+
+        if buscar:
+            queryset = queryset.filter(nombre__icontains=buscar)
+
+        if estados:
+            if "activo" in estados and "inactivo" in estados:
+                pass
+            elif "activo" in estados:
+                queryset = queryset.filter(activo=True)
+            elif "inactivo" in estados:
+                queryset = queryset.filter(activo=False)
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["buscar"] = self.request.GET.get("buscar", "")
+        context["filtro_estados"] = self.request.GET.getlist("estado")  
+        return context
+
+
+  
+class CondicionFiscalCreate(LoginRequiredMixin,CreateView):
+     model=CondicionFiscal
+     fields = ["nombre", "activo"]
+     template_name="condicionfiscal/condicionfiscal_form.html"
+     success_url = reverse_lazy("mis_condiciones_fiscales")
+     
+class CondicionFiscalUpdate(LoginRequiredMixin,UpdateView):
+     model=CondicionFiscal
+     fields = ["nombre", "activo"]
+     template_name="condicionfiscal/condicionfiscal_form.html"
+     success_url = reverse_lazy("mis_condiciones_fiscales")
+
+class CondicionFiscalDelete(LoginRequiredMixin,DeleteView):
+     model=CondicionFiscal
+     template_name="condicionfiscal/condicionfiscal_confirm_delete.html"
+     success_url = reverse_lazy("mis_condiciones_fiscales")
+
+class CondicionFiscalDetail(DetailView):
+     model=CondicionFiscal
+     template_name="condicionfiscal/condicionfiscal_details.html"
+     context_object_name = 'condicionFiscal'

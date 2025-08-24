@@ -25,7 +25,7 @@ class CondicionFiscal(models.Model):
     nombre = models.CharField(max_length=100, unique=True, blank=False, null=False)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     activo = models.BooleanField(default=True)
-
+    #Podria agregarse un campo descripcion e IVA asociado
     class Meta:
         verbose_name = 'condicion fiscal'
         verbose_name_plural = 'condiciones fiscales'
