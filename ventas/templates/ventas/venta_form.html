@@ -1,0 +1,439 @@
+{% extends 'dashboard/principal.html' %}
+{% load static %}
+{% block Contenido %}
+<div class="container-fluid px-4">
+    <h1 class="mt-4">
+    {% if form.instance.pk %}
+      Editar pedido
+    {% else %}
+      Nuevo pedido
+    {% endif %}
+  </h1>
+  <hr style="height: 5px; background-color: black; border: none" />
+
+  <form action="" method="post" id="pedidoForm">
+    {% csrf_token %}
+  {% if form.instance.pk %}
+    <div class="mb-3">
+      <label>Proveedor:</label>
+      <input type="hidden" name="proveedor" value="{{ form.instance.proveedor.id }}">
+      <input type="text" class="form-control" value="{{ form.instance.proveedor.nombreEmpresa }}" readonly>
+    </div>
+  {% else %}
+    <div class="mb-3">
+      {{ form.proveedor.label_tag }} {{ form.proveedor }}
+    </div>
+  {% endif %}
+<div class="mb-3">
+  {{ form.forma_pago.label_tag }} {{ form.forma_pago }}
+</div>
+
+{% if not form.instance.pk %}
+  <div class="mb-3">
+    <label for="{{ form.fechaEstimadaEntrega.id_for_label }}" class="form-label">
+      {{ form.fechaEstimadaEntrega.label }}
+    </label>
+    {{ form.fechaEstimadaEntrega }}
+    {% if form.fechaEstimadaEntrega.errors %}
+      <div class="text-danger">{{ form.fechaEstimadaEntrega.errors }}</div>
+    {% endif %}
+  </div>
+{% endif %}
+
+
+  <div class="mb-3">
+    {{ form.comentarios.label_tag }} {{ form.comentarios }}
+  </div>
+
+{% if form.instance.pk %}
+  <div class="mb-3" id="fechaIngresoContainer">
+    {{ form.fechaIngreso.label_tag }} {{ form.fechaIngreso }}
+    {% if form.fechaIngreso.errors %}
+      <div class="text-danger">{{ form.fechaIngreso.errors }}</div>
+    {% endif %}
+  </div>
+
+  <div class="mb-3">
+    {{ form.completado.label_tag }} {{ form.completado }}
+  </div>
+{% endif %}
+
+
+    <h5 class="mt-4">Productos del pedido:</h5>
+    <table class="table table-bordered" id="pedido-items-table">
+      {{ formset.management_form }}
+      <thead class="table-dark">
+        <tr>
+          <th>Producto</th>
+          <th>Cantidad</th>
+          <th>Precio (opcional)</th>
+          <th>Subtotal</th>
+          {% if not form.instance.completado %}
+           <th>Acciones</th>
+          {% endif %}
+        </tr>
+      </thead>
+      <tbody>
+      {% for item_form in formset %}
+        {{ item_form.id }}  
+        <tr class="pedido-item-row">
+            <td>
+              {{ item_form.producto }}
+              {% if item_form.producto.errors %}
+                <div class="text-danger small">{{ item_form.producto.errors }}</div>
+              {% endif %}
+            </td>
+            <td>
+              {{ item_form.cantidad }}
+              <div class="error-cantidad text-danger small" style="display:none;"></div>
+            </td>
+
+
+          <td>
+            <div class="input-group">
+              <span class="input-group-text">$</span>
+              {{ item_form.precio }}
+            </div>
+          </td>
+          <td class="subtotal-cell">0</td>
+          {% if not form.instance.completado %}
+            <td>
+              <button type="button" class="btn btn-danger btn-sm eliminar-fila" title="Eliminar">
+                &times;
+              </button>
+            </td>
+          {% endif %}
+
+        </tr>
+      {% endfor %}
+
+      </tbody>
+    </table>
+
+    <div class="mt-2 text-end">
+      <strong>Total del pedido: $<span id="total-pedido">0</span></strong>
+    </div>
+
+    {% if not form.instance.completado %}
+      <button type="button" class="btn btn-success my-2" id="add-item-btn">
+        + Agregar producto
+      </button>
+    {% endif %}
+
+    <br>
+    {% if not form.instance.completado %}
+      <input class="btn btn-primary" type="submit" value="Guardar" />
+    {% else %}
+      <button class="btn btn-secondary" type="button" disabled>Pedido confirmado</button>
+    {% endif %}
+
+    <button
+      class="btn btn-secondary"
+      type="button"
+      onclick="window.location.href='{% url "listar_pedidos" %}'"
+    >
+      Cancelar
+    </button>
+  </form>
+</div>
+
+
+<!-- jQuery y jQuery UI para autocompletar -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+<script>
+  const pedidoCompletado = {{ form.instance.completado|yesno:"true,false" }};
+</script>
+
+<script>
+$(function() {
+  function activateAutocomplete(scope) {
+    var $scope = scope || $(document);
+    $scope.find("select[name$='-producto']").each(function() {
+      var $select = $(this);
+
+ 
+      $select.siblings("input[type='text']").remove();
+
+      var $input = $("<input type='text' class='form-control' placeholder='Buscar producto...'>");
+      $input.val($select.find("option:selected").text());
+      $select.after($input).hide();
+
+      $input.autocomplete({
+        source: function(request, response) {
+          $.ajax({
+            url: "{% url 'autocomplete_productos' %}",
+            data: {
+              term: request.term,
+              proveedor_id: $("#id_proveedor").val()
+            },
+            success: function(data) {
+              response(data);
+            }
+          });
+        },
+        minLength: 2,
+        select: function(event, ui) {
+          $select.val(ui.item.id);
+        }
+      });
+      if (pedidoCompletado) {
+        $input.prop("disabled", true); 
+      } 
+    });
+  }
+
+  activateAutocomplete();
+
+
+  $("#add-item-btn").click(function() {
+    var totalForms = $("#id_items-TOTAL_FORMS");
+    var currentCount = parseInt(totalForms.val());
+    var $lastRow = $(".pedido-item-row:last");
+    var $newRow = $lastRow.clone(false); 
+
+
+    $newRow.find("input, select").each(function() {
+      var name = $(this).attr("name");
+      if (name) {
+        var newName = name.replace(/-(\d+)-/, "-" + currentCount + "-");
+        $(this).attr("name", newName).attr("id", "id_" + newName);
+        $(this).val("");
+      }
+    });
+
+
+    $newRow.find(".subtotal-cell").text("0");
+
+  
+    $newRow.find("input[type='text']").val("").blur();
+    $newRow.find("select[name$='-producto']").val("");
+
+    $lastRow.after($newRow);
+    totalForms.val(currentCount + 1);
+
+
+    $(".ui-autocomplete").hide();
+
+ 
+    activateAutocomplete($newRow);
+
+    calcularTotales();
+  });
+});
+</script>
+
+<script>
+$(function() {
+  $("#id_proveedor").change(function() {
+    var proveedorId = $(this).val();
+    if (!proveedorId) return;
+    $.get("{% url 'productos_por_proveedor' %}", {proveedor_id: proveedorId}, function(data) {
+      $("select[name$='-producto']").each(function() {
+        var $select = $(this);
+        var selected = $select.val();
+        $select.empty();
+        $select.append($('<option>', {value: '', text: ''}));
+        $.each(data.productos, function(i, prod) {
+          $select.append($('<option>', {value: prod.id, text: prod.nombre}));
+        });
+        if (selected) $select.val(selected);
+      });
+    });
+  });
+ 
+  $("#id_proveedor").trigger('change');
+});
+</script>
+
+<script>
+function calcularTotales() {
+  var total = 0;
+  $("#pedido-items-table tbody tr").each(function() {
+    var $row = $(this);
+    var cantidad = parseFloat($row.find("input[name$='-cantidad']").val()) || 0;
+    var precio = parseFloat($row.find("input[name$='-precio']").val()) || 0;
+    var subtotal = cantidad * precio;
+    $row.find(".subtotal-cell").text(`$${subtotal.toFixed(2)}`);
+    total += subtotal;
+  });
+  $("#total-pedido").text(total.toFixed(2));
+}
+
+$(document).on("input", "input[name$='-cantidad'], input[name$='-precio']", calcularTotales);
+
+$("#add-item-btn").click(function() {
+  setTimeout(calcularTotales, 100); 
+});
+
+
+$(document).ready(calcularTotales);
+</script>
+
+<script>
+$(document).on("click", ".eliminar-fila", function() {
+  var $row = $(this).closest("tr");
+  var $table = $("#pedido-items-table tbody");
+ 
+  if ($table.find("tr").length > 1) {
+    $row.remove();
+    var totalForms = $("#id_items-TOTAL_FORMS");
+    totalForms.val($table.find("tr").length);
+    calcularTotales();
+  } else {
+
+    $row.find("input, select").val("");
+    $row.find(".subtotal-cell").text("0");
+    calcularTotales();
+  }
+});
+</script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const completadoCheckbox = document.getElementById("id_completado");
+    const fechaIngresoContainer = document.getElementById("fechaIngresoContainer");
+
+    function toggleFechaIngreso() {
+      if (completadoCheckbox && fechaIngresoContainer) {
+        fechaIngresoContainer.style.display = completadoCheckbox.checked ? "block" : "none";
+      }
+    }
+
+    if (completadoCheckbox) {
+      completadoCheckbox.addEventListener("change", toggleFechaIngreso);
+      toggleFechaIngreso();
+    }
+  });
+</script>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const fechaInput = document.getElementById("id_fechaIngreso");
+    if (fechaInput && !fechaInput.value) {
+      const today = new Date().toISOString().split("T")[0];
+      fechaInput.value = today;
+    }
+  });
+</script>
+{% if formset.non_form_errors %}
+  <div class="alert alert-danger" id="formset-errors">
+    {{ formset.non_form_errors }}
+  </div>
+{% else %}
+  <div class="alert alert-danger d-none" id="formset-errors"></div>
+{% endif %}
+
+
+<!--{% for item_form in formset %}
+  {% for field in item_form %}
+    {% if field.errors %}
+      <div class="text-danger">{{ field.label }}: {{ field.errors }}</div>
+    {% endif %}
+  {% endfor %}
+{% endfor %}-->
+{% if form.errors %}
+  <div class="alert alert-danger">
+    {{ form.errors }}
+  </div>
+{% endif %}
+{% if form.instance.completado %}
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+
+    document.querySelectorAll("#add-item-btn, .eliminar-fila").forEach(btn => {
+      btn.disabled = true;
+    });
+  });
+</script>
+{% endif %}
+
+<script>
+function validarItems() {
+  let hayItemValido = false;
+
+  $("#pedido-items-table tbody tr").each(function() {
+    const producto = $(this).find("select[name$='-producto']").val();
+    const cantidad = parseFloat($(this).find("input[name$='-cantidad']").val()) || 0;
+
+    if (producto && cantidad > 0) {
+      hayItemValido = true;
+    }
+  });
+
+  const errorDiv = $("#formset-errors");
+  if (hayItemValido) {
+    errorDiv.fadeOut(200, function() {
+      errorDiv.addClass("d-none").text("");
+    });
+  } else {
+    errorDiv.removeClass("d-none").text("Debe agregar al menos un producto con cantidad.").fadeIn();
+  }
+}
+
+
+$(document).on("change input", "select[name$='-producto'], input[name$='-cantidad']", validarItems);
+
+
+$("#add-item-btn").click(function() {
+  setTimeout(validarItems, 100);
+});
+
+// Validar antes de enviar el formulario
+$("#pedidoForm").on("submit", function(e) {
+  let hayItemValido = false;
+
+  $("#pedido-items-table tbody tr").each(function() {
+    const producto = $(this).find("select[name$='-producto']").val();
+    const cantidad = parseFloat($(this).find("input[name$='-cantidad']").val()) || 0;
+
+    if (producto && cantidad > 0) {
+      hayItemValido = true;
+    }
+  });
+
+  const errorDiv = $("#formset-errors");
+  if (!hayItemValido) {
+    e.preventDefault();
+    errorDiv.removeClass("d-none").text("Debe agregar al menos un producto con cantidad.").fadeIn();
+  }
+});
+</script>
+
+<script>
+function validarCantidadPorProducto() {
+  $("#pedido-items-table tbody tr").each(function() {
+    const $row = $(this);
+    const producto = $row.find("select[name$='-producto']").val();
+    const cantidadInput = $row.find("input[name$='-cantidad']");
+    const cantidad = cantidadInput.val().trim();
+    const errorDiv = $row.find(".error-cantidad");
+
+    if (producto && cantidad === "") {
+      errorDiv.text("Este campo es obligatorio.").show();
+    } else {
+      errorDiv.hide();
+    }
+  });
+}
+
+// Validar al escribir o cambiar producto
+$(document).on("input change", "input[name$='-cantidad'], select[name$='-producto']", validarCantidadPorProducto);
+
+// Validar al agregar fila
+$("#add-item-btn").click(function() {
+  setTimeout(validarCantidadPorProducto, 100);
+});
+
+// Validar al enviar
+$("#pedidoForm").on("submit", function(e) {
+  validarCantidadPorProducto();
+  const hayErrores = $(".error-cantidad:visible").length > 0;
+  if (hayErrores) {
+    e.preventDefault();
+  }
+});
+</script>
+
+
+{% endblock Contenido %}

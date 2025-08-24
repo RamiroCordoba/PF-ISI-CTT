@@ -1,0 +1,258 @@
+{% extends 'dashboard/principal.html' %}
+{% block Contenido %}
+
+
+<div class="container-fluid px-4">
+  <h1 class="mt-4">Proveedores</h1>
+  <hr style="height: 5px; background-color: black; border: none" />
+  <div class="d-flex justify-content-between align-items-center py-2">
+    <div class="d-flex gap-2 flex-wrap">
+      {% if request.user.is_staff %}
+      <a href="{% url 'nuevo_proveedor' %}"
+        class="btn btn-primary btn-sm d-flex align-items-center justify-content-center px-4" style="height: 38px;">
+        Nuevo proveedor
+      </a>
+      {% endif %}
+    </div>
+    <form method="get" class="d-flex align-items-end gap-3 flex-wrap">
+      <!-- Empresa -->
+      <div class="dropdown">
+        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+          Empresa
+        </button>
+        <ul class="dropdown-menu p-2" style="max-height: 200px; overflow-y: auto;">
+          {% for empresa in empresas %}
+            <li>
+              <div class="form-check mb-0">
+                <input class="form-check-input" type="checkbox" name="empresa" value="{{ empresa }}" id="empresa_{{ forloop.counter }}" {% if filtro_empresa == empresa %}checked{% endif %}>
+                <label class="form-check-label" for="empresa_{{ forloop.counter }}">{{ empresa }}</label>
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+      <!-- Categorías -->
+      <div class="dropdown">
+        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+          Categorías
+        </button>
+        <ul class="dropdown-menu p-2" style="max-height: 200px; overflow-y: auto;">
+          {% for cat in categorias %}
+            <li>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="categoria" value="{{ cat.id }}" id="cat{{ cat.id }}" {% if cat.id|stringformat:'s' in filtro_categorias %}checked{% endif %}>
+                <label class="form-check-label" for="cat{{ cat.id }}">{{ cat.nombre }}</label>
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+      <!-- Estado -->
+      <div class="dropdown">
+        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+          Estado
+        </button>
+        <ul class="dropdown-menu p-2">
+          <li>
+            <div class="form-check mb-0">
+              <input class="form-check-input" type="checkbox" name="estado" value="activos" id="estado_activos" {% if filtro_estado == 'activos' %}checked{% endif %}>
+              <label class="form-check-label" for="estado_activos">Activos</label>
+            </div>
+          </li>
+          <li>
+            <div class="form-check mb-0">
+              <input class="form-check-input" type="checkbox" name="estado" value="inactivos" id="estado_inactivos" {% if filtro_estado == 'inactivos' %}checked{% endif %}>
+              <label class="form-check-label" for="estado_inactivos">Inactivos</label>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <!-- Buscador -->
+      <div class="d-flex align-items-end gap-2">
+        <input type="text" name="buscar" class="form-control form-control-sm" placeholder="Buscar proveedor..." value="{{ buscar }}">
+      </div>
+  <button type="submit" class="btn btn-primary btn-sm mb-0 px-4" style="height: 38px;">Filtrar</button>
+      {% if filtros_activos or buscar %}
+        <a href="{% url 'mis_proveedores' %}" class="btn btn-outline-danger btn-sm" title="Restablecer filtros">
+          <i class="fa-solid fa-rotate-left"></i>
+        </a>
+      {% endif %}
+    </form>
+  </div>
+  <div>
+    {% if filtros_activos or buscar %}
+      <div class="text-secondary small mt-3">
+        <strong>Se está filtrando por:</strong>
+        {% if filtro_estado %}
+          Estado:
+          <span>
+            {% if filtro_estado == 'activos' %}<strong>Activos</strong>{% endif %}
+            {% if filtro_estado == 'inactivos' %}<strong>Inactivos</strong>{% endif %}
+          </span>
+        {% endif %}
+        {% if filtro_categorias %}
+          {% if filtro_estado %}, {% endif %}
+          Categoría/s:
+          <span>
+            {% for id in filtro_categorias %}
+              {% for cat in categorias %}
+                {% if cat.id|stringformat:"s" == id %}
+                  <strong>{{ cat.nombre }}</strong>{% if not forloop.last or not forloop.parentloop.last %}, {% endif %}
+                {% endif %}
+              {% endfor %}
+            {% endfor %}
+          </span>
+        {% endif %}
+        {% if filtro_empresa %}
+          {% if filtro_estado or filtro_categorias %}, {% endif %}
+          Empresa:
+          <span>
+            <strong>{{ filtro_empresa }}</strong>
+          </span>
+        {% endif %}
+        {% if buscar %}
+          {% if filtro_estado or filtro_categorias or filtro_empresa %}, {% endif %}
+          Búsqueda de texto: <span><strong>"{{ buscar }}"</strong></span>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+  <hr style="height: 5px; background-color: black; border: none" />
+  <table class="table table-striped table-bordered text-center">
+    <thead>
+      <tr>
+        {% if request.user.is_staff %}
+        <th class="text-center">Acciones</th>
+        <th class="text-center">Contacto</th>
+        {% endif %}
+        <th class="text-center">Empresa</th>
+        <th class="text-center">Nombre del proveedor</th>
+        <th class="text-center">Categorías asociadas</th>
+        <th class="text-center">Estado</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if proveedores %}
+        {% for p in proveedores %}
+        <tr>
+          {% if request.user.is_staff %}
+          <td class="text-center">
+            <a href="{% url 'detalles_de_proveedor' p.id %}" class="btn btn-outline-primary mt-2"
+              style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
+              <i class="fa-solid fa-eye" title="Ver"></i>
+            </a>
+            <a href="{% url 'editar_proveedor' p.id %}" class="btn btn-outline-success mt-2"
+              style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
+              <i class="fa fa-edit fa-sm" title="Editar"></i>
+            </a>
+<!-- Botón que abre el modal -->
+{% if p.cantidad_productos > 0 or p.cantidad_pedidos > 0 %}
+<button type="button"
+        class="btn btn-outline-secondary mt-2"
+        data-bs-toggle="modal"
+        data-bs-target="#modalBloqueado{{ p.id }}"
+        style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;"
+        title="No se puede eliminar">
+  <i class="fa fa-lock fa-sm text-warning"></i>
+</button>
+
+<div class="modal fade" id="modalBloqueado{{ p.id }}" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-warning">
+        <h5 class="modal-title">Eliminación bloqueada</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        Este proveedor no puede eliminarse porque tiene:
+        <ul class="mb-0">
+          {% if p.cantidad_productos > 0 %}
+            <li>{{ p.cantidad_productos }} productos asociados</li>
+          {% endif %}
+          {% if p.cantidad_pedidos > 0 %}
+            <li>{{ p.cantidad_pedidos }} pedidos registrados</li>
+          {% endif %}
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% else %}
+  <button type="button"
+          class="btn btn-outline-danger mt-2"
+          data-bs-toggle="modal"
+          data-bs-target="#modalEliminarProveedor{{ p.id }}"
+          style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;"
+          title="Eliminar">
+    <i class="fa fa-trash fa-sm"></i>
+  </button>
+{% endif %}
+
+
+
+<!-- Modal de confirmación -->
+<div class="modal fade" id="modalEliminarProveedor{{ p.id }}" tabindex="-1" aria-labelledby="modalEliminarProveedorLabel{{ p.id }}" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalEliminarProveedorLabel{{ p.id }}">Confirmar eliminación</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        ¿Estás seguro de que querés eliminar al proveedor <strong>{{ p.nombre }}</strong>?
+      </div>
+      <div class="modal-footer">
+        <form method="post" action="{% url 'eliminar_proveedor' p.id %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">Eliminar</button>
+        </form>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+          </td>
+          <td class="text-center">
+            <a href="https://wa.me/{{ p.telefono }}" target="_blank"
+              class="btn btn-outline-success mt-2 me-1"
+              style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;"
+              title="WhatsApp">
+              <i class="fab fa-whatsapp fa-sm"></i>
+            </a>
+            <a href="mailto:{{ p.mail }}?subject=Solicitud%20de%20Ferreteria%20Santa%20Rita%20-%20Rosario&body=--%0D%0ASaludos,%20Ferreteria%20Santa%20Rita."
+              class="btn btn-outline-primary mt-2"
+              style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;"
+              title="Enviar correo">
+              <i class="fa-solid fa-envelope"></i>
+            </a>
+          </td>
+          {% endif %}
+          <td class="text-center">{{ p.nombreEmpresa }}</td>
+          <td class="text-center">{{ p.nombreProv }}</td>
+          <td>
+            {% for cat in p.categoria.all %}
+            {{ cat.nombre }}{% if not forloop.last %}, {% endif %}
+            {% empty %}
+              No asignadas
+            {% endfor %}
+          </td>                         
+          <td>
+            <span class="badge {% if p.estado %}bg-success{% else %}bg-danger{% endif %} px-3 py-2">
+              {% if p.estado %}Activo{% else %}Inactivo{% endif %}
+            </span>
+          </td>
+        </tr>
+        {% endfor %}
+      {% else %}
+        <tr>
+          <td colspan="6" class="text-center">No se encontraron proveedores.</td>
+        </tr>
+      {% endif %}
+    </tbody>
+  </table>
+</div>
+{% endblock Contenido %}

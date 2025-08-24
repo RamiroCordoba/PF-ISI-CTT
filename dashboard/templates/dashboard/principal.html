@@ -283,6 +283,69 @@
                 </nav>
               </div>
 
+              <a
+                class="nav-link collapsed"
+                href="#"
+                data-bs-toggle="collapse"
+                data-bs-target="#collapseIva"
+                aria-expanded="false"
+                aria-controls="collapseIva"
+              >
+                <div class="sb-nav-link-icon">
+                  <i class="fas fa-credit-card"></i>
+                </div>
+                IVA
+                <div class="sb-sidenav-collapse-arrow">
+                  <i class="fas fa-angle-down"></i>
+                </div>
+              </a>
+              <div
+                class="collapse"
+                id="collapseIva"
+                aria-labelledby="headingIva"
+                data-bs-parent="#sidenavAccordion"
+              >
+                <nav class="sb-sidenav-menu-nested nav">
+                  <a class="nav-link" href="{% url 'mis_iva' %}">
+                    Lista de IVA
+                  </a>
+                  <a class="nav-link" href="{% url 'nuevo_iva' %}">
+                    Nuevo IVA
+                  </a>
+                </nav>
+              </div>
+                <a
+                class="nav-link collapsed"
+                href="#"
+                data-bs-toggle="collapse"
+                data-bs-target="#collapseMoneda"
+                aria-expanded="false"
+                aria-controls="collapseMoneda"
+              >
+                <div class="sb-nav-link-icon">
+                  <i class="fas fa-credit-card"></i>
+                </div>
+                Moneda
+                <div class="sb-sidenav-collapse-arrow">
+                  <i class="fas fa-angle-down"></i>
+                </div>
+              </a>
+              <div
+                class="collapse"
+                id="collapseMoneda"
+                aria-labelledby="headingMoneda"
+                data-bs-parent="#sidenavAccordion"
+              >
+                <nav class="sb-sidenav-menu-nested nav">
+                  <a class="nav-link" href="{% url 'mis_monedas' %}">
+                    Lista de Monedas
+                  </a>
+                  <a class="nav-link" href="{% url 'nueva_moneda' %}">
+                    Nuevo Moneda
+                  </a>
+                </nav>
+              </div>
+
               <div class="sb-sidenav-menu-heading">Registros</div>
               <a class="nav-link" href="charts.html">
                 <div class="sb-nav-link-icon">

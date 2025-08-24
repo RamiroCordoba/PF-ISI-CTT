@@ -1,0 +1,106 @@
+{% extends 'dashboard/principal.html' %} 
+{% block Contenido %}
+<div class="container-fluid px-4" style="background-color: #f5f6fa; min-height: 100vh;">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-7">
+      <div class="card border-0 mt-4 shadow-lg" style="box-shadow: 0 6px 32px 0 rgba(0,0,0,0.10), 0 1.5px 6px 0 rgba(0,0,0,0.08);">
+        <div class="card-header text-white text-center py-3 rounded-top" style="background: #ff8800;">
+          <h3 class="mb-0">
+            {% if form.instance.pk %}
+              <i class="fa fa-edit me-2"></i>Editando proveedor
+            {% else %}
+              <i class="fa fa-plus me-2"></i>Nuevo proveedor
+            {% endif %}
+          </h3>
+        </div>
+        <div class="card-body bg-white">
+          <form action="" method="post" autocomplete="off">
+            {% csrf_token %}
+            <div class="mb-4">
+              <label for="id_nombreEmpresa" class="form-label fw-semibold">Empresa</label>
+              <input type="text" name="nombreEmpresa" class="form-control form-control-lg" id="id_nombreEmpresa" value="{{ form.nombreEmpresa.value|default_if_none:'' }}">
+              {% if form.nombreEmpresa.errors %}
+                <div class="text-danger small mt-1">{{ form.nombreEmpresa.errors }}</div>
+              {% endif %}
+            </div>
+            <div class="mb-4">
+              <label for="id_nombreProv" class="form-label fw-semibold">Proveedor</label>
+              <input type="text" name="nombreProv" class="form-control form-control-lg" id="id_nombreProv" value="{{ form.nombreProv.value|default_if_none:'' }}">
+              {% if form.nombreProv.errors %}
+                <div class="text-danger small mt-1">{{ form.nombreProv.errors }}</div>
+              {% endif %}
+            </div>
+            <div class="mb-4">
+              <label for="id_telefono" class="form-label fw-semibold">Teléfono</label>
+              <input type="text" name="telefono" class="form-control form-control-lg" id="id_telefono" value="{{ form.telefono.value|default_if_none:'' }}">
+              {% if form.telefono.errors %}
+                <div class="text-danger small mt-1">{{ form.telefono.errors }}</div>
+              {% endif %}
+            </div>
+            <div class="mb-4">
+              <label for="id_mail" class="form-label fw-semibold">Email</label>
+              <input type="email" name="mail" class="form-control form-control-lg" id="id_mail" value="{{ form.mail.value|default_if_none:'' }}">
+              {% if form.mail.errors %}
+                <div class="text-danger small mt-1">{{ form.mail.errors }}</div>
+              {% endif %}
+            </div>
+            <div class="mb-4">
+              <label for="id_estado" class="form-label fw-semibold">Estado</label>
+              <select name="estado" id="id_estado" class="form-select form-select-lg" style="width: 100%;">
+                <option value="True" {% if form.estado.value == True or form.estado.value == 'True' %}selected{% endif %}>Activo</option>
+                <option value="False" {% if form.estado.value == False or form.estado.value == 'False' %}selected{% endif %}>Inactivo</option>
+              </select>
+              {% if form.estado.errors %}
+                <div class="text-danger small mt-1">{{ form.estado.errors }}</div>
+              {% endif %}
+            </div>
+            <div class="mb-4">
+              <label for="id_direccion" class="form-label fw-semibold">Dirección</label>
+              <input type="text" name="direccion" class="form-control form-control-lg" id="id_direccion" value="{{ form.direccion.value|default_if_none:'' }}">
+              {% if form.direccion.errors %}
+                <div class="text-danger small mt-1">{{ form.direccion.errors }}</div>
+              {% endif %}
+            </div>
+            <div class="mb-4">
+              <label for="id_provincia" class="form-label fw-semibold">Provincia</label>
+              <input type="text" name="provincia" class="form-control form-control-lg" id="id_provincia" value="{{ form.provincia.value|default_if_none:'' }}">
+              {% if form.provincia.errors %}
+                <div class="text-danger small mt-1">{{ form.provincia.errors }}</div>
+              {% endif %}
+            </div>
+            <div class="mb-4">
+              <label for="id_ciudad" class="form-label fw-semibold">Ciudad</label>
+              <input type="text" name="ciudad" class="form-control form-control-lg" id="id_ciudad" value="{{ form.ciudad.value|default_if_none:'' }}">
+              {% if form.ciudad.errors %}
+                <div class="text-danger small mt-1">{{ form.ciudad.errors }}</div>
+              {% endif %}
+            </div>
+            <div class="mb-4">
+              <label class="form-label fw-semibold">Categorías</label>
+              <div>
+                {% for cat in form.categoria %}
+                  <div class="form-check" style="font-size: 1.05em; min-height: 1.7em;">
+                    <input type="checkbox" name="categoria" value="{{ cat.data.value }}" id="{{ cat.id_for_label }}" class="form-check-input" style="transform: scale(1.08); margin-right: 7px;" {% if cat.data.selected %}checked{% endif %}>
+                    <label class="form-check-label" for="{{ cat.id_for_label }}">
+                      {{ cat.choice_label }}
+                    </label>
+                  </div>
+                {% endfor %}
+              </div>
+              {% if form.categoria.errors %}<div class="text-danger small mt-1">{{ form.categoria.errors }}</div>{% endif %}
+            </div>
+            <div class="d-flex justify-content-center gap-2 mt-4">
+              <button class="btn px-4 text-white" style="background: #ff8800;" type="submit">
+                <i class="fa fa-save me-1"></i>Guardar
+              </button>
+              <button class="btn btn-secondary px-4" type="button" onclick="window.location.href='{% url 'mis_proveedores' %}'">
+                <i class="fa fa-times me-1"></i>Cancelar
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock Contenido %}
