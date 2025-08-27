@@ -2,13 +2,13 @@ from django.db import models
 from productos.models import Producto,FormaPago
 
 class Cliente(models.Model):
-    nombre = models.CharField(max_length=100, unique=True, blank=False, null=False)
-    apellido = models.CharField(max_length=100, unique=True, blank=False, null=False)
-    razon_social = models.CharField(max_length=150, unique=True, blank=True, null=True)
-    email = models.EmailField(max_length=254, unique=True, blank=False, null=False) 
-    cuit = models.CharField(max_length=20, unique=True, blank=False, null=False)
-    telefono = models.CharField(max_length=20, unique=True, blank=True, null=True)
-    direccion = models.CharField(max_length=200, unique=True, blank=True, null=True)
+    nombre = models.CharField(max_length=100,  blank=False, null=False)
+    apellido = models.CharField(max_length=100, blank=False, null=False)
+    razon_social = models.CharField(max_length=150, blank=True, null=True)
+    email = models.EmailField(max_length=254, blank=False, null=False) 
+    cuit = models.CharField(max_length=11, unique=True, blank=False, null=False)
+    telefono = models.CharField(max_length=20,  blank=True, null=True)
+    direccion = models.CharField(max_length=200, blank=True, null=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     activo = models.BooleanField(default=True)
     condicion_fiscal = models.ForeignKey('condicionfiscal', on_delete=models.PROTECT, related_name='clientes')

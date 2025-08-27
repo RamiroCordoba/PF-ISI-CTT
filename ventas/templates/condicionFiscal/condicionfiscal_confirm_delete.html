@@ -1,0 +1,29 @@
+{% extends 'dashboard/principal.html' %}
+{% block Contenido %}
+<div class="container-fluid px-4">
+  <h1 class="mt-4">Eliminar Condición Fiscal</h1>
+  <hr style="height: 5px; background-color: black; border: none" />
+
+  <form method="post">
+    {% csrf_token %}
+    <div class="text-center">
+      <h3>¿Estás seguro de que querés eliminar esta condición fiscal?</h3>
+      <p style="color: red">
+        <strong>{{ object.nombre }}</strong><br>
+        <small>{% if object.activo %}Activo{% else %}Inactivo{% endif %}</small>
+      </p>
+    </div>
+
+    <div class="text-center mt-4">
+      <input type="submit" class="btn btn-danger px-4" value="Confirmar" />
+      <button
+        class="btn btn-secondary px-4"
+        type="button"
+        onclick="window.location.href='{% url 'mis_condiciones_fiscales' %}'"
+      >
+        Cancelar
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

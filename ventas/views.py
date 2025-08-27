@@ -3,6 +3,7 @@ from .models import *
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView,CreateView,UpdateView,DeleteView,DetailView
 from django.urls import reverse_lazy
+from .forms import *
 
 class IvaList(LoginRequiredMixin, ListView):
     model = Iva
@@ -116,8 +117,8 @@ class MonedaDetail(DetailView):
 
 class CondicionFiscalList(LoginRequiredMixin, ListView):
     model = CondicionFiscal
-    template_name = "moneda/moneda_list.html"
-    context_object_name = "monedas"
+    template_name = "condicionfiscal/condicionfiscal_list.html"
+    context_object_name = "condicionesFiscales"
 
     def get_queryset(self):
         queryset = super().get_queryset().order_by("id")
@@ -149,21 +150,78 @@ class CondicionFiscalList(LoginRequiredMixin, ListView):
 class CondicionFiscalCreate(LoginRequiredMixin,CreateView):
      model=CondicionFiscal
      fields = ["nombre", "activo"]
-     template_name="condicionfiscal/condicionfiscal_form.html"
+     template_name="condicionFiscal/condicionfiscal_form.html"
      success_url = reverse_lazy("mis_condiciones_fiscales")
      
 class CondicionFiscalUpdate(LoginRequiredMixin,UpdateView):
      model=CondicionFiscal
      fields = ["nombre", "activo"]
-     template_name="condicionfiscal/condicionfiscal_form.html"
+     template_name="condicionFiscal/condicionfiscal_form.html"
      success_url = reverse_lazy("mis_condiciones_fiscales")
 
 class CondicionFiscalDelete(LoginRequiredMixin,DeleteView):
      model=CondicionFiscal
-     template_name="condicionfiscal/condicionfiscal_confirm_delete.html"
+     template_name="condicionFiscal/condicionfiscal_confirm_delete.html"
      success_url = reverse_lazy("mis_condiciones_fiscales")
 
 class CondicionFiscalDetail(DetailView):
      model=CondicionFiscal
-     template_name="condicionfiscal/condicionfiscal_details.html"
+     template_name="condicionFiscal/condicionfiscal_details.html"
      context_object_name = 'condicionFiscal'
+
+
+class ClienteList(LoginRequiredMixin, ListView):
+    model = Cliente
+    template_name = "cliente/cliente_list.html"
+    context_object_name = "clientes"
+
+    def get_queryset(self):
+        queryset = super().get_queryset().order_by("id")
+
+        buscar = self.request.GET.get("buscar", "").strip()
+        estados = self.request.GET.getlist("estado")  
+
+        if buscar:
+            queryset = queryset.filter(nombre__icontains=buscar)
+
+        if estados:
+            if "activo" in estados and "inactivo" in estados:
+                pass
+            elif "activo" in estados:
+                queryset = queryset.filter(activo=True)
+            elif "inactivo" in estados:
+                queryset = queryset.filter(activo=False)
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["buscar"] = self.request.GET.get("buscar", "")
+        context["filtro_estados"] = self.request.GET.getlist("estado")  
+        return context
+
+
+  
+class ClienteCreate(LoginRequiredMixin,CreateView):
+     model=Cliente
+     form_class = ClienteForm
+     #fields = ['nombre', 'apellido', 'razon_social', 'email', 'cuit', 'telefono', 'direccion', 'condicion_fiscal']
+     template_name="cliente/cliente_form.html"
+     success_url = reverse_lazy("mis_clientes")
+     
+class ClienteUpdate(LoginRequiredMixin,UpdateView):
+     model=Cliente
+     form_class = ClienteForm
+     #fields = ['nombre', 'apellido', 'razon_social', 'email', 'cuit', 'telefono', 'direccion', 'condicion_fiscal']
+     template_name="cliente/cliente_form.html"
+     success_url = reverse_lazy("mis_clientes")
+
+class ClienteDelete(LoginRequiredMixin,DeleteView):
+     model=Cliente
+     template_name="cliente/cliente_confirm_delete.html"
+     success_url = reverse_lazy("mis_clientes")
+
+class ClienteDetail(DetailView):
+     model=Cliente
+     template_name="cliente/cliente_details.html"
+     context_object_name = 'cliente'

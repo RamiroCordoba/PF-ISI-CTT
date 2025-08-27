@@ -368,7 +368,7 @@
                 data-bs-parent="#sidenavAccordion"
               >
                 <nav class="sb-sidenav-menu-nested nav">
-                  <a class="nav-link" href="{% url 'mis_condiciones_ficales' %}">
+                  <a class="nav-link" href="{% url 'mis_condiciones_fiscales' %}">
                     Lista de Condiciones Fiscales
                   </a>
                   <a class="nav-link" href="{% url 'nueva_condicion_fiscal' %}">
@@ -376,7 +376,37 @@
                   </a>
                 </nav>
               </div>
-
+               <a
+                class="nav-link collapsed"
+                href="#"
+                data-bs-toggle="collapse"
+                data-bs-target="#collapseClientes"
+                aria-expanded="false"
+                aria-controls="collapseClientes"
+              >
+                <div class="sb-nav-link-icon">
+                  <i class="fas fa-credit-card"></i>
+                </div>
+                Moneda
+                <div class="sb-sidenav-collapse-arrow">
+                  <i class="fas fa-angle-down"></i>
+                </div>
+              </a>
+              <div
+                class="collapse"
+                id="collapseClientes"
+                aria-labelledby="headingClientes"
+                data-bs-parent="#sidenavAccordion"
+              >
+                <nav class="sb-sidenav-menu-nested nav">
+                  <a class="nav-link" href="{% url 'mis_clientes' %}">
+                    Lista de Clientes
+                  </a>
+                  <a class="nav-link" href="{% url 'nuevo_cliente' %}">
+                    Nuevo Cliente
+                  </a>
+                </nav>
+              </div>
               <div class="sb-sidenav-menu-heading">Registros</div>
               <a class="nav-link" href="charts.html">
                 <div class="sb-nav-link-icon">

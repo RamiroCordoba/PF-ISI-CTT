@@ -17,9 +17,15 @@ urlpatterns = [
     path('moneda/informacion/<int:pk>/', MonedaDetail.as_view(), name='detalles_moneda'),
     path('moneda/eliminar_moneda/<int:pk>/', MonedaDelete.as_view(), name='eliminar_moneda'),   
     #Condicion Fiscal
-    path('condicion_fiscal/', CondicionFiscalList.as_view(), name='mis_condiciones_ficales'),
+    path('condicion_fiscal/', CondicionFiscalList.as_view(), name='mis_condiciones_fiscales'),
     path('condicion_fiscal/nueva_condicion_fiscal/', CondicionFiscalCreate.as_view(), name='nueva_condicion_fiscal'),
     path('condicion_fiscal/editar_condicion_fiscal/<int:pk>/', CondicionFiscalUpdate.as_view(), name='editar_condicion_fiscal'),
     path('condicion_fiscal/informacion/<int:pk>/', CondicionFiscalDetail.as_view(), name='detalles_condicion_fiscal'),
-    path('condicion_fiscal/eliminar_condicion_fiscal/<int:pk>/', CondicionFiscalDelete.as_view(), name='eliminar_condicion_fiscal'),    
+    path('condicion_fiscal/eliminar_condicion_fiscal/<int:pk>/', CondicionFiscalDelete.as_view(), name='eliminar_condicion_fiscal'),
+    #Cliente
+    path('cliente/', ClienteList.as_view(), name='mis_clientes'),
+    path('cliente/nuevo_cliente/', ClienteCreate.as_view(), name='nuevo_cliente'),
+    path('cliente/editar_cliente/<int:pk>/', ClienteUpdate.as_view(), name='editar_cliente'),
+    path('cliente/informacion/<int:pk>/', ClienteDetail.as_view(), name='detalles_cliente'),
+    path('cliente/eliminar_cliente/<int:pk>/', ClienteDelete.as_view(), name='eliminar_cliente'),
 ]

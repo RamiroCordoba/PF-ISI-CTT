@@ -1,0 +1,48 @@
+{% extends 'dashboard/principal.html' %}
+{% block Contenido %}
+<div class="container-fluid px-4">
+
+  <!-- Migas de pan -->
+  <nav aria-label="breadcrumb" class="mt-4 rounded px-3 py-2" style="background-color: #f0f0f0">
+    <ol class="breadcrumb mb-0 text-muted">
+      <li class="breadcrumb-item">
+        <a href="{% url 'dashboard' %}" class="text-decoration-none text-muted fw-bold">Inicio</a>
+      </li>
+      <li class="breadcrumb-item">
+        <a href="{% url 'mis_condiciones_fiscales' %}" class="text-decoration-none text-muted fw-bold">Condiciones Fiscales</a>
+      </li>
+      <li class="breadcrumb-item active" aria-current="page">Condición: {{ condicionFiscal.nombre }}</li>
+    </ol>
+  </nav>
+
+  <!-- Título y botones -->
+  <div class="d-flex justify-content-between align-items-center mt-3 mb-2">
+    <h1 class="mb-0">Detalle de Condición Fiscal: {{ condicionFiscal.nombre }}</h1>
+    <div class="d-flex gap-2">
+      <a href="{% url 'mis_condiciones_fiscales' %}" class="btn btn-outline-secondary">
+        <i class="fa fa-arrow-left me-1"></i> Volver
+      </a>
+      {% if request.user.is_staff %}
+      <a href="{% url 'editar_condicion_fiscal' condicionFiscal.id %}" class="btn btn-outline-success">
+        <i class="fa fa-edit me-1"></i> Editar
+      </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Separador -->
+  <hr class="my-3 border-top border-2 border-dark-subtle" />
+
+  <!-- Información de la condición fiscal -->
+  <div class="container mt-4">
+    <p><strong>Nombre:</strong> {{ condicion.nombre }}</p>
+    <p><strong>Fecha de creación:</strong> {{ condicionFiscal.fecha_creacion|date:"d/m/Y H:i" }}</p>
+    <p><strong>Activo:</strong>
+      <span class="badge {% if condicionFiscal.activo %}bg-success{% else %}bg-secondary{% endif %}">
+        {% if condicionFiscal.activo %}Sí{% else %}No{% endif %}
+      </span>
+    </p>
+  </div>
+
+</div>
+{% endblock %}
