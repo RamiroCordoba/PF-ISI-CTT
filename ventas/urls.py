@@ -28,4 +28,13 @@ urlpatterns = [
     path('cliente/editar_cliente/<int:pk>/', ClienteUpdate.as_view(), name='editar_cliente'),
     path('cliente/informacion/<int:pk>/', ClienteDetail.as_view(), name='detalles_cliente'),
     path('cliente/eliminar_cliente/<int:pk>/', ClienteDelete.as_view(), name='eliminar_cliente'),
+    #Venta
+    path('venta/', VentaList.as_view(), name='mis_ventas'),
+    path('venta/nueva_venta/', VentaCreate.as_view(), name='nueva_venta'),
+    path('venta/editar_venta/<int:pk>/', VentaUpdate.as_view(), name='editar_venta'),
+    path('venta/informacion/<int:pk>/', VentaDetail.as_view(), name='detalles_venta'),
+    path('venta/eliminar_venta/<int:pk>/', VentaDelete.as_view(), name='eliminar_venta'),
+    path('ajax/obtener_precio/', obtener_precio, name='obtener_precio_producto'),
+    path('ajax/buscar_productos2/', buscar_productos2, name='buscar_productos2'),
+    path('autocomplete-productos2/', autocomplete_productos2, name='autocomplete_productos2'),
 ]

@@ -2,7 +2,6 @@
 {% load static %}
 {% block Contenido %}
 
-
 <div class="container-fluid px-4" style="background-color: #f5f6fa; min-height: 100vh;">
   <div class="row justify-content-center">
     <div class="col-12 col-lg-10">
@@ -17,86 +16,76 @@
           </h3>
         </div>
         <div class="card-body bg-white">
-          <form action="" method="post" id="pedidoForm">
+          <form method="post" id="pedidoForm">
             {% csrf_token %}
+            {{ formset.management_form }}
+
+            <!-- Datos del pedido -->
             <div class="row">
               <div class="col-md-6">
                 {% if form.instance.pk %}
                   <div class="mb-4">
-                    <label class="form-label fw-semibold" style="color: #ff8800; font-size: 1.15em; letter-spacing: 0.5px;">
-                      <i class="fa fa-industry me-2"></i>Proveedor
-                    </label>
-                    <div style="position: relative; background: linear-gradient(90deg, #fff3e0 0%, #ffe0b2 100%); border-radius: 0.7rem; box-shadow: 0 2px 8px 0 rgba(255,136,0,0.08); border: 2px solid #ff8800; padding: 0.7rem;">
+                    <label class="form-label fw-semibold" style="color:#ff8800;"><i class="fa fa-industry me-2"></i>Proveedor</label>
+                    <div style="position:relative; background:linear-gradient(90deg,#fff3e0 0%,#ffe0b2 100%); border-radius:0.7rem; box-shadow:0 2px 8px rgba(255,136,0,0.08); border:2px solid #ff8800; padding:0.7rem;">
                       <input type="hidden" name="proveedor" value="{{ form.instance.proveedor.id }}">
-                      <input type="text" class="form-control form-control-lg border-0" value="{{ form.instance.proveedor.nombreEmpresa }}" readonly style="background-color: transparent;">
+                      <input type="text" class="form-control border-0" value="{{ form.instance.proveedor.nombreEmpresa }}" readonly style="background:transparent;">
                     </div>
                   </div>
                 {% else %}
                   <div class="mb-4">
-                    <label class="form-label fw-semibold" style="color: #ff8800; font-size: 1.15em; letter-spacing: 0.5px;">
-                      <i class="fa fa-industry me-2"></i>Proveedor
-                    </label>
-                    <div style="position: relative; background: linear-gradient(90deg, #fff3e0 0%, #ffe0b2 100%); border-radius: 0.7rem; box-shadow: 0 2px 8px 0 rgba(255,136,0,0.08); border: 2px solid #ff8800; padding: 0.7rem;">
-                      <select name="proveedor" id="id_proveedor" class="form-select form-select-lg border-0" style="width: 100%; background: transparent; appearance: none; padding-right: 2.2em;">
+                    <label class="form-label fw-semibold" style="color:#ff8800;"><i class="fa fa-industry me-2"></i>Proveedor</label>
+                    <div style="position:relative; background:linear-gradient(90deg,#fff3e0 0%,#ffe0b2 100%); border-radius:0.7rem; box-shadow:0 2px 8px rgba(255,136,0,0.08); border:2px solid #ff8800; padding:0.7rem;">
+                      <select name="proveedor" id="id_proveedor" class="form-select form-select-lg border-0" style="width:100%; background:transparent; appearance:none; padding-right:2.2em;">
+                        <option value="">-- Seleccione proveedor --</option>
                         {% for option in form.proveedor.field.choices %}
                           <option value="{{ option.0 }}" {% if option.0 == form.proveedor.value %}selected{% endif %}>{{ option.1 }}</option>
                         {% endfor %}
                       </select>
-                      <style>
-                        #id_proveedor.form-select,
-                        #id_forma_pago.form-select,
-                        input[type="date"].form-control {
-                          font-size: 1em !important;
-                          min-height: 2em !important;
-                          padding-top: 0.2em !important;
-                          padding-bottom: 0.2em !important;
-                        }
-                      </style>
-                      <span style="position: absolute; right: 1.2em; top: 50%; transform: translateY(-50%); pointer-events: none; font-size: 1.3em; color: #ff8800;">
+                      <span style="position:absolute; right:1.2em; top:50%; transform:translateY(-50%); pointer-events:none; font-size:1.3em; color:#ff8800;">
                         <i class="fa fa-chevron-down"></i>
                       </span>
                     </div>
+                    <div id="proveedor-error" class="text-danger mt-1"></div>
                   </div>
                 {% endif %}
+
+                <!-- Forma de pago -->
                 <div class="mb-4">
-                  <label class="form-label fw-semibold" style="color: #ff8800; font-size: 1.15em; letter-spacing: 0.5px;">
-                    <i class="fa fa-credit-card me-2"></i>Forma de pago
-                  </label>
-                  <div style="position: relative; background: linear-gradient(90deg, #fff3e0 0%, #ffe0b2 100%); border-radius: 0.7rem; box-shadow: 0 2px 8px 0 rgba(255,136,0,0.08); border: 2px solid #ff8800; padding: 0.7rem;">
-                    <select name="forma_pago" id="id_forma_pago" class="form-select form-select-lg border-0" style="width: 100%; background: transparent; appearance: none; padding-right: 2.2em;">
+                  <label class="form-label fw-semibold" style="color:#ff8800;"><i class="fa fa-credit-card me-2"></i>Forma de pago</label>
+                  <div style="position:relative; background:linear-gradient(90deg,#fff3e0 0%,#ffe0b2 100%); border-radius:0.7rem; box-shadow:0 2px 8px rgba(255,136,0,0.08); border:2px solid #ff8800; padding:0.7rem;">
+                    <select name="forma_pago" id="id_forma_pago" class="form-select form-select-lg border-0" style="width:100%; background:transparent; appearance:none; padding-right:2.2em;">
+                      <option value="">-- Seleccione forma de pago --</option>
                       {% for option in form.forma_pago.field.choices %}
-                        <option value="{{ option.0 }}" {% if option.1|lower == 'efectivo' %}selected{% elif option.0 == form.forma_pago.value %}selected{% endif %}>{{ option.1 }}</option>
+                        <option value="{{ option.0 }}" {% if option.0 == form.forma_pago.value %}selected{% endif %}>{{ option.1 }}</option>
                       {% endfor %}
                     </select>
-                    <span style="position: absolute; right: 1.2em; top: 50%; transform: translateY(-50%); pointer-events: none; font-size: 1.3em; color: #ff8800;">
+                    <span style="position:absolute; right:1.2em; top:50%; transform:translateY(-50%); pointer-events:none; font-size:1.3em; color:#ff8800;">
                       <i class="fa fa-chevron-down"></i>
                     </span>
                   </div>
+                  <div id="forma_pago-error" class="text-danger mt-1"></div>
                 </div>
+
+                <!-- Fecha estimada -->
                 {% if not form.instance.pk %}
                   <div class="mb-4">
-                    <label for="{{ form.fechaEstimadaEntrega.id_for_label }}" class="form-label fw-semibold" style="color: #ff8800; font-size: 1.15em; letter-spacing: 0.5px;">
-                      {{ form.fechaEstimadaEntrega.label }}
-                    </label>
-                    <div style="position: relative; background: linear-gradient(90deg, #fff3e0 0%, #ffe0b2 100%); border-radius: 0.7rem; box-shadow: 0 2px 8px 0 rgba(255,136,0,0.08); border: 2px solid #ff8800; padding: 0.7rem;">
-                      <input type="date" name="fechaEstimadaEntrega" id="{{ form.fechaEstimadaEntrega.id_for_label }}" class="form-control border-0" style="width: 100%; background: transparent; appearance: none; padding-right: 2.2em; color: #333;" value="{{ form.fechaEstimadaEntrega.value|default_if_none:'' }}">
+                    <label for="{{ form.fechaEstimadaEntrega.id_for_label }}" class="form-label fw-semibold" style="color:#ff8800;">{{ form.fechaEstimadaEntrega.label }}</label>
+                    <div style="position:relative; background:linear-gradient(90deg,#fff3e0 0%,#ffe0b2 100%); border-radius:0.7rem; box-shadow:0 2px 8px rgba(255,136,0,0.08); border:2px solid #ff8800; padding:0.7rem;">
+                      <input type="date" name="fechaEstimadaEntrega" id="{{ form.fechaEstimadaEntrega.id_for_label }}" class="form-control border-0" style="width:100%; background:transparent; padding-right:2.2em;" value="{{ form.fechaEstimadaEntrega.value|default_if_none:'' }}">
                     </div>
-                    {% if form.fechaEstimadaEntrega.errors %}
-                      <div class="text-danger small mt-1">{{ form.fechaEstimadaEntrega.errors }}</div>
-                    {% endif %}
+                    <div id="fecha-error" class="text-danger mt-1"></div>
                   </div>
                 {% endif %}
               </div>
             </div>
-            <!-- Comentarios mejorados -->
+
+            <!-- Comentarios -->
             <div class="row">
               <div class="col-12">
                 <div class="mb-4">
-                  <label for="id_comentarios" class="form-label fw-semibold" style="color: #ff8800; font-size: 1.15em; letter-spacing: 0.5px;">
-                    <i class="fa fa-comment-dots me-2"></i>Comentarios
-                  </label>
-                  <div style="background: linear-gradient(90deg, #fff3e0 0%, #ffe0b2 100%); border-radius: 0.7rem; box-shadow: 0 2px 8px 0 rgba(255,136,0,0.08); border: 2px solid #ff8800; padding: 1rem;">
-                    <textarea name="comentarios" class="form-control form-control-lg border-0" id="id_comentarios" rows="3" style="background: transparent; resize: vertical; font-size: 1.08em; color: #333; min-height: 60px;">{{ form.comentarios.value|default_if_none:'' }}</textarea>
+                  <label for="id_comentarios" class="form-label fw-semibold" style="color:#ff8800;"><i class="fa fa-comment-dots me-2"></i>Comentarios</label>
+                  <div style="background:linear-gradient(90deg,#fff3e0 0%,#ffe0b2 100%); border-radius:0.7rem; box-shadow:0 2px 8px rgba(255,136,0,0.08); border:2px solid #ff8800; padding:1rem;">
+                    <textarea name="comentarios" class="form-control form-control-lg border-0" id="id_comentarios" rows="3" style="background:transparent; resize:vertical; font-size:1.08em;">{{ form.comentarios.value|default_if_none:'' }}</textarea>
                   </div>
                   {% if form.comentarios.errors %}
                     <div class="text-danger small mt-1">{{ form.comentarios.errors }}</div>
@@ -104,99 +93,63 @@
                 </div>
               </div>
             </div>
-            <!-- Productos del pedido -->
+
+            <!-- Productos -->
             <div class="row">
               <div class="col-12">
-                <div class="mb-2">
-                  <h5 class="fw-bold" style="color: #ff8800; font-size: 1.18em;">
-                    <i class="fa fa-boxes me-2"></i>Productos del pedido
-                  </h5>
-                </div>
-                <div class="table-responsive" style="border-radius: 0.7rem; box-shadow: 0 2px 8px 0 rgba(255,136,0,0.08); border: 2px solid #ff8800; background: linear-gradient(90deg, #fff3e0 0%, #ffe0b2 100%); padding: 1rem;">
-                  <table class="table table-bordered align-middle mb-0" id="pedido-items-table" style="background: #fff; border-radius: 0.5rem; overflow: hidden;">
-                    {{ formset.management_form }}
+                <h5 class="fw-bold" style="color:#ff8800;"><i class="fa fa-boxes me-2"></i>Productos del pedido</h5>
+                <div class="table-responsive" style="border-radius:0.7rem; box-shadow:0 2px 8px rgba(255,136,0,0.08); border:2px solid #ff8800; background:linear-gradient(90deg,#fff3e0 0%,#ffe0b2 100%); padding:1rem;">
+                  <table class="table table-bordered align-middle mb-0" id="pedido-items-table" style="background:#fff; border-radius:0.5rem; overflow:hidden;">
                     <thead class="table-dark">
-                      <tr style="font-size: 1.07em;">
-                        <th style="background: #ff8800; color: #fff; border: none;">Producto</th>
-                        <th style="background: #ff8800; color: #fff; border: none;">Cantidad</th>
-                        <th style="background: #ff8800; color: #fff; border: none;">Precio (opcional)</th>
-                        <th style="background: #ff8800; color: #fff; border: none;">Subtotal</th>
+                      <tr style="font-size:1.07em;">
+                        <th style="background:#ff8800; color:#fff;">Producto</th>
+                        <th style="background:#ff8800; color:#fff;">Cantidad</th>
+                        <th style="background:#ff8800; color:#fff;">Precio</th>
+                        <th style="background:#ff8800; color:#fff;">Subtotal</th>
                         {% if not form.instance.completado %}
-                         <th style="background: #ff8800; color: #fff; border: none;">Acciones</th>
+                          <th style="background:#ff8800; color:#fff;">Acciones</th>
                         {% endif %}
                       </tr>
                     </thead>
                     <tbody>
-                    {% for item_form in formset %}
-                      {{ item_form.id }}  
-                      <tr class="pedido-item-row" style="font-size: 1.05em;">
+                      {% for item_form in formset %}
+                        <tr class="pedido-item-row">
                           <td>
-                            {{ item_form.producto }}
-                            {% if item_form.producto.errors %}
-                              <div class="text-danger small">{{ item_form.producto.errors }}</div>
-                            {% endif %}
+                            <input type="text" class="form-control producto-autocomplete" data-index="{{ forloop.counter0 }}" value="{% if item_form.instance.producto %}{{ item_form.instance.producto.nombre }}{% endif %}">
+                            <input type="hidden" name="{{ item_form.producto.html_name }}" value="{{ item_form.instance.producto.id|default_if_none:'' }}">
                           </td>
                           <td>
-                            {{ item_form.cantidad }}
-                            <div class="error-cantidad text-danger small" style="display:none;"></div>
+                            <input type="number" name="{{ item_form.cantidad.html_name }}" class="form-control cantidad-input" min="0" step="1" value="{{ item_form.instance.cantidad|default_if_none:'' }}">
                           </td>
-                        <td>
-                          <div class="input-group">
-                            <span class="input-group-text" style="background: #ffe0b2; color: #ff8800; border: none;">$</span>
-                            {{ item_form.precio }}
-                          </div>
-                        </td>
-                        <td class="subtotal-cell">0</td>
-                        {% if not form.instance.completado %}
                           <td>
-                            <button type="button" class="btn btn-danger btn-sm eliminar-fila" title="Eliminar" style="background: #ff5252; border: none;">
-                              &times;
-                            </button>
+                            <input type="text" name="{{ item_form.precio.html_name }}" class="form-control precio-input" value="{{ item_form.instance.precio|default_if_none:'' }}">
                           </td>
-                        {% endif %}
-                      </tr>
-                    {% endfor %}
+                          <td class="subtotal-cell">0</td>
+                          {% if not form.instance.completado %}
+                            <td><button type="button" class="btn btn-danger btn-sm eliminar-fila-pedido">&times;</button></td>
+                          {% endif %}
+                        </tr>
+                      {% endfor %}
                     </tbody>
                   </table>
                 </div>
                 <div class="mt-2 text-end">
-                  <strong style="font-size: 1.12em; color: #ff8800;">Total del pedido: $<span id="total-pedido">0</span></strong>
+                  <strong style="color:#ff8800;">Total del pedido: $<span id="total-pedido">0</span></strong>
                 </div>
                 {% if not form.instance.completado %}
-                  <button type="button" class="btn my-2 px-4 text-white" id="add-item-btn" style="background: #298f29ff; font-weight: 500; font-size: 1.08em; border-radius: 0.5rem;">
-                    <i class="fa fa-plus me-1"></i>Agregar producto
-                  </button>
+                  <button type="button" id="add-item-btn-pedido" class="btn my-2 px-4 text-white" style="background:#298f29;">Agregar producto</button>
                 {% endif %}
               </div>
             </div>
-            <div class="row">
-              <div class="col-md-6">
-                {% if form.instance.pk %}
-                  <div class="mb-4" id="fechaIngresoContainer">
-                    {{ form.fechaIngreso.label_tag }} {{ form.fechaIngreso }}
-                    {% if form.fechaIngreso.errors %}
-                      <div class="text-danger small mt-1">{{ form.fechaIngreso.errors }}</div>
-                    {% endif %}
-                  </div>
-                {% endif %}
-                <div class="mb-4">
-                  <div class="d-flex align-items-center mb-4" style="justify-content: space-between;">
-                    <label class="form-label fw-semibold mb-0 d-flex align-items-center" style="color: #ff8800; font-size: 1.08em; letter-spacing: 0.5px;">
-                      <i class="fa fa-check-circle me-2"></i>Pedido completo&nbsp;{{ form.completado }}
-                    </label>
-                  </div>
-                </div>
-              </div>
-            </div>
+
+            <!-- Botones -->
             <div class="d-flex justify-content-center gap-2 mt-4">
               {% if not form.instance.completado %}
-                <input class="btn px-4 text-white" style="background: #ff8800;" type="submit" value="Guardar" />
+                <input class="btn px-4 text-white" style="background:#ff8800;" type="submit" value="Guardar" />
               {% else %}
-                <button class="btn btn-secondary px-4" type="button" disabled>Pedido confirmado</button>
+                <button class="btn btn-secondary px-4" disabled>Pedido confirmado</button>
               {% endif %}
-              <button class="btn btn-secondary px-4" type="button" onclick="window.location.href='{% url "listar_pedidos" %}'">
-                Cancelar
-              </button>
+              <button class="btn btn-secondary px-4" type="button" onclick="window.location.href='{% url "listar_pedidos" %}'">Cancelar</button>
             </div>
           </form>
         </div>
@@ -205,303 +158,134 @@
   </div>
 </div>
 
+<!-- Plantilla oculta -->
+<table style="display:none;">
+  <tbody>
+    <tr id="pedido-item-template" class="pedido-item-row">
+      <td>
+        <input type="text" class="form-control producto-autocomplete" data-index="__prefix__" value="">
+        <input type="hidden" name="__prefix__-producto" value="">
+      </td>
+      <td>
+        <input type="number" name="__prefix__-cantidad" class="form-control cantidad-input" min="0" step="1" value="">
+      </td>
+      <td>
+        <input type="text" name="__prefix__-precio" class="form-control precio-input" value="">
+      </td>
+      <td class="subtotal-cell">0</td>
+      <td>
+        <button type="button" class="btn btn-danger btn-sm eliminar-fila-pedido">&times;</button>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
-<!-- jQuery y jQuery UI para autocompletar -->
+<!-- Scripts -->
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
 <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
 <script>
-  const pedidoCompletado = {{ form.instance.completado|yesno:"true,false" }};
-</script>
+$(function(){
 
-<script>
-$(function() {
-  function activateAutocomplete(scope) {
-    var $scope = scope || $(document);
-    $scope.find("select[name$='-producto']").each(function() {
-      var $select = $(this);
-
- 
-      $select.siblings("input[type='text']").remove();
-
-      var $input = $("<input type='text' class='form-control' placeholder='Buscar producto...'>");
-      $input.val($select.find("option:selected").text());
-      $select.after($input).hide();
+  function activarAutocomplete($scope){
+    $scope = $scope || $(document);
+    $scope.find(".producto-autocomplete").each(function(){
+      const $input = $(this);
+      const $hidden = $input.siblings("input[type='hidden']");
+      if($input.data("ui-autocomplete")) return;
 
       $input.autocomplete({
-        source: function(request, response) {
-          $.ajax({
-            url: "{% url 'autocomplete_productos' %}",
-            data: {
-              term: request.term,
-              proveedor_id: $("#id_proveedor").val()
-            },
-            success: function(data) {
-              response(data);
-            }
-          });
-        },
+        source: "{% url 'autocomplete_productos' %}",
         minLength: 2,
-        select: function(event, ui) {
-          $select.val(ui.item.id);
+        select: function(event, ui){
+          $input.val(ui.item.value);
+          $hidden.val(ui.item.id);
+          $input.closest("tr").find(".precio-input").val(parseFloat(ui.item.precio).toFixed(2));
+          calcularTotales();
         }
       });
-      if (pedidoCompletado) {
-        $input.prop("disabled", true); 
-      } 
     });
   }
 
-  activateAutocomplete();
+  function calcularTotales(){
+    let total = 0;
+    $("#pedido-items-table tbody tr").each(function(){
+      const cantidad = parseFloat($(this).find(".cantidad-input").val()) || 0;
+      const precio = parseFloat($(this).find(".precio-input").val()) || 0;
+      const subtotal = cantidad * precio;
+      $(this).find(".subtotal-cell").text(`$${subtotal.toFixed(2)}`);
+      total += subtotal;
+    });
+    $("#total-pedido").text(total.toFixed(2));
+  }
 
+  function validarItems(){
+    let valido=false;
+    $("#pedido-items-table tbody tr").each(function(){
+      const prod=$(this).find("input[type='hidden']").val();
+      const cant=parseFloat($(this).find(".cantidad-input").val())||0;
+      if(prod && cant>0) valido=true;
+    });
+    if(!valido){
+      if($("#formset-errors").length===0)
+        $("<div id='formset-errors' class='text-danger mt-2'></div>").insertBefore("#pedidoForm input[type='submit']");
+      $("#formset-errors").text("Debe agregar al menos un producto con cantidad.");
+    } else { $("#formset-errors").text(""); }
+    return valido;
+  }
 
-  $("#add-item-btn").click(function() {
-    var totalForms = $("#id_items-TOTAL_FORMS");
-    var currentCount = parseInt(totalForms.val());
-    var $lastRow = $(".pedido-item-row:last");
-    var $newRow = $lastRow.clone(false); 
+  $("#add-item-btn-pedido").click(function(){
+    const totalForms=$("#id_{{ formset.prefix }}-TOTAL_FORMS");
+    const formIndex=parseInt(totalForms.val());
 
-
-    $newRow.find("input, select").each(function() {
-      var name = $(this).attr("name");
-      if (name) {
-        var newName = name.replace(/-(\d+)-/, "-" + currentCount + "-");
-        $(this).attr("name", newName).attr("id", "id_" + newName);
-        $(this).val("");
-      }
+    const $template=$("#pedido-item-template").clone().removeAttr("id").show();
+    $template.find("input, select").each(function(){
+      const name=$(this).attr("name");
+      if(name) $(this).attr("name",name.replace("__prefix__",formIndex));
     });
 
+    $("#pedido-items-table tbody").append($template);
+    totalForms.val(formIndex+1);
 
-    $newRow.find(".subtotal-cell").text("0");
-
-  
-    $newRow.find("input[type='text']").val("").blur();
-    $newRow.find("select[name$='-producto']").val("");
-
-    $lastRow.after($newRow);
-    totalForms.val(currentCount + 1);
-
-
-    $(".ui-autocomplete").hide();
-
- 
-    activateAutocomplete($newRow);
-
+    activarAutocomplete($template);
     calcularTotales();
   });
-});
-</script>
 
-<script>
-$(function() {
-  $("#id_proveedor").change(function() {
-    var proveedorId = $(this).val();
-    if (!proveedorId) return;
-    $.get("{% url 'productos_por_proveedor' %}", {proveedor_id: proveedorId}, function(data) {
-      $("select[name$='-producto']").each(function() {
-        var $select = $(this);
-        var selected = $select.val();
-        $select.empty();
-        $select.append($('<option>', {value: '', text: ''}));
-        $.each(data.productos, function(i, prod) {
-          $select.append($('<option>', {value: prod.id, text: prod.nombre}));
-        });
-        if (selected) $select.val(selected);
-      });
-    });
-  });
- 
-  $("#id_proveedor").trigger('change');
-});
-</script>
-
-<script>
-function calcularTotales() {
-  var total = 0;
-  $("#pedido-items-table tbody tr").each(function() {
-    var $row = $(this);
-    var cantidad = parseFloat($row.find("input[name$='-cantidad']").val()) || 0;
-    var precio = parseFloat($row.find("input[name$='-precio']").val()) || 0;
-    var subtotal = cantidad * precio;
-    $row.find(".subtotal-cell").text(`$${subtotal.toFixed(2)}`);
-    total += subtotal;
-  });
-  $("#total-pedido").text(total.toFixed(2));
-}
-
-$(document).on("input", "input[name$='-cantidad'], input[name$='-precio']", calcularTotales);
-
-$("#add-item-btn").click(function() {
-  setTimeout(calcularTotales, 100); 
-});
-
-
-$(document).ready(calcularTotales);
-</script>
-
-<script>
-$(document).on("click", ".eliminar-fila", function() {
-  var $row = $(this).closest("tr");
-  var $table = $("#pedido-items-table tbody");
- 
-  if ($table.find("tr").length > 1) {
-    $row.remove();
-    var totalForms = $("#id_items-TOTAL_FORMS");
-    totalForms.val($table.find("tr").length);
+  $(document).on("click",".eliminar-fila-pedido",function(){
+    const $tbody=$("#pedido-items-table tbody");
+    const totalForms=$("#id_{{ formset.prefix }}-TOTAL_FORMS");
+    if($tbody.find("tr").length>1) $(this).closest("tr").remove();
+    else {
+      const $row=$tbody.find("tr:first");
+      $row.find("input").val("");
+      $row.find(".subtotal-cell").text("0");
+    }
+    totalForms.val($tbody.find("tr").length);
     calcularTotales();
-  } else {
+    validarItems();
+  });
 
-    $row.find("input, select").val("");
-    $row.find(".subtotal-cell").text("0");
-    calcularTotales();
-  }
+  $(document).on("input",".cantidad-input,.precio-input",calcularTotales);
+
+  $("#pedidoForm").on("submit",function(e){
+    let valido=true;
+    if($("#id_proveedor").length && !$("#id_proveedor").val()){ valido=false; $("#proveedor-error").text("Debe seleccionar un proveedor."); }
+    else $("#proveedor-error").text("");
+
+    if($("#id_forma_pago").length && !$("#id_forma_pago").val()){ valido=false; $("#forma_pago-error").text("Debe seleccionar una forma de pago."); }
+    else $("#forma_pago-error").text("");
+
+    if($("#id_fechaEstimadaEntrega").length && !$("#id_fechaEstimadaEntrega").val()){ valido=false; $("#fecha-error").text("Debe ingresar una fecha estimada de entrega."); }
+    else $("#fecha-error").text("");
+
+    if(!validarItems()) valido=false;
+    if(!valido) e.preventDefault();
+  });
+
+  activarAutocomplete();
+  calcularTotales();
+
 });
 </script>
-
-<script>
-  document.addEventListener("DOMContentLoaded", function() {
-    const completadoCheckbox = document.getElementById("id_completado");
-    const fechaIngresoContainer = document.getElementById("fechaIngresoContainer");
-
-    function toggleFechaIngreso() {
-      if (completadoCheckbox && fechaIngresoContainer) {
-        fechaIngresoContainer.style.display = completadoCheckbox.checked ? "block" : "none";
-      }
-    }
-
-    if (completadoCheckbox) {
-      completadoCheckbox.addEventListener("change", toggleFechaIngreso);
-      toggleFechaIngreso();
-    }
-  });
-</script>
-<script>
-  document.addEventListener("DOMContentLoaded", function() {
-    const fechaInput = document.getElementById("id_fechaIngreso");
-    if (fechaInput && !fechaInput.value) {
-      const today = new Date().toISOString().split("T")[0];
-      fechaInput.value = today;
-    }
-  });
-</script>
-{% if formset.non_form_errors %}
-  <div class="alert alert-danger" id="formset-errors">
-    {{ formset.non_form_errors }}
-  </div>
-{% else %}
-  <div class="alert alert-danger d-none" id="formset-errors"></div>
-{% endif %}
-
-
-<!--{% for item_form in formset %}
-  {% for field in item_form %}
-    {% if field.errors %}
-      <div class="text-danger">{{ field.label }}: {{ field.errors }}</div>
-    {% endif %}
-  {% endfor %}
-{% endfor %}-->
-{% if form.errors %}
-  <div class="alert alert-danger">
-    {{ form.errors }}
-  </div>
-{% endif %}
-{% if form.instance.completado %}
-<script>
-  document.addEventListener("DOMContentLoaded", function() {
-
-    document.querySelectorAll("#add-item-btn, .eliminar-fila").forEach(btn => {
-      btn.disabled = true;
-    });
-  });
-</script>
-{% endif %}
-
-<script>
-function validarItems() {
-  let hayItemValido = false;
-
-  $("#pedido-items-table tbody tr").each(function() {
-    const producto = $(this).find("select[name$='-producto']").val();
-    const cantidad = parseFloat($(this).find("input[name$='-cantidad']").val()) || 0;
-
-    if (producto && cantidad > 0) {
-      hayItemValido = true;
-    }
-  });
-
-  const errorDiv = $("#formset-errors");
-  if (hayItemValido) {
-    errorDiv.fadeOut(200, function() {
-      errorDiv.addClass("d-none").text("");
-    });
-  } else {
-    errorDiv.removeClass("d-none").text("Debe agregar al menos un producto con cantidad.").fadeIn();
-  }
-}
-
-
-$(document).on("change input", "select[name$='-producto'], input[name$='-cantidad']", validarItems);
-
-
-$("#add-item-btn").click(function() {
-  setTimeout(validarItems, 100);
-});
-
-// Validar antes de enviar el formulario
-$("#pedidoForm").on("submit", function(e) {
-  let hayItemValido = false;
-
-  $("#pedido-items-table tbody tr").each(function() {
-    const producto = $(this).find("select[name$='-producto']").val();
-    const cantidad = parseFloat($(this).find("input[name$='-cantidad']").val()) || 0;
-
-    if (producto && cantidad > 0) {
-      hayItemValido = true;
-    }
-  });
-
-  const errorDiv = $("#formset-errors");
-  if (!hayItemValido) {
-    e.preventDefault();
-    errorDiv.removeClass("d-none").text("Debe agregar al menos un producto con cantidad.").fadeIn();
-  }
-});
-</script>
-
-<script>
-function validarCantidadPorProducto() {
-  $("#pedido-items-table tbody tr").each(function() {
-    const $row = $(this);
-    const producto = $row.find("select[name$='-producto']").val();
-    const cantidadInput = $row.find("input[name$='-cantidad']");
-    const cantidad = cantidadInput.val().trim();
-    const errorDiv = $row.find(".error-cantidad");
-
-    if (producto && cantidad === "") {
-      errorDiv.text("Este campo es obligatorio.").show();
-    } else {
-      errorDiv.hide();
-    }
-  });
-}
-
-// Validar al escribir o cambiar producto
-$(document).on("input change", "input[name$='-cantidad'], select[name$='-producto']", validarCantidadPorProducto);
-
-// Validar al agregar fila
-$("#add-item-btn").click(function() {
-  setTimeout(validarCantidadPorProducto, 100);
-});
-
-// Validar al enviar
-$("#pedidoForm").on("submit", function(e) {
-  validarCantidadPorProducto();
-  const hayErrores = $(".error-cantidad:visible").length > 0;
-  if (hayErrores) {
-    e.preventDefault();
-  }
-});
-</script>
-
 
 {% endblock Contenido %}

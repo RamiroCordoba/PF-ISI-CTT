@@ -408,12 +408,37 @@
                 </nav>
               </div>
               <div class="sb-sidenav-menu-heading">Registros</div>
-              <a class="nav-link" href="charts.html">
+               <a
+                class="nav-link collapsed"
+                href="#"
+                data-bs-toggle="collapse"
+                data-bs-target="#collapseVentas"
+                aria-expanded="false"
+                aria-controls="collapseVentas"
+              >
                 <div class="sb-nav-link-icon">
-                  <i class="fas fa-chart-area"></i>
+                  <i class="fas fa-credit-card"></i>
                 </div>
                 Ventas
+                <div class="sb-sidenav-collapse-arrow">
+                  <i class="fas fa-angle-down"></i>
+                </div>
               </a>
+              <div
+                class="collapse"
+                id="collapseVentas"
+                aria-labelledby="headingVentas"
+                data-bs-parent="#sidenavAccordion"
+              >
+                <nav class="sb-sidenav-menu-nested nav">
+                  <a class="nav-link" href="{% url 'mis_ventas' %}">
+                    Lista de Ventas
+                  </a>
+                  <a class="nav-link" href="{% url 'nueva_venta' %}">
+                    Nueva Ventas
+                  </a>
+                </nav>
+              </div>
               <a class="nav-link" href="tables.html">
                 <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
                 Informes

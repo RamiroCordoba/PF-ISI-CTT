@@ -1,15 +1,15 @@
 {% extends 'dashboard/principal.html' %}
 {% block Contenido %}
 <div class="container-fluid px-4">
-  <h1 class="mt-4">Pedidos</h1>
+  <h1 class="mt-4">Ventas</h1>
   <hr style="height: 5px; background-color: black; border: none" />
 
   <!-- Fila de funciones generales -->
   <div class="d-flex justify-content-between align-items-center py-2">
     <!-- Botones de acciones -->
     <div class="d-flex gap-2 flex-wrap">
-      <a href="{% url 'nuevo_pedido' %}" class="btn btn-primary btn-sm d-flex align-items-center justify-content-center px-4">
-        Nuevo pedido
+      <a href="{% url 'nueva_venta' %}" class="btn btn-primary btn-sm d-flex align-items-center justify-content-center px-4">
+        Nueva venta
       </a>
     </div>
 
@@ -25,41 +25,19 @@
           <label class="form-label mb-0">Hasta:</label>
           <input type="date" name="fecha_fin" class="form-control form-control-sm" value="{{ request.GET.fecha_fin }}">
         </div>
-        <!-- Completado -->
-        <div class="dropdown">
-          <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
-            Estado
-          </button>
-          <ul class="dropdown-menu p-2">
-            <li>
-              <div class="form-check mb-0">
-                <input class="form-check-input" type="checkbox" name="estado" value="completado"
-                       id="estado_completado" {% if "completado" in filtro_estados %}checked{% endif %}>
-                <label class="form-check-label" for="estado_completado">Completado</label>
-              </div>
-            </li>
-            <li>
-              <div class="form-check mb-0">
-                <input class="form-check-input" type="checkbox" name="estado" value="pendiente"
-                       id="estado_pendiente" {% if "pendiente" in filtro_estados %}checked{% endif %}>
-                <label class="form-check-label" for="estado_pendiente">Pendiente</label>
-              </div>
-            </li>
-          </ul>
-        </div>
 
-        <!-- Proveedores -->
+        <!-- Clientes -->
         <div class="dropdown">
           <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
-            Proveedor
+            Cliente
           </button>
           <ul class="dropdown-menu p-2" style="max-height: 200px; overflow-y: auto;">
-            {% for p in proveedores %}
+            {% for c in clientes %}
               <li>
                 <div class="form-check mb-0">
-                  <input class="form-check-input" type="checkbox" name="proveedor" value="{{ p.id }}"
-                         id="prov{{ p.id }}" {% if p.id|stringformat:"s" in filtro_proveedores %}checked{% endif %}>
-                  <label class="form-check-label" for="prov{{ p.id }}">{{ p.nombreEmpresa }}</label>
+                  <input class="form-check-input" type="checkbox" name="cliente" value="{{ c.id }}"
+                         id="cli{{ c.id }}" {% if c.id|stringformat:"s" in filtro_clientes %}checked{% endif %}>
+                  <label class="form-check-label" for="cli{{ c.id }}">{{ c.nombre }} {{ c.apellido }}</label>
                 </div>
               </li>
             {% endfor %}
@@ -68,7 +46,7 @@
 
         <!-- Buscador -->
         <div class="d-flex align-items-end gap-2">
-          <input type="text" name="buscar" class="form-control form-control-sm" placeholder="Buscar pedido..." value="{{ request.GET.buscar }}">
+          <input type="text" name="buscar" class="form-control form-control-sm" placeholder="Buscar venta..." value="{{ request.GET.buscar }}">
         </div>
 
         <!-- Botón filtrar -->
@@ -76,7 +54,7 @@
 
         <!-- Botón restablecer filtros -->
         {% if filtros_activos or request.GET.buscar %}
-          <a href="{% url 'listar_pedidos' %}" class="btn btn-outline-danger btn-sm" title="Restablecer filtros">
+          <a href="{% url 'mis_ventas' %}" class="btn btn-outline-danger btn-sm" title="Restablecer filtros">
             <i class="fa-solid fa-rotate-left"></i>
           </a>
         {% endif %}
@@ -88,24 +66,18 @@
   {% if filtros_activos or request.GET.buscar %}
   <div class="text-secondary small mt-3">
     Se está filtrando por
-    {% if filtro_estados %}
-      {% if "completado" in filtro_estados %} pedidos completados{% endif %}
-      {% if "pendiente" in filtro_estados %}
-        {% if "completado" in filtro_estados %} y{% endif %} pedidos pendientes
-      {% endif %}
-    {% endif %}
-    {% if filtro_proveedores %}
-      {% if filtro_estados %},{% endif %} con proveedor/es
-      {% for id in filtro_proveedores %}
-        {% for prov in proveedores %}
-          {% if prov.id|stringformat:"s" == id %}
-            {{ prov.nombreEmpresa }}{% if not forloop.last %}, {% endif %}
+    {% if filtro_clientes %}
+      ventas de cliente/s
+      {% for id in filtro_clientes %}
+        {% for cli in clientes %}
+          {% if cli.id|stringformat:"s" == id %}
+            {{ cli.nombre }} {{ cli.apellido }}{% if not forloop.last %}, {% endif %}
           {% endif %}
         {% endfor %}
       {% endfor %}
     {% endif %}
     {% if request.GET.buscar %}
-      {% if filtro_estados or filtro_proveedores %},{% endif %}
+      {% if filtro_clientes %},{% endif %}
       que coinciden con: "<strong>{{ request.GET.buscar }}</strong>"
     {% endif %}.
   </div>
@@ -113,112 +85,101 @@
 
   <hr style="height: 5px; background-color: black; border: none" />
 
-  <!-- Tabla de pedidos -->
+  <!-- Tabla de ventas -->
   <table class="table table-striped table-bordered text-center">
     <thead>
       <tr>
-        <th class="text-center">Acciones</th>
-        <th class="text-center">ID</th>
-        <th class="text-center">Proveedor</th>
-        <th class="text-center">Fecha</th>
-        <th class="text-center">Fecha Ingreso</th>
-        <th class="text-center">Comentarios</th>
-        <th class="text-center">Completado</th>
+        <th>Acciones</th>
+        <th>ID</th>
+        <th>Cliente</th>
+        <th>Fecha</th>
+        <th>Vendedor</th>
+        <th>Moneda</th>
+        <th>Forma de Pago</th>
+        <th>Descuento</th>
       </tr>
     </thead>
     <tbody>
-      {% for pedido in pedidos %}
+      {% for venta in ventas %}
       <tr>
-        <td class="text-center">
-          {% if request.user.is_staff %}
-            <a href="{% url 'editar_pedido' pedido.id %}" class="btn btn-outline-success mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
-          <i class="fa fa-edit fa-sm" title="Editar"></i>
-          </a>
-<!-- Botón que abre el modal -->
-<button type="button"
-        class="btn btn-outline-danger mt-2"
-        data-bs-toggle="modal"
-        data-bs-target="#modalEliminarPedido{{ pedido.id }}"
-        style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;"
-        title="Eliminar">
-  <i class="fa fa-trash fa-sm"></i>
-</button>
-
-<!-- Modal de confirmación -->
-<div class="modal fade" id="modalEliminarPedido{{ pedido.id }}" tabindex="-1" aria-labelledby="modalEliminarPedidoLabel{{ pedido.id }}" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="modalEliminarPedidoLabel{{ pedido.id }}">Confirmar eliminación</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-      </div>
-      <div class="modal-body">
-        ¿Estás seguro de que querés eliminar el pedido <strong>#{{ pedido.id }}</strong>?
-      </div>
-      <div class="modal-footer">
-        <form method="post" action="{% url 'eliminar_pedido' pedido.id %}">
-          {% csrf_token %}
-          <button type="submit" class="btn btn-danger">Eliminar</button>
-        </form>
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-          <a href="{% url 'detalle_de_pedido' pedido.id %}" class="btn btn-outline-primary mt-2"
-             style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
-            <i class="fa-solid fa-eye" title="Ver"></i>
-          </a>
-          <a href="{% url 'pedido_pdf' pedido.id %}" class="btn btn-outline-dark mt-2"
-            style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;"
-            title="Descargar PDF" target="_blank">
-            <i class="fa-solid fa-download"></i>
-          </a>
-        {% endif %}
-        </td>
-        <td>{{ pedido.id }}</td>
-        <td>{{ pedido.proveedor.nombreEmpresa }}</td>
-        <td>{{ pedido.fecha|date:"d/m/Y" }}</td>
-        <td>{{ pedido.fechaIngreso|default:"-" }}</td>
-        <td>{{ pedido.comentarios|default:"-" }}</td>
         <td>
-          {% if pedido.completado %}
-            <span class="badge bg-success">Sí</span>
-          {% else %}
-            <span class="badge bg-secondary">No</span>
+          {% if request.user.is_staff %}
+            <a href="{% url 'editar_venta' venta.id %}" class="btn btn-outline-success mt-2 btn-sm">
+              <i class="fa fa-edit fa-sm" title="Editar"></i>
+            </a>
+
+            <!-- Modal eliminar -->
+            <button type="button" class="btn btn-outline-danger mt-2 btn-sm" data-bs-toggle="modal" data-bs-target="#modalEliminarVenta{{ venta.id }}" title="Eliminar">
+              <i class="fa fa-trash fa-sm"></i>
+            </button>
+
+            <div class="modal fade" id="modalEliminarVenta{{ venta.id }}" tabindex="-1" aria-labelledby="modalEliminarVentaLabel{{ venta.id }}" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="modalEliminarVentaLabel{{ venta.id }}">Confirmar eliminación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                  </div>
+                  <div class="modal-body">
+                    ¿Estás seguro de que querés eliminar la venta <strong>#{{ venta.id }}</strong>?
+                  </div>
+                  <div class="modal-footer">
+                    <form method="post" action="{% url 'eliminar_venta' venta.id %}">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-danger">Eliminar</button>
+                    </form>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <a href="{% url 'detalle_venta' venta.id %}" class="btn btn-outline-primary mt-2 btn-sm">
+              <i class="fa-solid fa-eye" title="Ver"></i>
+            </a>
+            <a href="{% url 'venta_pdf' venta.id %}" class="btn btn-outline-dark mt-2 btn-sm" target="_blank" title="Descargar PDF">
+              <i class="fa-solid fa-download"></i>
+            </a>
           {% endif %}
         </td>
+        <td>{{ venta.id }}</td>
+        <td>{{ venta.cliente.nombre }} {{ venta.cliente.apellido }}</td>
+        <td>{{ venta.fecha|date:"d/m/Y" }}</td>
+        <td>{{ venta.vendedor|default:"-" }}</td>
+        <td>{{ venta.moneda.nombre|default:"-" }}</td>
+        <td>{{ venta.forma_pago.nombre|default:"-" }}</td>
+        <td>${{ venta.descuento|floatformat:2 }}</td>
       </tr>
       {% empty %}
       <tr>
-        <td colspan="7">No hay pedidos registrados.</td>
+        <td colspan="8">No hay ventas registradas.</td>
       </tr>
       {% endfor %}
     </tbody>
-    {% if is_paginated %}
-<nav aria-label="Paginación de pedidos">
-  <ul class="pagination justify-content-center">
-    {% if page_obj.has_previous %}
-      <li class="page-item">
-        <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value|urlencode }}&{% endif %}{% endfor %}page={{ page_obj.previous_page_number }}">Anterior</a>
-      </li>
-    {% endif %}
-    {% for num in paginator.page_range %}
-      <li class="page-item {% if page_obj.number == num %}active{% endif %}">
-        <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ num }}">{{ num }}</a>
-      </li>
-    {% endfor %}
-    {% if page_obj.has_next %}
-      <li class="page-item">
-        <<a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value|urlencode }}&{% endif %}{% endfor %}page={{ page_obj.next_page_number }}">Siguiente</a>
-      </li>
-    {% endif %}
-  </ul>
-</nav>
-{% endif %}
-
   </table>
+
+  <!-- Paginación -->
+  {% if is_paginated %}
+  <nav aria-label="Paginación de ventas">
+    <ul class="pagination justify-content-center">
+      {% if page_obj.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value|urlencode }}&{% endif %}{% endfor %}page={{ page_obj.previous_page_number }}">Anterior</a>
+        </li>
+      {% endif %}
+      {% for num in paginator.page_range %}
+        <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+          <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ num }}">{{ num }}</a>
+        </li>
+      {% endfor %}
+      {% if page_obj.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value|urlencode }}&{% endif %}{% endfor %}page={{ page_obj.next_page_number }}">Siguiente</a>
+        </li>
+      {% endif %}
+    </ul>
+  </nav>
+  {% endif %}
 </div>
 
 <script>
@@ -228,5 +189,5 @@
     });
   });
 </script>
-
 {% endblock %}
+``

@@ -97,3 +97,35 @@ class ClienteForm(forms.ModelForm):
         if not all(c.isalnum() or c.isspace() or c in ',.-#' for c in direccion):
             raise forms.ValidationError('La dirección contiene caracteres no permitidos.')
         return direccion
+
+class VentaItemForm(forms.ModelForm):
+    class Meta:
+        model = VentaItem
+        fields = ['producto', 'cantidad', 'precio', 'descuento']
+        widgets = {
+            'producto': forms.Select(attrs={'class': 'select-producto'}),
+            'cantidad': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
+            'precio': forms.NumberInput(attrs={'class': 'form-control precio-input', 'step': '0.01', 'min': '0'}),
+            'descuento': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0', 'max': '100'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['producto'].queryset = Producto.objects.none()
+
+
+VentaItemFormSet = inlineformset_factory(Venta, VentaItem, form=VentaItemForm, extra=1, can_delete=True)
+
+class VentaForm(forms.ModelForm):
+    class Meta:
+        model = Venta
+        fields = ['cliente', 'vendedor', 'moneda', 'comentarios', 'forma_pago', 'iva']
+        widgets = {
+            'cliente': Select2Widget(attrs={'class': 'form-control'}),
+            'vendedor': forms.TextInput(attrs={'class': 'form-control'}),
+            'moneda': Select2Widget(attrs={'class': 'form-control'}),
+            'comentarios': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'forma_pago': Select2Widget(attrs={'class': 'form-control'}),
+            'descuento': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0', 'max': '100'}),
+            'iva': Select2Widget(attrs={'class': 'form-control'}),
+        }

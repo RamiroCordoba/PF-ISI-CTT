@@ -67,17 +67,17 @@ class Venta(models.Model):
     moneda = models.ForeignKey(Moneda, on_delete=models.PROTECT, null=True, blank=True)
     comentarios = models.TextField(null=True, blank=True)
     forma_pago = models.ForeignKey(FormaPago, on_delete=models.PROTECT, null=True, blank=True)
-    descuento = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, null=True, blank=True)
     iva = models.ForeignKey(Iva , on_delete=models.PROTECT, null=True, blank=True)
 
     def __str__(self):
         return f"Pedido #{self.id} a {self.cliente.nombre}"
 
-class Ventaitem(models.Model):
+class VentaItem(models.Model):
     venta = models.ForeignKey(Venta, related_name='items', on_delete=models.CASCADE)
     producto = models.ForeignKey(Producto, on_delete=models.PROTECT) 
     cantidad = models.PositiveIntegerField()
     precio = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    descuento = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, null=True, blank=True)
 
     def __str__(self):
         return f"{self.producto.nombre} x {self.cantidad}"

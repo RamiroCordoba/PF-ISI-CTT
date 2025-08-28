@@ -624,17 +624,16 @@ class PedidosList(LoginRequiredMixin, ListView):
 
 
 def autocomplete_productos(request):
-    term = request.GET.get('term', '')
-    proveedor_id = request.GET.get('proveedor_id')
-    productos = Producto.objects.all()
-    if proveedor_id:
-        productos = productos.filter(proveedores__id=proveedor_id)
-    if term:
-        productos = productos.filter(nombre__icontains=term)
-    productos = productos[:10]
+    term = request.GET.get("term", "")
+    productos = Producto.objects.filter(nombre__icontains=term)[:10]
     results = []
     for producto in productos:
-        results.append({'id': producto.id, 'label': producto.nombre, 'value': producto.nombre})
+        results.append({
+            "id": producto.id,
+            "label": producto.nombre,   
+            "value": producto.nombre,   
+            "precio": producto.precio, 
+        })
     return JsonResponse(results, safe=False)
 
 def productos_por_proveedor(request):
