@@ -211,7 +211,7 @@
     {% endfor %}
     {% if page_obj.has_next %}
       <li class="page-item">
-        <<a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value|urlencode }}&{% endif %}{% endfor %}page={{ page_obj.next_page_number }}">Siguiente</a>
+        <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value|urlencode }}&{% endif %}{% endfor %}page={{ page_obj.next_page_number }}">Siguiente</a>
       </li>
     {% endif %}
   </ul>
