@@ -1,0 +1,55 @@
+{% extends 'dashboard/principal.html' %}
+{% block Contenido %}
+<div class="container-fluid px-4">
+
+  <!-- Migas de pan -->
+  <nav aria-label="breadcrumb" class="mt-4 rounded px-3 py-2" style="background-color: #f0f0f0">
+    <ol class="breadcrumb mb-0 text-muted">
+      <li class="breadcrumb-item">
+        <a href="{% url 'dashboard' %}" class="text-decoration-none text-muted fw-bold">Inicio</a>
+      </li>
+      <li class="breadcrumb-item">
+        <a href="{% url 'mis_clientes' %}" class="text-decoration-none text-muted fw-bold">Clientes</a>
+      </li>
+      <li class="breadcrumb-item active" aria-current="page">Cliente: {{ cliente.nombre }} {{ cliente.apellido }}</li>
+    </ol>
+  </nav>
+
+  <!-- Título y botones -->
+  <div class="d-flex justify-content-between align-items-center mt-3 mb-2">
+    <h1 class="mb-0">Detalle del Cliente: {{ cliente.nombre }} {{ cliente.apellido }}</h1>
+    <div class="d-flex gap-2">
+      <a href="{% url 'mis_clientes' %}" class="btn btn-outline-secondary">
+        <i class="fa fa-arrow-left me-1"></i> Volver
+      </a>
+      {% if request.user.is_staff %}
+      <a href="{% url 'editar_cliente' cliente.id %}" class="btn btn-outline-success">
+        <i class="fa fa-edit me-1"></i> Editar
+      </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Separador -->
+  <hr class="my-3 border-top border-2 border-dark-subtle" />
+
+  <!-- Información del cliente -->
+  <div class="container mt-4">
+    <p><strong>Nombre:</strong> {{ cliente.nombre }}</p>
+    <p><strong>Apellido:</strong> {{ cliente.apellido }}</p>
+    <p><strong>Razón Social:</strong> {{ cliente.razon_social }}</p>
+    <p><strong>Email:</strong> <a href="mailto:{{ cliente.email }}">{{ cliente.email }}</a></p>
+    <p><strong>CUIT:</strong> {{ cliente.cuit }}</p>
+    <p><strong>Teléfono:</strong> {{ cliente.telefono }}</p>
+    <p><strong>Dirección:</strong> {{ cliente.direccion }}</p>
+    <p><strong>Condición Fiscal:</strong> {{ cliente.condicion_fiscal.nombre }}</p>
+    <p><strong>Activo:</strong>
+      <span class="badge {% if cliente.activo %}bg-success{% else %}bg-secondary{% endif %}">
+        {% if cliente.activo %}Sí{% else %}No{% endif %}
+      </span>
+    </p>
+    <p><strong>Fecha de creación:</strong> {{ cliente.fecha_creacion|date:"d/m/Y H:i" }}</p>
+  </div>
+
+</div>
+{% endblock %}

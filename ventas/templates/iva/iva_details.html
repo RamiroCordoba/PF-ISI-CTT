@@ -1,0 +1,47 @@
+{% extends 'dashboard/principal.html' %}
+{% block Contenido %}
+<div class="container-fluid px-4">
+
+  <nav aria-label="breadcrumb" class="mt-4 rounded px-3 py-2" style="background-color: #f0f0f0">
+    <ol class="breadcrumb mb-0 text-muted">
+      <li class="breadcrumb-item">
+        <a href="{% url 'dashboard' %}" class="text-decoration-none text-muted fw-bold">Inicio</a>
+      </li>
+      <li class="breadcrumb-item">
+        <a href="{% url 'mis_iva' %}" class="text-decoration-none text-muted fw-bold">IVAs</a>
+      </li>
+      <li class="breadcrumb-item active" aria-current="page">IVA: {{ iva.nombre }}</li>
+    </ol>
+  </nav>
+
+  <!-- Título y botones -->
+  <div class="d-flex justify-content-between align-items-center mt-3 mb-2">
+    <h1 class="mb-0">Detalle de IVA: {{ iva.nombre }}</h1>
+    <div class="d-flex gap-2">
+      <a href="{% url 'mis_iva' %}" class="btn btn-outline-secondary">
+        <i class="fa fa-arrow-left me-1"></i> Volver
+      </a>
+      {% if request.user.is_staff %}
+      <a href="{% url 'editar_iva' iva.id %}" class="btn btn-outline-success">
+        <i class="fa fa-edit me-1"></i> Editar
+      </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Separador -->
+  <hr class="my-3 border-top border-2 border-dark-subtle" />
+
+  <!-- Información del IVA -->
+  <div class="container mt-4">
+    <p><strong>Nombre:</strong> {{ iva.nombre }}</p>
+    <p><strong>Porcentaje:</strong> {{ iva.porcentaje }}%</p>
+    <p><strong>Activo:</strong>
+      <span class="badge {% if iva.activo %}bg-success{% else %}bg-secondary{% endif %}">
+        {% if iva.activo %}Sí{% else %}No{% endif %}
+      </span>
+    </p>
+  </div>
+
+</div>
+{% endblock %}

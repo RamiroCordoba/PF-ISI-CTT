@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 from . import views
 
 urlpatterns = [
@@ -7,5 +7,5 @@ urlpatterns = [
     # Rutas para los gráficos del principal
     path('top-10-productos/',views.top_10_productos_mas_pedidos,name='top_10_productos_mas_pedidos'),
     path('productos-stock-minimo/', views.productos_stock_minimo, name='productos_stock_minimo'),
-
+    #path('ventas/', include('ventas.urls')),
 ]

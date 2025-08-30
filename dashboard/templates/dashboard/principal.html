@@ -283,13 +283,190 @@
                 </nav>
               </div>
 
-              <div class="sb-sidenav-menu-heading">Registros</div>
-              <a class="nav-link" href="charts.html">
+              <a
+                class="nav-link collapsed"
+                href="#"
+                data-bs-toggle="collapse"
+                data-bs-target="#collapseIva"
+                aria-expanded="false"
+                aria-controls="collapseIva"
+              >
                 <div class="sb-nav-link-icon">
-                  <i class="fas fa-chart-area"></i>
+                  <i class="fas fa-credit-card"></i>
+                </div>
+                IVA
+                <div class="sb-sidenav-collapse-arrow">
+                  <i class="fas fa-angle-down"></i>
+                </div>
+              </a>
+              <div
+                class="collapse"
+                id="collapseIva"
+                aria-labelledby="headingIva"
+                data-bs-parent="#sidenavAccordion"
+              >
+                <nav class="sb-sidenav-menu-nested nav">
+                  <a class="nav-link" href="{% url 'mis_iva' %}">
+                    Lista de IVA
+                  </a>
+                  <a class="nav-link" href="{% url 'nuevo_iva' %}">
+                    Nuevo IVA
+                  </a>
+                </nav>
+              </div>
+                <a
+                class="nav-link collapsed"
+                href="#"
+                data-bs-toggle="collapse"
+                data-bs-target="#collapseMoneda"
+                aria-expanded="false"
+                aria-controls="collapseMoneda"
+              >
+                <div class="sb-nav-link-icon">
+                  <i class="fas fa-credit-card"></i>
+                </div>
+                Moneda
+                <div class="sb-sidenav-collapse-arrow">
+                  <i class="fas fa-angle-down"></i>
+                </div>
+              </a>
+              <div
+                class="collapse"
+                id="collapseMoneda"
+                aria-labelledby="headingMoneda"
+                data-bs-parent="#sidenavAccordion"
+              >
+                <nav class="sb-sidenav-menu-nested nav">
+                  <a class="nav-link" href="{% url 'mis_monedas' %}">
+                    Lista de Monedas
+                  </a>
+                  <a class="nav-link" href="{% url 'nueva_moneda' %}">
+                    Nuevo Moneda
+                  </a>
+                </nav>
+              </div>
+                <a
+                class="nav-link collapsed"
+                href="#"
+                data-bs-toggle="collapse"
+                data-bs-target="#collapseCondicionFiscal"
+                aria-expanded="false"
+                aria-controls="collapseCondicionFiscal"
+              >
+                <div class="sb-nav-link-icon">
+                  <i class="fas fa-credit-card"></i>
+                </div>
+                Condicion Fiscal
+                <div class="sb-sidenav-collapse-arrow">
+                  <i class="fas fa-angle-down"></i>
+                </div>
+              </a>
+              <div
+                class="collapse"
+                id="collapseCondicionFiscal"
+                aria-labelledby="headingcCondicionFiscal"
+                data-bs-parent="#sidenavAccordion"
+              >
+                <nav class="sb-sidenav-menu-nested nav">
+                  <a class="nav-link" href="{% url 'mis_condiciones_fiscales' %}">
+                    Lista de Condiciones Fiscales
+                  </a>
+                  <a class="nav-link" href="{% url 'nueva_condicion_fiscal' %}">
+                    Nueva Condicion Fiscal
+                  </a>
+                </nav>
+              </div>
+               <a
+                class="nav-link collapsed"
+                href="#"
+                data-bs-toggle="collapse"
+                data-bs-target="#collapseClientes"
+                aria-expanded="false"
+                aria-controls="collapseClientes"
+              >
+                <div class="sb-nav-link-icon">
+                  <i class="fas fa-credit-card"></i>
+                </div>
+                Clientes
+                <div class="sb-sidenav-collapse-arrow">
+                  <i class="fas fa-angle-down"></i>
+                </div>
+              </a>
+              <div
+                class="collapse"
+                id="collapseClientes"
+                aria-labelledby="headingClientes"
+                data-bs-parent="#sidenavAccordion"
+              >
+                <nav class="sb-sidenav-menu-nested nav">
+                  <a class="nav-link" href="{% url 'mis_clientes' %}">
+                    Lista de Clientes
+                  </a>
+                  <a class="nav-link" href="{% url 'nuevo_cliente' %}">
+                    Nuevo Cliente
+                  </a>
+                </nav>
+              </div>
+              <div class="sb-sidenav-menu-heading">Registros</div>
+               <a
+                class="nav-link collapsed"
+                href="#"
+                data-bs-toggle="collapse"
+                data-bs-target="#collapseVentas"
+                aria-expanded="false"
+                aria-controls="collapseVentas"
+              >
+                <div class="sb-nav-link-icon">
+                  <i class="fas fa-credit-card"></i>
                 </div>
                 Ventas
+                <div class="sb-sidenav-collapse-arrow">
+                  <i class="fas fa-angle-down"></i>
+                </div>
               </a>
+              <div
+                class="collapse"
+                id="collapseVentas"
+                aria-labelledby="headingVentas"
+                data-bs-parent="#sidenavAccordion"
+              >
+                <nav class="sb-sidenav-menu-nested nav">
+                  <a class="nav-link" href="{% url 'mis_ventas' %}">
+                    Lista de Ventas
+                  </a>
+                  <a class="nav-link" href="{% url 'nueva_venta' %}">
+                    Nueva Ventas
+                  </a>
+                </nav>
+              </div>
+              <a
+                class="nav-link collapsed"
+                href="#"
+                data-bs-toggle="collapse"
+                data-bs-target="#collapseNotas"
+                aria-expanded="false"
+                aria-controls="collapseNotas"
+              >
+                <div class="sb-nav-link-icon">
+                  <i class="fa-solid fa-file-invoice"></i>
+                </div>
+                Notas de Crédito
+                <div class="sb-sidenav-collapse-arrow">
+                  <i class="fas fa-angle-down"></i>
+                </div>
+              </a>
+              <div
+                class="collapse"
+                id="collapseNotas"
+                aria-labelledby="headingNotas"
+                data-bs-parent="#sidenavAccordion"
+              >
+                <nav class="sb-sidenav-menu-nested nav">
+                  <a class="nav-link" href="{% url 'mis_notascredito' %}">
+                    Lista de Notas de Crédito
+                  </a>
+                </nav>
+              </div>
               <a class="nav-link" href="tables.html">
                 <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
                 Informes

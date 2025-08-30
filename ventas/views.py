@@ -1,0 +1,846 @@
+from django.shortcuts import render,redirect
+from .models import *
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import ListView,CreateView,UpdateView,DeleteView,DetailView
+from django.urls import reverse_lazy
+from .forms import *
+from django.contrib import messages
+from django.http import JsonResponse
+from productos.models import Producto,Proveedor
+from django.db.models import Q
+from django.views import View
+from decimal import Decimal, InvalidOperation
+from django.template.loader import render_to_string
+import pdfkit
+import qrcode
+import io
+from django.http import HttpResponse
+import logging
+
+class IvaList(LoginRequiredMixin, ListView):
+    model = Iva
+    template_name = "iva/iva_list.html"
+    context_object_name = "ivas"
+
+    def get_queryset(self):
+        queryset = super().get_queryset().order_by("id")
+
+        buscar = self.request.GET.get("buscar", "").strip()
+        estados = self.request.GET.getlist("estado") 
+
+        if buscar:
+            queryset = queryset.filter(nombre__icontains=buscar)
+
+        if estados:
+            if "activo" in estados and "inactivo" in estados:
+
+                pass
+            elif "activo" in estados:
+                queryset = queryset.filter(activo=True)
+            elif "inactivo" in estados:
+                queryset = queryset.filter(activo=False)
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["buscar"] = self.request.GET.get("buscar", "")
+        context["filtro_estados"] = self.request.GET.getlist("estado")  
+        return context
+
+
+  
+class IvaCreate(LoginRequiredMixin,CreateView):
+     model=Iva
+     fields = ["nombre", "porcentaje", "activo"]
+     template_name="iva/iva_form.html"
+     success_url = reverse_lazy("mis_iva")
+     
+class IvaUpdate(LoginRequiredMixin,UpdateView):
+     model=Iva
+     fields = ["nombre", "porcentaje", "activo"]
+     template_name="iva/iva_form.html"
+     success_url = reverse_lazy("mis_iva")
+
+class IvaDelete(LoginRequiredMixin,DeleteView):
+     model=Iva
+     template_name="iva/iva_confirm_delete.html"
+     success_url = reverse_lazy("mis_iva")
+
+class IvaDetail(DetailView):
+     model=Iva
+     template_name="iva/iva_details.html"
+     context_object_name = 'iva'
+
+
+class MonedaList(LoginRequiredMixin, ListView):
+    model = Moneda
+    template_name = "moneda/moneda_list.html"
+    context_object_name = "monedas"
+
+    def get_queryset(self):
+        queryset = super().get_queryset().order_by("id")
+
+        buscar = self.request.GET.get("buscar", "").strip()
+        estados = self.request.GET.getlist("estado")  
+
+        if buscar:
+            queryset = queryset.filter(nombre__icontains=buscar)
+
+        if estados:
+            if "activo" in estados and "inactivo" in estados:
+                pass
+            elif "activo" in estados:
+                queryset = queryset.filter(activo=True)
+            elif "inactivo" in estados:
+                queryset = queryset.filter(activo=False)
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["buscar"] = self.request.GET.get("buscar", "")
+        context["filtro_estados"] = self.request.GET.getlist("estado")  
+        return context
+
+
+  
+class MonedaCreate(LoginRequiredMixin,CreateView):
+     model=Moneda
+     fields = ["nombre", "simbolo", "activo"]
+     template_name="moneda/moneda_form.html"
+     success_url = reverse_lazy("mis_monedas")
+     
+class MonedaUpdate(LoginRequiredMixin,UpdateView):
+     model=Moneda
+     fields = ["nombre", "simbolo", "activo"]
+     template_name="moneda/moneda_form.html"
+     success_url = reverse_lazy("mis_monedas")
+
+class MonedaDelete(LoginRequiredMixin,DeleteView):
+     model=Moneda
+     template_name="moneda/moneda_confirm_delete.html"
+     success_url = reverse_lazy("mis_monedas")
+
+class MonedaDetail(DetailView):
+     model=Moneda
+     template_name="moneda/moneda_details.html"
+     context_object_name = 'moneda'
+
+class CondicionFiscalList(LoginRequiredMixin, ListView):
+    model = CondicionFiscal
+    template_name = "condicionfiscal/condicionfiscal_list.html"
+    context_object_name = "condicionesFiscales"
+
+    def get_queryset(self):
+        queryset = super().get_queryset().order_by("id")
+
+        buscar = self.request.GET.get("buscar", "").strip()
+        estados = self.request.GET.getlist("estado")  
+
+        if buscar:
+            queryset = queryset.filter(nombre__icontains=buscar)
+
+        if estados:
+            if "activo" in estados and "inactivo" in estados:
+                pass
+            elif "activo" in estados:
+                queryset = queryset.filter(activo=True)
+            elif "inactivo" in estados:
+                queryset = queryset.filter(activo=False)
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["buscar"] = self.request.GET.get("buscar", "")
+        context["filtro_estados"] = self.request.GET.getlist("estado")  
+        return context
+
+
+  
+class CondicionFiscalCreate(LoginRequiredMixin,CreateView):
+     model=CondicionFiscal
+     fields = ["nombre", "activo"]
+     template_name="condicionFiscal/condicionfiscal_form.html"
+     success_url = reverse_lazy("mis_condiciones_fiscales")
+     
+class CondicionFiscalUpdate(LoginRequiredMixin,UpdateView):
+     model=CondicionFiscal
+     fields = ["nombre", "activo"]
+     template_name="condicionFiscal/condicionfiscal_form.html"
+     success_url = reverse_lazy("mis_condiciones_fiscales")
+
+class CondicionFiscalDelete(LoginRequiredMixin,DeleteView):
+     model=CondicionFiscal
+     template_name="condicionFiscal/condicionfiscal_confirm_delete.html"
+     success_url = reverse_lazy("mis_condiciones_fiscales")
+
+class CondicionFiscalDetail(DetailView):
+     model=CondicionFiscal
+     template_name="condicionFiscal/condicionfiscal_details.html"
+     context_object_name = 'condicionFiscal'
+
+
+class ClienteList(LoginRequiredMixin, ListView):
+    model = Cliente
+    template_name = "cliente/cliente_list.html"
+    context_object_name = "clientes"
+
+    def get_queryset(self):
+        queryset = super().get_queryset().order_by("id")
+
+        buscar = self.request.GET.get("buscar", "").strip()
+        estados = self.request.GET.getlist("estado")  
+
+        if buscar:
+            queryset = queryset.filter(nombre__icontains=buscar)
+
+        if estados:
+            if "activo" in estados and "inactivo" in estados:
+                pass
+            elif "activo" in estados:
+                queryset = queryset.filter(activo=True)
+            elif "inactivo" in estados:
+                queryset = queryset.filter(activo=False)
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["buscar"] = self.request.GET.get("buscar", "")
+        context["filtro_estados"] = self.request.GET.getlist("estado")  
+        return context
+
+
+  
+class ClienteCreate(LoginRequiredMixin,CreateView):
+     model=Cliente
+     form_class = ClienteForm
+     template_name="cliente/cliente_form.html"
+     success_url = reverse_lazy("mis_clientes")
+     
+class ClienteUpdate(LoginRequiredMixin,UpdateView):
+     model=Cliente
+     form_class = ClienteForm
+     template_name="cliente/cliente_form.html"
+     success_url = reverse_lazy("mis_clientes")
+
+class ClienteDelete(LoginRequiredMixin,DeleteView):
+     model=Cliente
+     template_name="cliente/cliente_confirm_delete.html"
+     success_url = reverse_lazy("mis_clientes")
+
+class ClienteDetail(DetailView):
+     model=Cliente
+     template_name="cliente/cliente_details.html"
+     context_object_name = 'cliente'
+
+
+
+class VentaList(LoginRequiredMixin, ListView):
+    model = Venta
+    template_name = 'ventas/venta_list.html'
+    context_object_name = 'ventas'
+    paginate_by = 10
+
+    def get_queryset(self):
+        qs = super().get_queryset().select_related('cliente', 'moneda', 'forma_pago', 'iva')
+        request = self.request
+
+        # Filtros
+        filtro_estados = request.GET.getlist('estado')
+        filtro_proveedores = request.GET.getlist('proveedor')
+        fecha_inicio = request.GET.get('fecha_inicio')
+        fecha_fin = request.GET.get('fecha_fin')
+        buscar = request.GET.get('buscar')
+
+        # Estado completado
+        if filtro_estados:
+            estado_q = Q()
+            if "completado" in filtro_estados:
+                estado_q |= Q(completado=True)
+            if "pendiente" in filtro_estados:
+                estado_q |= Q(completado=False)
+            qs = qs.filter(estado_q)
+
+        # Proveedores
+        if filtro_proveedores:
+            qs = qs.filter(cliente__id__in=filtro_proveedores)
+
+        # Fechas
+        if fecha_inicio:
+            qs = qs.filter(fecha__gte=fecha_inicio)
+        if fecha_fin:
+            qs = qs.filter(fecha__lte=fecha_fin)
+
+        # Buscador
+        if buscar:
+            qs = qs.filter(
+                Q(comentarios__icontains=buscar) |
+                Q(cliente__nombre__icontains=buscar) |
+                Q(cliente__apellido__icontains=buscar)
+            )
+
+        return qs.order_by('-id')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        request = self.request
+
+        context.update({
+            'proveedores': Proveedor.objects.all(),
+            'filtro_estados': request.GET.getlist('estado'),
+            'filtro_proveedores': request.GET.getlist('proveedor'),
+            'filtros_activos': any([
+                request.GET.getlist('estado'),
+                request.GET.getlist('proveedor'),
+                request.GET.get('fecha_inicio'),
+                request.GET.get('fecha_fin'),
+                request.GET.get('buscar')
+            ]),
+            'request': request
+        })
+
+        return context
+
+
+class NotaCreditoList(LoginRequiredMixin, ListView):
+    model = NotaCredito
+    template_name = 'notacredito/notacredito_list.html'
+    context_object_name = 'notas'
+    paginate_by = 10
+
+    def get_queryset(self):
+        qs = super().get_queryset().select_related('cliente', 'venta_original')
+        buscar = self.request.GET.get('buscar')
+        fecha_inicio = self.request.GET.get('fecha_inicio')
+        fecha_fin = self.request.GET.get('fecha_fin')
+        if fecha_inicio:
+            qs = qs.filter(fecha__gte=fecha_inicio)
+        if fecha_fin:
+            qs = qs.filter(fecha__lte=fecha_fin)
+        if buscar:
+            qs = qs.filter(
+                Q(comentarios__icontains=buscar) |
+                Q(cliente__nombre__icontains=buscar) |
+                Q(cliente__apellido__icontains=buscar)
+            )
+        return qs.order_by('-id')
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['request'] = self.request
+        ctx['filtros_activos'] = any([
+            self.request.GET.get('fecha_inicio'),
+            self.request.GET.get('fecha_fin'),
+            self.request.GET.get('buscar')
+        ])
+        return ctx
+
+
+class NotaCreditoDetail(LoginRequiredMixin, DetailView):
+    model = NotaCredito
+    template_name = 'notacredito/notacredito_details.html'
+    context_object_name = 'nota'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        items = self.object.items.select_related('producto')
+        total = Decimal('0')
+        enriched = []
+        for it in items:
+            precio = Decimal(str(it.precio)) if it.precio is not None else Decimal('0')
+            cantidad = Decimal(str(it.cantidad)) if it.cantidad is not None else Decimal('0')
+            descuento_pct = Decimal(str(it.descuento or 0))
+            descuento_factor = Decimal('1') - (descuento_pct / Decimal('100'))
+            subtotal = (precio * cantidad * descuento_factor)
+            total += subtotal
+            enriched.append((it, subtotal))
+        ctx['items'] = enriched
+        ctx['total'] = total
+        return ctx
+
+def autocomplete_productos2(request):
+    term = request.GET.get("term", "")
+    proveedor_id = request.GET.get("proveedor_id")
+
+    productos = Producto.objects.filter(nombre__icontains=term)
+
+    if proveedor_id:  
+        productos = productos.filter(proveedores__id=proveedor_id)
+
+    productos = productos[:20]
+
+    results = [
+        {
+            "id": p.id,
+            "value": p.nombre,       
+            "precio": float(p.precio) if p.precio else 0
+        } 
+        for p in productos
+    ]
+    return JsonResponse(results, safe=False)
+
+
+def autocomplete_clientes(request):
+    term = request.GET.get('term', '').strip()
+    qs = Cliente.objects.all()
+    if term:
+        qs = qs.filter(
+            Q(razon_social__icontains=term) |
+            Q(nombre__icontains=term) |
+            Q(apellido__icontains=term)
+        )
+    qs = qs.order_by('razon_social', 'nombre')[:20]
+
+    results = []
+    for c in qs:
+        display = c.razon_social if c.razon_social else (f"{c.nombre} {c.apellido}".strip())
+        results.append({
+            'id': c.id,
+            'value': display,
+            'label': display,
+        })
+    return JsonResponse(results, safe=False)
+
+
+
+def productos_por_proveedor2(request):
+    proveedor_id = request.GET.get('proveedor_id')
+    
+    if not proveedor_id:
+        return JsonResponse({'productos': []})
+
+    productos = (
+        Producto.objects
+        .filter(proveedores__id=proveedor_id)
+        .values('id', 'nombre')
+        .order_by('nombre')
+    )
+
+    return JsonResponse({'productos': list(productos)})
+
+class VentaCreate(LoginRequiredMixin, View):
+    def get(self, request):
+
+        vendedor_default = request.user.get_full_name() or request.user.username
+
+        try:
+            moneda_pesos = Moneda.objects.filter(nombre__iexact='pesos').first()
+        except Exception:
+            moneda_pesos = None
+        initial = {'vendedor': vendedor_default}
+        if moneda_pesos:
+            initial['moneda'] = moneda_pesos.id
+        default_cliente = None
+        try:
+            default_cliente = Cliente.objects.filter(
+                Q(razon_social__icontains='consumidor final') |
+                Q(razon_social__icontains='consumidor') |
+                Q(nombre__icontains='consumidor') |
+                Q(apellido__icontains='consumidor')
+            ).order_by('id').first()
+            if default_cliente and not initial.get('cliente'):
+                initial['cliente'] = default_cliente.id
+        except Exception:
+            default_cliente = None
+
+        form = VentaForm(initial=initial)
+        formset = VentaItemFormSet(instance=Venta())
+        context = {
+            'form': form,
+            'formset': formset,
+            'default_cliente_id': getattr(default_cliente, 'id', ''),
+            'default_cliente_name': (default_cliente.razon_social if getattr(default_cliente, 'razon_social', None) else (f"{getattr(default_cliente,'nombre','')} {getattr(default_cliente,'apellido','')}") ).strip() if default_cliente else ''
+        }
+        return render(request, 'ventas/venta_form.html', context)
+
+    def post(self, request):
+        post_data = request.POST.copy()
+        vendedor_default = request.user.get_full_name() or request.user.username
+        post_data['vendedor'] = vendedor_default
+        try:
+            moneda_pesos = Moneda.objects.filter(nombre__iexact='pesos').first()
+        except Exception:
+            moneda_pesos = None
+        if moneda_pesos:
+            post_data['moneda'] = str(moneda_pesos.id)
+
+        
+        if not post_data.get('cliente'):
+            try:
+                cf = Cliente.objects.filter(
+                    Q(razon_social__icontains='consumidor final') |
+                    Q(razon_social__icontains='consumidor') |
+                    Q(nombre__icontains='consumidor') |
+                    Q(apellido__icontains='consumidor')
+                ).order_by('id').first()
+                if cf:
+                    post_data['cliente'] = str(cf.id)
+            except Exception:
+                pass
+
+        form = VentaForm(post_data)
+        if form.is_valid():
+            vendedor_default = request.user.get_full_name() or request.user.username
+            form.instance.vendedor = vendedor_default
+
+            form.instance.completado = False
+
+            if not form.cleaned_data.get('cliente'):
+                try:
+                    cf = Cliente.objects.filter(Q(razon_social__iexact='consumidor final') | Q(nombre__iexact='consumidor') | Q(nombre__icontains='consumidor')).first()
+                    if cf:
+                        form.instance.cliente = cf
+                except Exception:
+                    pass
+
+            temp_venta = Venta()
+            formset = VentaItemFormSet(request.POST, instance=temp_venta)
+            if formset.is_valid():
+                insuficientes = []
+                try:
+                    for cd in formset.cleaned_data:
+                        if not cd or cd.get('DELETE'):
+                            continue
+                        producto = cd.get('producto')
+                        cantidad = cd.get('cantidad') or 0
+                        if producto is None:
+                            insuficientes.append((None, 'Producto no seleccionado'))
+                            continue
+                        prod = Producto.objects.filter(pk=producto.pk).first()
+                        if prod is None:
+                            insuficientes.append((producto.nombre if producto else '??', 'Producto no encontrado'))
+                        else:
+                            if prod.stock < cantidad:
+                                insuficientes.append((prod.nombre, prod.stock, cantidad))
+                except Exception:
+                    insuficientes.append(('error', 'No se pudo validar el stock'))
+
+                if insuficientes:
+                    msgs = []
+                    for it in insuficientes:
+                        if len(it) == 3:
+                            msgs.append(f"{it[0]}: stock disponible {it[1]}, solicitado {it[2]}")
+                        else:
+                            msgs.append(str(it))
+                    fullmsg = "Stock insuficiente para los siguientes productos: " + "; ".join(msgs)
+                    try:
+                        form.add_error(None, fullmsg)
+                    except Exception:
+                        pass
+                    messages.error(request, fullmsg)
+                    form = VentaForm(post_data)
+                    formset = VentaItemFormSet(request.POST)
+                    return render(request, 'ventas/venta_form.html', {'form': form, 'formset': formset, 'stock_errors': msgs})
+
+                venta = form.save()
+                venta.completado = True
+                venta.save()
+                formset = VentaItemFormSet(request.POST, instance=venta)
+                formset.save()
+                try:
+                    from .models import apply_stock_for_venta
+                    apply_stock_for_venta(venta)
+                except Exception:
+                    pass
+                messages.success(request, "Venta creada correctamente.")
+                return redirect('mis_ventas')
+        else:
+            formset = VentaItemFormSet(request.POST)
+
+        return render(request, 'ventas/venta_form.html', {'form': form, 'formset': formset})
+
+
+def obtener_precio(request):
+    producto_id = request.GET.get('producto_id')
+    try:
+        producto = Producto.objects.get(pk=producto_id)
+        precio = producto.precio
+    except Producto.DoesNotExist:
+        precio = 0
+    return JsonResponse({'precio': precio})
+
+def buscar_productos2(request):
+    q = request.GET.get('q', '')
+    if q:
+        productos = Producto.objects.filter(nombre__icontains=q)
+    else:
+        productos = Producto.objects.all()[:50] 
+    data = [{'id': p.id, 'nombre': p.nombre} for p in productos]
+    return JsonResponse(data, safe=False)
+
+
+
+class VentaDetail(LoginRequiredMixin, DetailView):
+    model = Venta
+    template_name = "ventas/venta_details.html"
+    context_object_name = "venta"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        items = (
+            VentaItem.objects
+            .filter(venta=self.object)
+            .select_related('producto')  
+        )
+        for item in items:
+            try:
+                descuento_pct = Decimal(str(item.descuento or 0))
+            except (InvalidOperation, TypeError, ValueError):
+                descuento_pct = Decimal('0')
+
+            try:
+                precio = Decimal(str(item.precio)) if item.precio is not None else Decimal('0')
+            except (InvalidOperation, TypeError, ValueError):
+                precio = Decimal('0')
+
+            try:
+                cantidad = Decimal(str(item.cantidad)) if item.cantidad is not None else Decimal('0')
+            except (InvalidOperation, TypeError, ValueError):
+                cantidad = Decimal('0')
+
+            descuento_factor = Decimal('1') - (descuento_pct / Decimal('100'))
+            item.subtotal = (precio * cantidad * descuento_factor)
+
+        total = sum((item.subtotal or Decimal('0')) for item in items)
+
+        context.update({
+            "items": items,
+            "total": total,
+        })
+
+        context['venta'] = self.object
+
+        return context
+
+
+def venta_pdf_view(request, pk):
+    try:
+        venta = Venta.objects.get(pk=pk)
+    except Venta.DoesNotExist:
+        return HttpResponse("Venta no encontrada", status=404)
+
+    items = []
+    total = Decimal('0')
+    for item in venta.items.all():
+        precio = Decimal(str(item.precio)) if item.precio is not None else Decimal('0')
+        cantidad = Decimal(str(item.cantidad)) if item.cantidad is not None else Decimal('0')
+        try:
+            descuento_pct = Decimal(str(item.descuento or 0))
+        except Exception:
+            descuento_pct = Decimal('0')
+        descuento_factor = Decimal('1') - (descuento_pct / Decimal('100'))
+        subtotal = (precio * cantidad * descuento_factor)
+        total += subtotal
+        items.append({
+            'producto': item.producto.nombre if item.producto else '',
+            'cantidad': item.cantidad,
+            'precio': item.precio,
+            'descuento': item.descuento,
+            'subtotal': subtotal,
+        })
+
+    import base64
+    logo_path = r"productos\static\pdf\assets\img\logoFerre.png"
+    logo_base64 = ''
+    try:
+        with open(logo_path, "rb") as image_file:
+            logo_base64 = base64.b64encode(image_file.read()).decode("utf-8")
+    except Exception:
+        logo_base64 = ''
+
+    pdf_url = request.build_absolute_uri(f'/ventas/venta/venta/{venta.id}/pdf/')
+    qr = qrcode.QRCode(box_size=4, border=2)
+    qr.add_data(pdf_url)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+    buffer = io.BytesIO()
+    img.save(buffer, format="PNG")
+    qr_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
+
+    html = render_to_string('ventas/venta_pdf.html', {
+        'venta': venta,
+        'items': items,
+        'total': total,
+        'logo_base64': logo_base64,
+        'qr_base64': qr_base64,
+    })
+
+    path_wkhtmltopdf = r"C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe"
+    config = pdfkit.configuration(wkhtmltopdf=path_wkhtmltopdf)
+
+    pdf = pdfkit.from_string(html, False, configuration=config)
+
+    response = HttpResponse(pdf, content_type='application/pdf')
+    filename = f"venta_{venta.id}.pdf"
+    response['Content-Disposition'] = f'inline; filename="{filename}"'
+    return response
+
+
+
+
+class VentaUpdate(LoginRequiredMixin, UpdateView):
+    model = Venta
+    form_class = VentaForm
+    template_name = "ventas/venta_form.html"
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        if self.object.completado:
+            for field in form.fields.values():
+                field.disabled = True
+        return form
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        venta = self.object
+
+        if self.request.POST:
+            formset = VentaItemFormSet(self.request.POST, instance=venta)
+        else:
+            VentaItemFormSetNoExtra = inlineformset_factory(
+                Venta,
+                VentaItem,
+                fields=["producto", "cantidad", "precio", "descuento"],
+                extra=0,
+                can_delete=True
+            )
+            formset = VentaItemFormSetNoExtra(instance=venta)
+
+            if venta.completado:
+                for form in formset.forms:
+                    for field in form.fields.values():
+                        field.disabled = True
+
+        context["formset"] = formset
+        return context
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        formset = context["formset"]
+
+        venta_original = Venta.objects.get(pk=self.object.pk)
+        estaba_completado = venta_original.completado
+
+        if form.is_valid() and formset.is_valid():
+            if self.request.POST.get('confirmar') in ['1', 'true', 'on']:
+                form.instance.completado = True
+            self.object = form.save()
+            formset.instance = self.object
+            formset.save()
+            try:
+                if self.object.completado and not estaba_completado:
+                    from .models import apply_stock_for_venta
+                    apply_stock_for_venta(self.object)
+            except Exception:
+                pass
+            if self.object.completado and not estaba_completado:
+                msg = "La venta fue confirmada y el stock actualizado."
+            elif self.object.completado and estaba_completado:
+                msg = "La venta ya estaba confirmada. Se actualizaron los datos."
+            else:
+                msg = "La venta fue guardada correctamente."
+
+            messages.success(self.request, msg)
+            return redirect("mis_ventas")
+
+        return self.render_to_response(self.get_context_data(form=form))
+
+
+
+class VentaDelete(DeleteView):
+    model = Venta
+    template_name = 'ventas/venta_confirm_delete.html'
+    success_url = reverse_lazy('mis_ventas')
+
+    def delete(self, request, *args, **kwargs):
+        venta = self.get_object()
+        try:
+            logging.getLogger(__name__).debug("VentaDelete.delete called for venta id=%s user=%s", venta.pk, request.user)
+        except Exception:
+            pass
+
+        nota = None
+        applied_count = 0
+        error_msg = None
+        pre_items = list(venta.items.select_related('producto').values('id', 'producto_id', 'cantidad', 'stock_aplicado'))
+
+        try:
+            from .models import create_nota_from_venta, apply_stock_for_nota, NotaCredito
+            from django.db import transaction
+
+            logger = logging.getLogger(__name__)
+            logger.info("Starting atomic delete flow for venta %s", getattr(venta, 'pk', None))
+            try:
+                with transaction.atomic():
+                    nota = create_nota_from_venta(venta)
+                    logger.info("create_nota_from_venta returned: %s", getattr(nota, 'pk', None))
+
+                    if nota is None or not NotaCredito.objects.filter(pk=getattr(nota, 'pk', None)).exists():
+                        raise Exception("La nota de crédito no se llegó a crear en la base de datos.")
+
+                    applied_count = apply_stock_for_nota(nota)
+
+                    venta.anulada = True
+                    venta.save(update_fields=['anulada'])
+
+            except Exception:
+                logging.getLogger(__name__).exception("Error during atomic create/apply/anular for venta %s", getattr(venta, 'pk', None))
+                raise
+        except Exception as e:
+            try:
+                logging.getLogger(__name__).exception("Error creando/aplicando nota de credito para venta %s: %s", getattr(venta, 'pk', None), str(e))
+            except Exception:
+                pass
+            error_msg = str(e)
+
+        if error_msg:
+            messages.error(request, f"Ocurrió un error creando/aplicando la nota de crédito: {error_msg}")
+        else:
+            messages.success(request, "La venta fue eliminada y la nota de crédito procesada correctamente.")
+        nota_items = []
+        if nota is not None:
+            nota_items = list(nota.items.select_related('producto').values('id', 'producto_id', 'cantidad', 'stock_aplicado'))
+
+        debug_requested = (
+            request.user.is_staff or
+            request.GET.get('debug') == '1' or
+            request.POST.get('debug') == '1' or
+            request.headers.get('x-requested-with') == 'XMLHttpRequest'
+        )
+        if debug_requested:
+            return JsonResponse({
+                'deleted': True,
+                'venta_id': venta.pk,
+                'nota_id': getattr(nota, 'pk', None),
+                'applied_count': applied_count,
+                'nota_items': nota_items,
+                'pre_items': pre_items,
+                'error': error_msg,
+            })
+
+        try:
+            venta.anulada = True
+            venta.save(update_fields=['anulada'])
+        except Exception:
+            try:
+                logging.getLogger(__name__).exception("No se pudo marcar venta %s como anulada", getattr(venta, 'pk', None))
+            except Exception:
+                pass
+
+        try:
+            from urllib.parse import urlencode, urlsplit, urlunsplit, parse_qsl
+            base = str(self.get_success_url())
+            scheme, netloc, path, query, frag = urlsplit(base)
+            q = dict(parse_qsl(query))
+            if nota is not None:
+                q['nota_id'] = str(nota.pk)
+            q['applied'] = str(applied_count)
+            new_query = urlencode(q)
+            new_loc = urlunsplit((scheme, netloc, path, new_query, frag))
+            return redirect(new_loc)
+        except Exception:
+            return redirect(self.get_success_url())

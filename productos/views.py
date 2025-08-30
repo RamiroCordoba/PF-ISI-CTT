@@ -3,7 +3,7 @@ from django.urls import reverse_lazy
 from django.views.generic import ListView,CreateView,UpdateView,DeleteView,DetailView
 from .models import *
 from django.contrib.auth.mixins import LoginRequiredMixin
-from .forms import ProveedorForm, CargaMasivaProductosForm, ProductoForm,PedidoForm, PedidoItemFormSet,inlineformset_factory
+from .forms import ProveedorForm, CargaMasivaProductosForm, ProductoForm,PedidoForm, PedidoItemFormSet,inlineformset_factory, PedidoItemFormSetNoExtra
 from django.views import View
 from django.contrib import messages
 from django.http import HttpResponse
@@ -22,7 +22,8 @@ from django.views.decorators.http import require_POST
 from django.db.models import Count
 import qrcode
 import io
-
+from .forms import PedidoForm, PedidoItemForm
+from django.forms import inlineformset_factory
 #______ Categorias CRUD
 class CategoriaList(LoginRequiredMixin, ListView):
   model=Categoria
@@ -224,7 +225,6 @@ class CargaMasivaProductosView(View):
         if form.is_valid():
             archivo = request.FILES['archivo_excel']
 
-            # Validar extensión del archivo
             if not archivo.name.endswith('.xlsx'):
                 messages.error(request, "El archivo debe tener extensión .xlsx   ")
                 return redirect('carga_masiva_productos')
@@ -241,7 +241,6 @@ class CargaMasivaProductosView(View):
             proveedores_actualizados = []
             proveedores_no_existentes = []
             for index, fila in df.iterrows():
-                # Saltar fila vacía completa
                 if fila.isnull().all():
                     continue
 
@@ -404,7 +403,7 @@ class ExportarProductosExcelView(View):
             })
 
         df = pd.DataFrame(data)
-        timestamp = datetime.now().strftime('%d_%m_%Y_%H_%Mhs') # Obtengo los datos de fecha y hora/min
+        timestamp = datetime.now().strftime('%d_%m_%Y_%H_%Mhs') 
         filename = f'listado_productos_{timestamp}.xlsx'
         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         response['Content-Disposition'] = f'attachment; filename={filename}'
@@ -445,24 +444,23 @@ class ProveedorList(LoginRequiredMixin, ListView):
         queryset = super().get_queryset().order_by("id")
         request = self.request
 
-        # Filtro por empresa
+
         empresa = request.GET.get('empresa', '').strip()
         if empresa:
             queryset = queryset.filter(nombreEmpresa__icontains=empresa)
 
-        # Filtro por categoría (ManyToMany)
+
         categorias = request.GET.getlist('categoria')
         if categorias:
             queryset = queryset.filter(categoria__id__in=categorias)
 
-        # Filtro por estado
+
         estado = request.GET.get('estado')
         if estado == 'activos':
             queryset = queryset.filter(estado=True)
         elif estado == 'inactivos':
             queryset = queryset.filter(estado=False)
 
-        # Buscador por texto
         buscar = request.GET.get('buscar', '').strip()
         buscar = self.request.GET.get("buscar")
 
@@ -475,9 +473,7 @@ class ProveedorList(LoginRequiredMixin, ListView):
             )
 
         queryset = queryset.distinct()
-        #return queryset
-    
-      # Annotate para contar relaciones
+
         queryset = queryset.annotate(
             cantidad_productos=Count('productos', distinct=True),
             cantidad_pedidos=Count('pedidos', distinct=True)
@@ -543,32 +539,71 @@ class EstacionalidadList(LoginRequiredMixin,ListView):
 class PedidoCreateView(LoginRequiredMixin, View):
     def get(self, request):
         form = PedidoForm()
-        formset = PedidoItemFormSet()
+        try:
+            if hasattr(request.user, 'get_full_name') and request.user.get_full_name():
+                form.initial['vendedor'] = request.user.get_full_name()
+            else:
+                form.initial['vendedor'] = request.user.username
+        except Exception:
+            pass
+        try:
+            from ventas.models import Moneda
+            m = Moneda.objects.filter(nombre__iexact='pesos').first()
+            if m:
+                form.initial['moneda'] = m.id
+        except Exception:
+            pass
+        PedidoItemFormSetLocal = inlineformset_factory(
+            Pedido,
+            PedidoItem,
+            form=PedidoItemForm,
+            extra=1,
+            can_delete=True
+        )
+        formset = PedidoItemFormSetLocal(instance=Pedido())
         return render(request, 'pedidos/pedido_form.html', {'form': form, 'formset': formset})
 
     def post(self, request):
-        form = PedidoForm(request.POST)
-        formset = PedidoItemFormSet(request.POST)
-        
-        if form.is_valid() and formset.is_valid():
-            items = formset.save(commit=False)
-            items_validos = [item for item in items if item.producto and item.cantidad]
-
-            if not items_validos:
-                formset._non_form_errors = formset.error_class(["Debe agregar al menos un producto con cantidad."])
-                return render(request, 'pedidos/pedido_form.html', {'form': form, 'formset': formset})
-
+        post_data = request.POST.copy()
+        try:
+            vendedor_val = request.user.get_full_name() or request.user.username
+        except Exception:
+            vendedor_val = getattr(request.user, 'username', '')
+        post_data['vendedor'] = vendedor_val
+        try:
+            from ventas.models import Moneda
+            m = Moneda.objects.filter(nombre__iexact='pesos').first()
+            if m:
+                post_data['moneda'] = str(m.id)
+        except Exception:
+            pass
+        form = PedidoForm(post_data)
+        PedidoItemFormSetLocal = inlineformset_factory(
+            Pedido,
+            PedidoItem,
+            form=PedidoItemForm,
+            extra=1,
+            can_delete=True
+        )
+        if form.is_valid():
             pedido = form.save()
-            for item in items_validos:
-                item.pedido = pedido
-                item.save()
-            return redirect('listar_pedidos')
+            formset = PedidoItemFormSetLocal(request.POST, instance=pedido)  
+            if formset.is_valid():
+                formset.save()  
+                try:
+                    if pedido.completado:
+                        from .models import apply_stock_for_pedido
+                        apply_stock_for_pedido(pedido)
+                except Exception:
+                    pass
+                messages.success(request, "Pedido creado correctamente.")
+                return redirect('listar_pedidos')
+        else:
+            formset = PedidoItemFormSetLocal(request.POST)
 
         return render(request, 'pedidos/pedido_form.html', {'form': form, 'formset': formset})
 
-"""def listar_pedidos(request):
-    pedidos = Pedido.objects.select_related('proveedor').all().order_by('-fecha')
-    return render(request, 'pedidos/listar_pedidos.html', {'pedidos': pedidos})"""
+
 
 
 class PedidosList(LoginRequiredMixin, ListView):
@@ -624,17 +659,29 @@ class PedidosList(LoginRequiredMixin, ListView):
 
 
 def autocomplete_productos(request):
-    term = request.GET.get('term', '')
-    proveedor_id = request.GET.get('proveedor_id')
-    productos = Producto.objects.all()
-    if proveedor_id:
-        productos = productos.filter(proveedores__id=proveedor_id)
-    if term:
-        productos = productos.filter(nombre__icontains=term)
-    productos = productos[:10]
+    term = request.GET.get("term", "")
+    productos = Producto.objects.filter(nombre__icontains=term)[:10]
     results = []
     for producto in productos:
-        results.append({'id': producto.id, 'label': producto.nombre, 'value': producto.nombre})
+        results.append({
+            "id": producto.id,
+            "label": producto.nombre,   
+            "value": producto.nombre,   
+            "precio": producto.precio, 
+        })
+    return JsonResponse(results, safe=False)
+
+
+def autocomplete_proveedores(request):
+    term = request.GET.get('term', '')
+    proveedores = Proveedor.objects.filter(nombreEmpresa__icontains=term)[:20]
+    results = []
+    for p in proveedores:
+        results.append({
+            'id': p.id,
+            'label': p.nombreEmpresa,
+            'value': p.nombreEmpresa,
+        })
     return JsonResponse(results, safe=False)
 
 def productos_por_proveedor(request):
@@ -667,34 +714,20 @@ class PedidoUpdateView(LoginRequiredMixin, UpdateView):
     form_class = PedidoForm
     template_name = "pedidos/pedido_form.html"
 
-    """def dispatch(self, request, *args, **kwargs):
-        pedido = self.get_object()
-        if pedido.completado:
-            messages.warning(request, "Este pedido ya fue confirmado y no puede editarse.")
-            return redirect("listar_pedidos")
-        return super().dispatch(request, *args, **kwargs)"""
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
         if self.get_object().completado:
-            for field in form.fields.values():
+            for field_name, field in form.fields.items():
                 field.disabled = True
         return form
-
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         pedido = self.object
-        
+
         if self.request.POST:
             formset = PedidoItemFormSet(self.request.POST, instance=pedido)
         else:
-            PedidoItemFormSetNoExtra = inlineformset_factory(
-                Pedido,
-                PedidoItem,
-                fields=["producto", "cantidad", "precio"],
-                extra=0,
-                can_delete=True
-            )
             formset = PedidoItemFormSetNoExtra(instance=pedido)
 
             if pedido.completado:
@@ -705,37 +738,57 @@ class PedidoUpdateView(LoginRequiredMixin, UpdateView):
         context["formset"] = formset
         return context
 
-
     def form_valid(self, form):
         context = self.get_context_data()
         formset = context["formset"]
 
-        # Obtener el estado anterior del pedido
         pedido_original = Pedido.objects.get(pk=self.object.pk) if self.object.pk else None
         estaba_completado = pedido_original.completado if pedido_original else False
 
+        try:
+            posted_completado = self.request.POST.get('completado')
+            import logging
+            logging.getLogger(__name__).debug('PedidoUpdateView POST[completado]=%s', posted_completado)
+            messages.info(self.request, f"DEBUG POST[completado]={posted_completado}")
+            messages.info(self.request, f"DEBUG form.cleaned_data.completado={form.cleaned_data.get('completado')}")
+        except Exception:
+            pass
+
         if form.is_valid() and formset.is_valid():
+            try:
+                vendedor_val = self.request.user.get_full_name() or self.request.user.username
+            except Exception:
+                vendedor_val = getattr(self.request.user, 'username', '')
+            form.instance.vendedor = vendedor_val
+            try:
+                from ventas.models import Moneda
+                m = Moneda.objects.filter(nombre__iexact='pesos').first()
+                if m:
+                    form.instance.moneda = m
+            except Exception:
+                pass
             self.object = form.save()
             formset.instance = self.object
             formset.save()
+            try:
+                if self.object.completado and not estaba_completado:
+                    from .models import apply_stock_for_pedido
+                    apply_stock_for_pedido(self.object)
+            except Exception:
+                pass
 
-            # Solo actualizar stock si el pedido fue marcado como completado ahora
             if self.object.completado and not estaba_completado:
-                items = PedidoItem.objects.filter(pedido=self.object)
-                for item in items:
-                    producto = item.producto
-                    #stock_anterior = producto.stock
-                    producto.stock = producto.stock + item.cantidad
-                    producto.save()
-
-            if self.object.completado:
-                messages.success(self.request, "El pedido fue confirmado y el stock actualizado.")
+                msg = "El pedido fue confirmado y el stock actualizado."
+            elif self.object.completado and estaba_completado:
+                msg = "El pedido ya estaba confirmado. Se actualizaron los datos."
             else:
-                messages.success(self.request, "El pedido fue guardado correctamente.")
+                msg = "El pedido fue guardado correctamente."
 
+            messages.success(self.request, msg)
             return redirect("listar_pedidos")
-        else:
-            return self.render_to_response(self.get_context_data(form=form))
+
+        return self.form_invalid(form)
+
 
 
 class PedidoDelete(DeleteView): 
@@ -744,14 +797,60 @@ class PedidoDelete(DeleteView):
     success_url = reverse_lazy('listar_pedidos')
     
     def delete(self, request, *args, **kwargs):
+        pedido = self.get_object()
+        try:
+            import logging
+            logging.getLogger(__name__).info("PedidoDelete.delete called for pedido id=%s user=%s", pedido.pk, request.user)
+        except Exception:
+            pass
+        reverted = None
+        reverted_items = []
+        try:
+            if pedido.completado:
+                applied_qs = pedido.items.filter(stock_aplicado=True).select_related('producto')
+                for it in applied_qs:
+                    reverted_items.append({'pedido_item_id': it.pk, 'producto_id': it.producto_id, 'producto_nombre': getattr(it.producto, 'nombre', ''), 'cantidad': it.cantidad})
+
+                from .models import revert_stock_for_pedido
+                try:
+                    applied_count = pedido.items.filter(stock_aplicado=True).count()
+                    messages.info(request, f"Revirtiendo stock de {applied_count} items del pedido.")
+                except Exception:
+                    pass
+                try:
+                    reverted = revert_stock_for_pedido(pedido)
+                except Exception as e:
+                    import logging
+                    logging.getLogger(__name__).exception("Error al revertir stock para pedido %s: %s", getattr(pedido, 'pk', None), str(e))
+                    messages.error(request, f"No se pudo revertir el stock del pedido: {e}")
+        except Exception:
+            pass
+
         messages.success(request, "Pedido eliminado correctamente.")
-        return super().delete(request, *args, **kwargs)
+
+        debug_requested = request.GET.get('debug') == '1' or request.POST.get('debug') == '1' or request.headers.get('x-requested-with') == 'XMLHttpRequest'
+        if debug_requested:
+            return JsonResponse({'deleted': True, 'reverted': reverted or 0, 'items': reverted_items})
+
+        response = super().delete(request, *args, **kwargs)
+        if reverted is not None:
+            try:
+                from urllib.parse import urlencode, urlsplit, urlunsplit, parse_qsl
+                loc = response['Location']
+                scheme, netloc, path, query, frag = urlsplit(loc)
+                q = dict(parse_qsl(query))
+                q['reverted'] = str(reverted)
+                new_query = urlencode(q)
+                new_loc = urlunsplit((scheme, netloc, path, new_query, frag))
+                response['Location'] = new_loc
+            except Exception:
+                pass
+        return response
 
 
 def pedido_pdf_view(request, pk):
     pedido = Pedido.objects.get(pk=pk)
 
-    # Calcular subtotales y total
     items = []
     total = 0
     for item in pedido.items.all():
@@ -765,13 +864,11 @@ def pedido_pdf_view(request, pk):
         })
 
 
-    # Convertir logo a base64
     import base64
     logo_path = r"productos\static\pdf\assets\img\logoFerre.png"
     with open(logo_path, "rb") as image_file:
         logo_base64 = base64.b64encode(image_file.read()).decode("utf-8")
 
-    # Construccion de URL para el QR
     pdf_url = request.build_absolute_uri(f'/productos/productos/productos/pedido/{pedido.id}/pdf/')
     qr = qrcode.QRCode(box_size=4, border=2)
     qr.add_data(pdf_url)
@@ -789,11 +886,10 @@ def pedido_pdf_view(request, pk):
         'qr_base64': qr_base64,
     })
 
-    # Ruta del ejecutable wkhtmltopdf en Windows
+
     path_wkhtmltopdf = r"C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe"
     config = pdfkit.configuration(wkhtmltopdf=path_wkhtmltopdf)
 
-    # Generar PDF usando la configuración
     pdf = pdfkit.from_string(html, False, configuration=config)
 
     response = HttpResponse(pdf, content_type='application/pdf')

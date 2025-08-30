@@ -1,0 +1,181 @@
+{% extends 'dashboard/principal.html' %}
+{% block Contenido %}
+<div class="container-fluid px-4">
+  <h1 class="mt-4">Ventas</h1>
+  <hr style="height: 5px; background-color: black; border: none" />
+
+  <div class="d-flex justify-content-between align-items-center py-2">
+    <div class="d-flex gap-2 flex-wrap">
+      <a href="{% url 'nueva_venta' %}" class="btn btn-primary btn-sm d-flex align-items-center justify-content-center px-4">
+        Nueva venta
+      </a>
+    </div>
+
+    <div class="d-flex align-items-end gap-3 flex-wrap">
+      <form method="get" class="d-flex align-items-end gap-3 flex-wrap">
+        <div class="d-flex flex-column">
+          <label class="form-label mb-0">Desde:</label>
+          <input type="date" name="fecha_inicio" class="form-control form-control-sm" value="{{ request.GET.fecha_inicio }}">
+        </div>
+        <div class="d-flex flex-column">
+          <label class="form-label mb-0">Hasta:</label>
+          <input type="date" name="fecha_fin" class="form-control form-control-sm" value="{{ request.GET.fecha_fin }}">
+        </div>
+
+        <div class="dropdown">
+          <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+            Cliente
+          </button>
+          <ul class="dropdown-menu p-2" style="max-height: 200px; overflow-y: auto;">
+            {% for c in clientes %}
+              <li>
+                <div class="form-check mb-0">
+                  <input class="form-check-input" type="checkbox" name="cliente" value="{{ c.id }}"
+                         id="cli{{ c.id }}" {% if c.id|stringformat:"s" in filtro_clientes %}checked{% endif %}>
+                  <label class="form-check-label" for="cli{{ c.id }}">{{ c.nombre }} {{ c.apellido }}</label>
+                </div>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <div class="d-flex align-items-end gap-2">
+          <input type="text" name="buscar" class="form-control form-control-sm" placeholder="Buscar venta..." value="{{ request.GET.buscar }}">
+        </div>
+
+        <button type="submit" class="btn btn-sm btn-primary mb-0">Filtrar</button>
+
+        {% if filtros_activos or request.GET.buscar %}
+          <a href="{% url 'mis_ventas' %}" class="btn btn-outline-danger btn-sm" title="Restablecer filtros">
+            <i class="fa-solid fa-rotate-left"></i>
+          </a>
+        {% endif %}
+      </form>
+    </div>
+  </div>
+
+  {% if filtros_activos or request.GET.buscar %}
+  <div class="text-secondary small mt-3">
+    Se está filtrando por
+    {% if filtro_clientes %}
+      ventas de cliente/s
+      {% for id in filtro_clientes %}
+        {% for cli in clientes %}
+          {% if cli.id|stringformat:"s" == id %}
+            {{ cli.nombre }} {{ cli.apellido }}{% if not forloop.last %}, {% endif %}
+          {% endif %}
+        {% endfor %}
+      {% endfor %}
+    {% endif %}
+    {% if request.GET.buscar %}
+      {% if filtro_clientes %},{% endif %}
+      que coinciden con: "<strong>{{ request.GET.buscar }}</strong>"
+    {% endif %}.
+  </div>
+  {% endif %}
+
+  <hr style="height: 5px; background-color: black; border: none" />
+
+  <table class="table table-striped table-bordered text-center">
+    <thead>
+      <tr>
+        <th>Acciones</th>
+        <th>ID</th>
+        <th>Cliente</th>
+        <th>Fecha</th>
+        <th>Vendedor</th>
+        <th>Moneda</th>
+        <th>Forma de Pago</th>
+        <th>Descuento</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for venta in ventas %}
+      <tr>
+        <td>
+          {% if request.user.is_staff %}
+            <a href="{% url 'editar_venta' venta.id %}" class="btn btn-outline-success mt-2 btn-sm">
+              <i class="fa fa-edit fa-sm" title="Editar"></i>
+            </a>
+
+            <button type="button" class="btn btn-outline-danger mt-2 btn-sm" data-bs-toggle="modal" data-bs-target="#modalEliminarVenta{{ venta.id }}" title="Eliminar">
+              <i class="fa fa-trash fa-sm"></i>
+            </button>
+
+            <div class="modal fade" id="modalEliminarVenta{{ venta.id }}" tabindex="-1" aria-labelledby="modalEliminarVentaLabel{{ venta.id }}" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="modalEliminarVentaLabel{{ venta.id }}">Confirmar eliminación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                  </div>
+                  <div class="modal-body">
+                    ¿Estás seguro de que querés eliminar la venta <strong>#{{ venta.id }}</strong>?
+                  </div>
+                  <div class="modal-footer">
+                    <form method="post" action="{% url 'eliminar_venta' venta.id %}">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-danger">Eliminar</button>
+                    </form>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <a href="{% url 'detalles_venta' venta.id %}" class="btn btn-outline-primary mt-2 btn-sm">
+              <i class="fa-solid fa-eye" title="Ver"></i>
+            </a>
+            <!--<a href="{//% url 'venta_pdf' venta.id %}" class="btn btn-outline-dark mt-2 btn-sm" target="_blank" title="Descargar PDF">
+              <i class="fa-solid fa-download"></i>
+            </a>-->
+          {% endif %}
+        </td>
+        <td>{{ venta.id }}</td>
+        <td>{{ venta.cliente.nombre }} {{ venta.cliente.apellido }}</td>
+        <td>{{ venta.fecha|date:"d/m/Y" }}</td>
+        <td>{{ venta.vendedor|default:"-" }}</td>
+        <td>{{ venta.moneda.nombre|default:"-" }}</td>
+        <td>{{ venta.forma_pago.nombre|default:"-" }}</td>
+        <td>${{ venta.descuento|floatformat:2 }}</td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="8">No hay ventas registradas.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if is_paginated %}
+  <nav aria-label="Paginación de ventas">
+    <ul class="pagination justify-content-center">
+      {% if page_obj.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value|urlencode }}&{% endif %}{% endfor %}page={{ page_obj.previous_page_number }}">Anterior</a>
+        </li>
+      {% endif %}
+      {% for num in paginator.page_range %}
+        <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+          <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ num }}">{{ num }}</a>
+        </li>
+      {% endfor %}
+      {% if page_obj.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value|urlencode }}&{% endif %}{% endfor %}page={{ page_obj.next_page_number }}">Siguiente</a>
+        </li>
+      {% endif %}
+    </ul>
+  </nav>
+  {% endif %}
+</div>
+
+<script>
+  document.querySelector("form").addEventListener("submit", function() {
+    document.querySelectorAll(".dropdown-menu").forEach(menu => {
+      menu.classList.add("show");
+    });
+  });
+</script>
+{% endblock %}
+``

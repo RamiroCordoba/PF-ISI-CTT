@@ -1,0 +1,78 @@
+{% extends 'dashboard/principal.html' %}
+{% load static %}
+{% load widget_tweaks %}
+{% block Contenido %}
+
+<div class="container-fluid px-4" style="background-color: #f5f6fa; min-height: 100vh;">
+  <div class="row justify-content-center">
+    <div class="col-12 col-lg-8">
+      <div class="card border-0 mt-4 shadow-lg" style="min-width: 600px; box-shadow: 0 6px 32px 0 rgba(0,0,0,0.10), 0 1.5px 6px 0 rgba(0,0,0,0.08);">
+        
+        <!-- Header -->
+        <div class="card-header text-white text-center py-3 rounded-top" style="background: #ff8800;">
+          <h3 class="mb-0">
+            {% if form.instance.pk %}
+              <i class="fa fa-edit me-2"></i>Editar Moneda
+            {% else %}
+              <i class="fa fa-plus me-2"></i>Nueva Moneda
+            {% endif %}
+          </h3>
+        </div>
+        
+        <!-- Body -->
+        <div class="card-body bg-white">
+          <form method="post" class="px-3 py-2">
+            {% csrf_token %}
+
+            <!-- Nombre -->
+            <div class="mb-4">
+              <label for="{{ form.nombre.id_for_label }}" class="form-label fw-semibold" style="color: #ff8800; font-size: 1.15em;">
+                <i class="fa fa-tag me-2"></i>Nombre
+              </label>
+              <div style="background: linear-gradient(90deg, #fff3e0 0%, #ffe0b2 100%); border-radius: 0.7rem; padding: 0.7rem; border: 2px solid #ff8800;">
+                {{ form.nombre|add_class:"form-control border-0" }}
+              </div>
+              {% if form.nombre.errors %}
+                <div class="text-danger small mt-1">{{ form.nombre.errors }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Símbolo -->
+            <div class="mb-4">
+              <label for="{{ form.simbolo.id_for_label }}" class="form-label fw-semibold" style="color: #ff8800; font-size: 1.15em;">
+                <i class="fa fa-money-bill me-2"></i>Símbolo
+              </label>
+              <div style="background: linear-gradient(90deg, #fff3e0 0%, #ffe0b2 100%); border-radius: 0.7rem; padding: 0.7rem; border: 2px solid #ff8800;">
+                {{ form.simbolo|add_class:"form-control border-0" }}
+              </div>
+              {% if form.simbolo.errors %}
+                <div class="text-danger small mt-1">{{ form.simbolo.errors }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Activo -->
+            <div class="form-check mb-4">
+              {{ form.activo }}
+              <label for="{{ form.activo.id_for_label }}" class="form-check-label fw-semibold" style="color: #ff8800; font-size: 1.05em;">
+                Activo
+              </label>
+            </div>
+
+            <!-- Botones -->
+            <div class="d-flex justify-content-center gap-2">
+              <button type="submit" class="btn px-4 text-white" style="background: #ff8800;">
+                Guardar
+              </button>
+              <button type="button" class="btn btn-secondary px-4" onclick="window.location.href='{% url "mis_monedas" %}'">
+                Cancelar
+              </button>
+            </div>
+          </form>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock Contenido %} 

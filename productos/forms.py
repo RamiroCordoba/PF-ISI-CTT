@@ -49,7 +49,6 @@ class ProductoForm(forms.ModelForm):
     def clean_fecha_ultimo_ingreso(self):
         fecha = self.cleaned_data.get('fecha_ultimo_ingreso')
         if fecha:
-            # Convertir a datetime con hora 00:00:00
             return datetime.datetime.combine(fecha, datetime.time.min)
         return fecha
 
@@ -76,12 +75,16 @@ class PedidoItemForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['producto'].empty_label = ''
+        self.fields['cantidad'].initial = 1
+        self.fields['precio'].initial = 0.00
+
 
 class PedidoForm(forms.ModelForm):
     class Meta:
         model = Pedido
         fields = [
             'proveedor',
+            'moneda',
             'comentarios',
             'completado',
             'fechaIngreso',
@@ -98,11 +101,24 @@ class PedidoForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        if not (self.instance and self.instance.pk):
+            try:
+                from ventas.models import Moneda
+                m = Moneda.objects.filter(nombre__iexact='pesos').first()
+                if m:
+                    self.fields['moneda'].initial = m.id
+            except Exception:
+                pass
+        if not (self.instance and self.instance.pk):
+            try:
+                self.fields['fechaEstimadaEntrega'].initial = datetime.date.today() + datetime.timedelta(days=7)
+            except Exception:
+                pass
 
         if self.instance and self.instance.pk:
             self.fields['completado'].label = '¿Completado?'
             self.fields['fechaIngreso'].label = 'Fecha de ingreso'
-            self.fields['proveedor'].widget.attrs.pop('disabled', None)
+            self.fields['proveedor'].disabled = True
         self.fields['fechaEstimadaEntrega'].label = 'Fecha estimada entrega'
 
 
@@ -112,7 +128,9 @@ class PedidoForm(forms.ModelForm):
         fecha_ingreso = cleaned_data.get('fechaIngreso')
 
         if completado and not fecha_ingreso:
-            self.add_error('fechaIngreso', 'Debe ingresar una fecha si el pedido está marcado como completado.')
+            self.add_error('fechaIngreso', 'Debe ingresar la fecha de ingreso al completar el pedido.')
+        if self.instance and self.instance.pk and self.instance.completado:
+            cleaned_data['completado'] = True
         if self.instance.pk:
             proveedor_enviado = cleaned_data.get('proveedor')
             if proveedor_enviado != self.instance.proveedor:
@@ -120,11 +138,19 @@ class PedidoForm(forms.ModelForm):
 
 
 
+
 PedidoItemFormSet = inlineformset_factory(
     Pedido,
     PedidoItem,
-    form=PedidoItemForm, 
-    fields=['producto', 'cantidad', 'precio'],
+    form=PedidoItemForm,
     extra=1,
+    can_delete=True
+)
+
+PedidoItemFormSetNoExtra = inlineformset_factory(
+    Pedido,
+    PedidoItem,
+    form=PedidoItemForm,
+    extra=0,
     can_delete=True
 )

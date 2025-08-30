@@ -1,0 +1,572 @@
+{% extends 'dashboard/principal.html' %}
+{% load static %}
+{% block Contenido %}
+{% load widget_tweaks %}
+
+<div class="container-fluid px-4">
+  <h1 class="mt-4">
+    {% if form.instance.pk %}
+      <i class="fa fa-edit me-2"></i>Editar Venta
+    {% else %}
+      <i class="fa fa-plus me-2"></i>Nueva Venta
+    {% endif %}
+  </h1>
+  <hr style="height: 5px; background-color: black; border: none" />
+
+  <form method="post" class="bg-light p-4 rounded shadow-sm" id="ventaForm">
+    {% csrf_token %}
+    {{ formset.management_form }}
+
+    <div class="card mb-4 shadow-sm">
+      <div class="card-header text-white py-2" style="background: #ff8800;">
+        <h5 class="mb-0">Datos principales de la venta</h5>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-12 mb-3">
+            <label for="{{ form.cliente.id_for_label }}" class="form-label fw-semibold">Cliente</label>
+            {% if form.instance and form.instance.pk %}
+              <input type="hidden" id="id_cliente" name="cliente" value="{{ form.instance.cliente.id }}">
+              <div class="form-control-plaintext">{{ form.instance.cliente.nombre }} {{ form.instance.cliente.apellido }}</div>
+            {% else %}
+              {# Select2-backed dropdown for cliente with default option if available #}
+              <select id="cliente-select" name="{{ form.cliente.html_name }}" class="form-control form-control-lg">
+                {% if default_cliente_id %}
+                  <option value="{{ default_cliente_id }}" selected>{{ default_cliente_name }}</option>
+                {% else %}
+                  <option></option>
+                {% endif %}
+              </select>
+              {% if form.cliente.errors %}
+                <div class="text-danger small mt-1">{{ form.cliente.errors|striptags }}</div>
+              {% endif %}
+            {% endif %}
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label for="{{ form.forma_pago.id_for_label }}" class="form-label fw-semibold">Forma de pago</label>
+            {% if form.instance.completado %}
+              <div class="form-control-plaintext">{% if form.instance.forma_pago %}{{ form.instance.forma_pago.nombre }}{% else %}-{% endif %}</div>
+            {% else %}
+              {{ form.forma_pago|add_class:"form-control form-control-lg" }}
+              {% if form.forma_pago.errors %}
+                <div class="text-danger small mt-1">{{ form.forma_pago.errors|striptags }}</div>
+              {% endif %}
+            {% endif %}
+          </div>
+
+          <div class="col-12 mb-3">
+            <label for="{{ form.comentarios.id_for_label }}" class="form-label fw-semibold">Comentarios</label>
+            {% if form.instance.completado %}
+              <div class="form-control-plaintext">{% if form.instance.comentarios %}{{ form.instance.comentarios }}{% else %}-{% endif %}</div>
+            {% else %}
+              {{ form.comentarios|add_class:"form-control form-control-lg"|attr:"rows:3" }}
+              {% if form.comentarios.errors %}
+                <div class="text-danger small mt-1">{{ form.comentarios.errors|striptags }}</div>
+              {% endif %}
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h5 class="fw-bold mb-3"><i class="fa fa-boxes me-2"></i>Productos de la venta</h5>
+
+    {% if stock_errors %}
+    <div class="alert alert-danger">
+      <strong>Stock insuficiente:</strong>
+      <ul class="mb-0">
+        {% for e in stock_errors %}
+          <li>{{ e }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {# Formset non-field errors (e.g., duplicate products) #}
+    {% if formset.non_form_errors %}
+    <div class="alert alert-danger">
+      <ul class="mb-0">
+        {% for e in formset.non_form_errors %}
+          <li>{{ e }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    <div class="table-responsive mb-3">
+      <table class="table table-bordered" id="venta-items-table">
+        <colgroup>
+          <col style="width:50%">
+          <col style="width:12%">
+          <col style="width:13%">
+          <col style="width:10%">
+          <col style="width:15%">
+          <col style="width:5%">
+        </colgroup>
+        <thead style="background: #ff8800; color: #fff;">
+          <tr>
+            <th>Producto</th>
+            <th class="text-end">Cantidad</th>
+            <th class="text-end">Precio</th>
+            <th class="text-end">Dto %</th>
+            <th class="text-end">Subtotal</th>
+            {% if not form.instance.completado %}
+            <th>Acciones</th>
+            {% endif %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for item_form in formset %}
+          <tr class="venta-item-row">
+            <td>
+              {% if form.instance.completado %}
+                <input type="hidden" name="{{ item_form.producto.html_name }}" class="producto-id" value="{% if item_form.instance.producto %}{{ item_form.instance.producto.id }}{% else %}{{ item_form.initial.producto|default_if_none:"" }}{% endif %}">
+                {% if item_form.instance.producto %}
+                  <div class="form-control-plaintext">{{ item_form.instance.producto.nombre }}</div>
+                {% else %}
+                  <div class="form-control-plaintext">(sin producto)</div>
+                {% endif %}
+              {% else %}
+                {{ item_form.producto|add_class:"d-none producto-id" }}
+                <input type="text" class="form-control producto-search" value="{% if item_form.instance.producto %}{{ item_form.instance.producto.nombre }}{% endif %}" placeholder="Buscar producto...">
+              {% endif %}
+            </td>
+            <td>
+              {% if form.instance.completado %}
+                <input type="hidden" name="{{ item_form.cantidad.html_name }}" value="{{ item_form.instance.cantidad|default_if_none:"" }}" class="cantidad-input">
+                <div class="form-control-plaintext text-end">{{ item_form.instance.cantidad|default_if_none:"" }}</div>
+              {% else %}
+                {{ item_form.cantidad|add_class:"form-control form-control-lg cantidad-input text-end"|attr:"type:number"|attr:"min:1" }}
+              {% endif %}
+            </td>
+            <td>
+              {% if form.instance.completado %}
+                <input type="hidden" name="{{ item_form.precio.html_name }}" value="{{ item_form.instance.precio|default_if_none:"" }}" class="precio-input">
+                <div class="form-control-plaintext text-end">{{ item_form.instance.precio|default_if_none:"" }}</div>
+              {% else %}
+                <div class="input-group">
+                  <span class="input-group-text">$</span>
+                  {{ item_form.precio|add_class:"form-control form-control-lg precio-input text-end"|attr:"type:number"|attr:"step:0.01"|attr:"min:0" }}
+                </div>
+              {% endif %}
+            </td>
+
+            <td>
+              {% if form.instance.completado %}
+                <input type="hidden" name="{{ item_form.descuento.html_name }}" class="dto-input" value="{% if item_form.instance %}{{ item_form.instance.descuento|default_if_none:0 }}{% else %}0{% endif %}">
+                <div class="form-control-plaintext text-end">{% if item_form.instance.descuento %}{{ item_form.instance.descuento }}{% else %}0{% endif %}%</div>
+              {% else %}
+                <div class="input-group">
+                  {{ item_form.descuento|default_if_none:0|add_class:"form-control form-control-lg dto-input text-end"|attr:"type:number"|attr:"step:0.01"|attr:"min:0"|attr:"max:100" }}
+                </div>
+              {% endif %}
+            </td>
+            <td class="subtotal-cell">
+              <div class="input-group">
+                <span class="input-group-text">$</span>
+                <input type="text" class="form-control form-control-lg subtotal-input text-end" disabled value="0.00">
+              </div>
+            </td>
+
+            {% if not form.instance.completado %}
+            <td class="text-center align-middle">
+              {{ item_form.DELETE|add_class:"d-none delete-input" }}
+              <button type="button" class="btn btn-danger btn-sm eliminar-fila">&times;</button>
+            </td>
+            {% endif %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mb-4">
+      {% if not form.instance.completado %}
+      <div class="text-center mt-2">
+        <button type="button" id="agregar-producto" class="btn btn-success">
+          <i class="fa fa-plus me-1"></i>Agregar Producto
+        </button>
+      </div>
+      {% endif %}
+      <div class="d-flex justify-content-end align-items-center mt-2">
+        <div class="p-3 border rounded" style="border:2px solid #000; background: #fff4e6; min-width:240px; text-align:center;">
+          <div class="small" style="color:#6b4a00;">Total de la venta</div>
+          <div class="h5 mb-0"><strong>$<span id="total-venta">0.00</span></strong></div>
+        </div>
+      </div>
+    </div>
+
+    {% if form.instance.pk and form.instance.completado %}
+    <div class="mb-4">
+      <label class="form-label"><i class="fa fa-check me-2"></i>Venta confirmada: <strong>Sí</strong></label>
+    </div>
+    {% endif %}
+
+        <div class="mt-4 d-flex gap-2">
+      {% if not form.instance.completado %}
+        <button class="btn px-4 text-white" style="background: #ff8800;" type="submit">
+          <i class="fa fa-save me-1"></i>Guardar
+        </button>
+      {% else %}
+        <button class="btn btn-secondary" disabled>Venta confirmada</button>
+      {% endif %}
+      <a href="{% url 'mis_ventas' %}" class="btn btn-secondary px-4">
+        <i class="fa fa-times me-1"></i>Cancelar
+      </a>
+    </div>
+  </form>
+</div>
+
+<table style="display: none;">
+  <tbody id="empty-form-template">
+    <tr class="venta-item-row">
+      <td>
+        <input type="hidden" name="{{ formset.prefix }}-__prefix__-producto" class="producto-id" value="">
+        <input type="text" class="form-control producto-search" placeholder="Buscar producto...">
+      </td>
+      <td>
+        <input type="number" name="{{ formset.prefix }}-__prefix__-cantidad" class="form-control form-control-lg cantidad-input text-end" min="1" value="1">
+      </td>
+      <td>
+        <div class="input-group">
+          <span class="input-group-text">$</span>
+          <input type="number" name="{{ formset.prefix }}-__prefix__-precio" class="form-control form-control-lg precio-input text-end" step="0.01" value="0">
+        </div>
+      </td>
+      <td>
+        <input type="number" name="{{ formset.prefix }}-__prefix__-descuento" class="form-control form-control-lg dto-input text-end" step="0.01" min="0" max="100" value="0">
+      </td>
+      <td class="subtotal-cell">
+        <div class="input-group">
+          <span class="input-group-text">$</span>
+          <input type="text" class="form-control form-control-lg subtotal-input text-end" disabled value="0.00">
+        </div>
+      </td>
+      <td class="text-center align-middle">
+        <input type="hidden" name="{{ formset.prefix }}-__prefix__-DELETE" class="d-none delete-input" value="">
+        <button type="button" class="btn btn-danger btn-sm eliminar-fila">&times;</button>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+<!-- Select2 -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+$(document).ready(function() {
+  const formsetPrefix = "{{ formset.prefix }}";
+  const autocompleteUrl = "{% url 'autocomplete_productos2' %}";
+  const buscarProductosUrl = "{% url 'buscar_productos2' %}";
+  const autocompleteClientesUrl = "{% url 'autocomplete_clientes' %}";
+
+  function formatNumber(number) {
+    return parseFloat(number || 0).toFixed(2);
+  }
+
+  function initAutocomplete($element) {
+    $element.autocomplete({
+      source: autocompleteUrl,
+      minLength: 2,
+      select: function(event, ui) {
+        const $td = $(this).closest('td');
+        $td.find('.producto-id').val(ui.item.id);
+        $(this).val(ui.item.value);
+        const $row = $(this).closest('tr');
+        const precioFromItem = ui.item.precio || ui.item.precio_venta || ui.item.precio_default || ui.item.precio_venta_actual;
+        if (precioFromItem !== undefined) {
+          const $precioInput = $row.find('.precio-input');
+          $precioInput.val(Number(precioFromItem).toFixed(2));
+          $precioInput.trigger('change');
+        }
+        calcularTotales();
+        return false;
+      }
+    });
+  }
+
+  function normalizeName(s) {
+    const str = String(s || '');
+    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+  }
+
+  function levenshtein(a, b) {
+    if (a === b) return 0;
+    const al = a.length, bl = b.length;
+    if (al === 0) return bl;
+    if (bl === 0) return al;
+    const v0 = new Array(bl + 1), v1 = new Array(bl + 1);
+    for (let j = 0; j <= bl; j++) v0[j] = j;
+    for (let i = 0; i < al; i++) {
+      v1[0] = i + 1;
+      for (let j = 0; j < bl; j++) {
+        const cost = a[i] === b[j] ? 0 : 1;
+        v1[j + 1] = Math.min(v1[j] + 1, v0[j + 1] + 1, v0[j] + cost);
+      }
+      for (let j = 0; j <= bl; j++) v0[j] = v1[j];
+    }
+    return v1[bl];
+  }
+
+  $(document).on('blur', '.producto-search', function() {
+    const $input = $(this);
+    const nombreRaw = $input.val();
+    const nombre = (nombreRaw || '').trim();
+    const nombreNorm = normalizeName(nombre);
+    const $row = $input.closest('tr');
+    if (!nombre) return;
+    if ($row.find('.producto-id').val()) return;
+
+    $.getJSON(buscarProductosUrl, { q: nombre }).done(function(data) {
+      if (!data || data.length === 0) return;
+      let match = data.find(function(p) { return p.nombre && normalizeName(p.nombre) === nombreNorm; });
+      if (!match && data.length === 1) match = data[0];
+      if (!match) match = data.find(function(p) { return p.nombre && normalizeName(p.nombre).startsWith(nombreNorm); });
+      if (!match) match = data.find(function(p) { return p.nombre && normalizeName(p.nombre).includes(nombreNorm); });
+      if (!match) match = data.find(function(p) { return p.nombre && nombreNorm.includes(normalizeName(p.nombre)); });
+      if (!match) {
+        let best = null, bestDist = Infinity;
+        data.forEach(function(p) {
+          if (!p.nombre) return;
+          const dist = levenshtein(normalizeName(p.nombre), nombreNorm);
+          if (dist < bestDist) { bestDist = dist; best = p; }
+        });
+        if (best && bestDist <= 2) match = best;
+      }
+      if (match) {
+        $row.find('.producto-id').val(match.id);
+        $.getJSON("{% url 'obtener_precio_producto' %}", { producto_id: match.id }).done(function(resp) {
+          if (resp && resp.precio !== undefined) {
+            $row.find('.precio-input').val(Number(resp.precio).toFixed(2)).trigger('change');
+          }
+        });
+      }
+    });
+  });
+  function calcularTotales() {
+    let total = 0;
+    $('#venta-items-table tbody tr').each(function() {
+      const $row = $(this);
+      const $delete = $row.find('.delete-input');
+      const isDeleted = $delete.length && (
+        ($delete.attr('type') === 'checkbox' && $delete.is(':checked')) ||
+        ($delete.attr('type') === 'hidden' && ($delete.val() === 'on' || String($delete.val()).toLowerCase() === 'true'))
+      );
+      if (isDeleted) {
+        $row.find('.subtotal-input').val(formatNumber(0));
+        return;
+      }
+
+      const rawCantidad = String($row.find('.cantidad-input').val() || '').trim().replace(/\s+/g, '');
+      const rawPrecio = String($row.find('.precio-input').val() || '').trim().replace(/\s+/g, '');
+      const rawDto = String($row.find('.dto-input').val() || '').trim().replace(/\s+/g, '');
+      const cantidadParsed = parseFloat(rawCantidad.replace(/,/g, '.'));
+      const precioParsed = parseFloat(rawPrecio.replace(/,/g, '.'));
+      const dtoParsed = parseFloat(rawDto.replace(/,/g, '.'));
+      const cantidad = isNaN(cantidadParsed) ? 0 : cantidadParsed;
+      const precio = isNaN(precioParsed) ? 0 : precioParsed;
+      const dto = (isNaN(dtoParsed) || dtoParsed < 0) ? 0 : Math.min(dtoParsed, 100);
+
+      const subtotalAntes = cantidad * precio;
+      const subtotal = subtotalAntes * (1 - dto / 100);
+      $row.find('.subtotal-input').val(formatNumber(subtotal));
+      total += subtotal;
+    });
+    $('#total-venta').text(formatNumber(total));
+  }
+
+  function inicializarSubtotales() {
+    $('#venta-items-table tbody tr').each(function() {
+      const $row = $(this);
+      const cantidad = parseFloat($row.find('.cantidad-input').val()) || 0;
+      const precio = parseFloat($row.find('.precio-input').val()) || 0;
+      $row.find('.subtotal-input').val(formatNumber(cantidad * precio));
+    });
+    calcularTotales();
+  }
+
+  $('.producto-search').each(function() { initAutocomplete($(this)); });
+  inicializarSubtotales();
+  if ($('#cliente-select').length) {
+    $('#cliente-select').select2({
+      placeholder: 'Buscar cliente...',
+      allowClear: true,
+      ajax: {
+        url: autocompleteClientesUrl,
+        dataType: 'json',
+        delay: 250,
+        data: function(params) { return { term: params.term }; },
+        processResults: function(data) { return { results: data.map(function(d){ return { id: d.id, text: d.value }; }) }; }
+      },
+      width: '100%'
+    });
+
+  
+    const hasDefault = $('#cliente-select option[selected]').length > 0;
+    if (hasDefault) {
+      const val = $('#cliente-select').val();
+      if (val) { $('#cliente-select').trigger('change'); }
+    }
+  }
+
+  $(document).on('input change blur', '.cantidad-input, .precio-input, .dto-input', calcularTotales);
+
+  $('#agregar-producto').click(function() {
+    const totalForms = $('#id_' + formsetPrefix + '-TOTAL_FORMS');
+    const formIdx = parseInt(totalForms.val());
+    const newRow = $('#empty-form-template tr').clone();
+    const newHtml = newRow.html().replace(/__prefix__/g, formIdx);
+    newRow.html(newHtml);
+    if (!newRow.find('.cantidad-input').val()) newRow.find('.cantidad-input').val(1);
+    if (!newRow.find('.precio-input').val()) newRow.find('.precio-input').val(0);
+    $('#venta-items-table tbody').append(newRow);
+    initAutocomplete(newRow.find('.producto-search'));
+  newRow.find('.dto-input').on('input change blur', calcularTotales);
+    totalForms.val(formIdx + 1);
+    calcularTotales();
+  });
+
+  $(document).on('click', '.eliminar-fila', function() {
+    const $row = $(this).closest('tr');
+    const $deleteInput = $row.find('.delete-input');
+    if ($deleteInput.length) {
+      if ($deleteInput.attr('type') === 'checkbox') {
+        $deleteInput.prop('checked', true);
+      } else {
+        $deleteInput.val('on');
+      }
+      $row.hide();
+    } else {
+      $row.remove();
+    }
+    calcularTotales();
+  });
+
+  $('#ventaForm').on('submit', function(e) {
+    e.preventDefault();
+    const $form = $(this);
+
+    $('.venta-item-row').each(function() {
+      const $row = $(this);
+      const productoId = $row.find('.producto-id').val();
+      const productoNombre = ($row.find('.producto-search').val() || '').trim();
+      if (productoNombre && !productoId) {
+
+        try {
+          const resp = $.ajax({
+            url: buscarProductosUrl,
+            data: { q: productoNombre },
+            dataType: 'json',
+            async: false
+          }).responseJSON;
+          if (resp && resp.length) {
+            const nombreNorm = normalizeName(productoNombre);
+            let match = resp.find(function(p) { return p.nombre && normalizeName(p.nombre) === nombreNorm; });
+            if (!match && resp.length === 1) match = resp[0];
+            if (!match) match = resp.find(function(p) { return p.nombre && normalizeName(p.nombre).startsWith(nombreNorm); });
+            if (!match) match = resp.find(function(p) { return p.nombre && normalizeName(p.nombre).includes(nombreNorm); });
+            if (!match) match = resp.find(function(p) { return p.nombre && nombreNorm.includes(normalizeName(p.nombre)); });
+            if (!match) {
+              let best = null, bestDist = Infinity;
+              resp.forEach(function(p) {
+                if (!p.nombre) return;
+                const dist = levenshtein(normalizeName(p.nombre), nombreNorm);
+                if (dist < bestDist) { bestDist = dist; best = p; }
+              });
+              if (best && bestDist <= 2) match = best;
+            }
+            if (match) {
+              $row.find('.producto-id').val(match.id);
+              try {
+                const precioResp = $.ajax({
+                  url: "{% url 'obtener_precio_producto' %}",
+                  data: { producto_id: match.id },
+                  dataType: 'json',
+                  async: false
+                }).responseJSON;
+                if (precioResp && precioResp.precio !== undefined) {
+                  $row.find('.precio-input').val(Number(precioResp.precio).toFixed(2)).trigger('change');
+                }
+              } catch (err) { }
+            }
+          }
+        } catch (err) {
+        }
+      }
+    });
+
+    let isValid = true;
+    const errores = [];
+
+  const clienteVal = ($('#id_cliente').length ? $('#id_cliente').val() : ( $('#cliente-select').length ? $('#cliente-select').val() : '' ));
+  if (!clienteVal) { isValid = false; errores.push('Debe seleccionar un cliente'); }
+
+    let hasItems = false;
+    $('.venta-item-row').each(function() {
+      const $row = $(this);
+      const $delete = $row.find('.delete-input');
+      const rowDeleted = $delete.length && (
+        ($delete.attr('type') === 'checkbox' && $delete.is(':checked')) ||
+        ($delete.attr('type') === 'hidden' && ($delete.val() === 'on' || String($delete.val()).toLowerCase() === 'true'))
+      );
+      if (!rowDeleted) {
+        hasItems = true;
+        const productoId = $row.find('.producto-id').val();
+        const productoNombre = $row.find('.producto-search').val();
+        const cantidad = parseFloat($row.find('.cantidad-input').val()) || 0;
+        if (productoNombre && !productoId) {
+          isValid = false; errores.push('Producto no válido: ' + productoNombre);
+          $row.addClass('table-danger');
+        } else if (cantidad <= 0) {
+          isValid = false; errores.push('La cantidad debe ser mayor a 0 para: ' + (productoNombre || 'producto sin nombre'));
+          $row.addClass('table-danger');
+        } else { $row.removeClass('table-danger'); }
+      }
+    });
+
+    if (!hasItems) { isValid = false; errores.push('Debe agregar al menos un producto a la venta'); }
+
+    if (!isValid) {
+      const $modal = $('#validationErrorsModal');
+      const $list = $modal.find('.modal-body .error-list');
+      $list.empty();
+      errores.forEach(function(err) { $list.append($('<li>').text(err)); });
+      $modal.find('.modal-title').text('Errores encontrados');
+      const validationModal = new bootstrap.Modal(document.getElementById('validationErrorsModal'));
+      validationModal.show();
+      return;
+    }
+
+
+    $form.off('submit');
+    $form.submit();
+  });
+
+  calcularTotales();
+});
+
+</script>
+
+<div class="modal fade" id="validationErrorsModal" tabindex="-1" aria-labelledby="validationErrorsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="validationErrorsModalLabel">Errores</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <ul class="error-list"></ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock Contenido %}

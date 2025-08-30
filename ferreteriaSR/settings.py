@@ -42,12 +42,15 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
+     "django_select2",
+     'widget_tweaks',
   #____ Nuestras app de la ferreteria
     'home',
     'dashboard',
     'productos',
     'reporte',
     'usuarios',
+    'ventas',
 
 ]
 

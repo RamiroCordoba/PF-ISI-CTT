@@ -1,0 +1,98 @@
+{% extends 'dashboard/principal.html' %}
+{% block Contenido %}
+<div class="container-fluid px-4">
+  <h1 class="mt-4">Notas de crédito</h1>
+  <hr style="height: 5px; background-color: black; border: none" />
+
+  <div class="d-flex justify-content-between align-items-center py-2">
+    <div class="d-flex gap-2 flex-wrap">
+    </div>
+
+    <div class="d-flex align-items-end gap-3 flex-wrap">
+      <form method="get" class="d-flex align-items-end gap-3 flex-wrap">
+        <div class="d-flex flex-column">
+          <label class="form-label mb-0">Desde:</label>
+          <input type="date" name="fecha_inicio" class="form-control form-control-sm" value="{{ request.GET.fecha_inicio }}">
+        </div>
+        <div class="d-flex flex-column">
+          <label class="form-label mb-0">Hasta:</label>
+          <input type="date" name="fecha_fin" class="form-control form-control-sm" value="{{ request.GET.fecha_fin }}">
+        </div>
+
+        <div class="d-flex align-items-end gap-2">
+          <input type="text" name="buscar" class="form-control form-control-sm" placeholder="Buscar nota de crédito..." value="{{ request.GET.buscar }}">
+        </div>
+
+        <button type="submit" class="btn btn-sm btn-primary mb-0">Filtrar</button>
+
+        {% if filtros_activos or request.GET.buscar %}
+          <a href="{% url 'mis_notascredito' %}" class="btn btn-outline-danger btn-sm" title="Restablecer filtros">
+            <i class="fa-solid fa-rotate-left"></i>
+          </a>
+        {% endif %}
+      </form>
+    </div>
+  </div>
+
+  <hr style="height: 5px; background-color: black; border: none" />
+
+  <table class="table table-striped table-bordered text-center">
+    <thead>
+      <tr>
+  <th>Acciones</th>
+  <th>ID</th>
+  <th>Venta original</th>
+  <th>Cliente</th>
+  <th>Fecha</th>
+  <th>Estado</th>
+  <th>Comentarios</th>
+  <th>Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for nota in notas %}
+      <tr>
+        <td>
+          <a href="{% url 'detalles_notacredito' nota.id %}" class="btn btn-outline-primary mt-2 btn-sm" title="Ver">
+            <i class="fa-solid fa-eye" aria-hidden="true"></i>
+          </a>
+        </td>
+        <td>{{ nota.id }}</td>
+        <td>{% if nota.venta_original %}#{{ nota.venta_original.id }}{% else %}-{% endif %}</td>
+        <td>{{ nota.cliente.nombre }} {{ nota.cliente.apellido }}</td>
+        <td>{{ nota.fecha|date:"d/m/Y" }}</td>
+        <td>{% if nota.aplicado %}<span class="badge bg-success">Aplicada</span>{% else %}<span class="badge bg-secondary">Pendiente</span>{% endif %}</td>
+        <td>{{ nota.comentarios|default:'-' }}</td>
+        <td>${{ nota.total|floatformat:2 }}</td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="8">No hay notas de crédito registradas.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if is_paginated %}
+  <nav aria-label="Paginación de notas">
+    <ul class="pagination justify-content-center">
+      {% if page_obj.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value|urlencode }}&{% endif %}{% endfor %}page={{ page_obj.previous_page_number }}">Anterior</a>
+        </li>
+      {% endif %}
+      {% for num in paginator.page_range %}
+        <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+          <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ num }}">{{ num }}</a>
+        </li>
+      {% endfor %}
+      {% if page_obj.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value|urlencode }}&{% endif %}{% endfor %}page={{ page_obj.next_page_number }}">Siguiente</a>
+        </li>
+      {% endif %}
+    </ul>
+  </nav>
+  {% endif %}
+</div>
+{% endblock %}

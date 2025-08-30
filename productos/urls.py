@@ -38,6 +38,7 @@ urlpatterns = [
     #__________ Pedidos
     path('pedidos/', PedidosList.as_view(), name='listar_pedidos'),
     path('pedidos/nuevo/', PedidoCreateView.as_view(), name='nuevo_pedido'),
+    path('autocomplete-proveedores/', autocomplete_proveedores, name='autocomplete_proveedores'),
     path('autocomplete_productos/', autocomplete_productos, name='autocomplete_productos'),
     path('ajax/productos_por_proveedor/', productos_por_proveedor, name='productos_por_proveedor'),
     path('pedidos/editar_pedidos/<int:pk>/', PedidoUpdateView.as_view(), name='editar_pedido'),
