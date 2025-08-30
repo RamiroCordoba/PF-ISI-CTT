@@ -49,7 +49,6 @@ class ProductoForm(forms.ModelForm):
     def clean_fecha_ultimo_ingreso(self):
         fecha = self.cleaned_data.get('fecha_ultimo_ingreso')
         if fecha:
-            # Convertir a datetime con hora 00:00:00
             return datetime.datetime.combine(fecha, datetime.time.min)
         return fecha
 
@@ -76,7 +75,6 @@ class PedidoItemForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['producto'].empty_label = ''
-        # Valores iniciales por defecto
         self.fields['cantidad'].initial = 1
         self.fields['precio'].initial = 0.00
 
@@ -86,6 +84,7 @@ class PedidoForm(forms.ModelForm):
         model = Pedido
         fields = [
             'proveedor',
+            'moneda',
             'comentarios',
             'completado',
             'fechaIngreso',
@@ -102,6 +101,14 @@ class PedidoForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        if not (self.instance and self.instance.pk):
+            try:
+                from ventas.models import Moneda
+                m = Moneda.objects.filter(nombre__iexact='pesos').first()
+                if m:
+                    self.fields['moneda'].initial = m.id
+            except Exception:
+                pass
         if not (self.instance and self.instance.pk):
             try:
                 self.fields['fechaEstimadaEntrega'].initial = datetime.date.today() + datetime.timedelta(days=7)
@@ -131,7 +138,7 @@ class PedidoForm(forms.ModelForm):
 
 
 
-# PedidoItemFormSet para crear (con fila vacía)
+
 PedidoItemFormSet = inlineformset_factory(
     Pedido,
     PedidoItem,
@@ -140,7 +147,6 @@ PedidoItemFormSet = inlineformset_factory(
     can_delete=True
 )
 
-# PedidoItemFormSet para editar (sin fila vacía extra)
 PedidoItemFormSetNoExtra = inlineformset_factory(
     Pedido,
     PedidoItem,

@@ -387,7 +387,7 @@
                 <div class="sb-nav-link-icon">
                   <i class="fas fa-credit-card"></i>
                 </div>
-                Moneda
+                Clientes
                 <div class="sb-sidenav-collapse-arrow">
                   <i class="fas fa-angle-down"></i>
                 </div>
@@ -436,6 +436,34 @@
                   </a>
                   <a class="nav-link" href="{% url 'nueva_venta' %}">
                     Nueva Ventas
+                  </a>
+                </nav>
+              </div>
+              <a
+                class="nav-link collapsed"
+                href="#"
+                data-bs-toggle="collapse"
+                data-bs-target="#collapseNotas"
+                aria-expanded="false"
+                aria-controls="collapseNotas"
+              >
+                <div class="sb-nav-link-icon">
+                  <i class="fa-solid fa-file-invoice"></i>
+                </div>
+                Notas de Crédito
+                <div class="sb-sidenav-collapse-arrow">
+                  <i class="fas fa-angle-down"></i>
+                </div>
+              </a>
+              <div
+                class="collapse"
+                id="collapseNotas"
+                aria-labelledby="headingNotas"
+                data-bs-parent="#sidenavAccordion"
+              >
+                <nav class="sb-sidenav-menu-nested nav">
+                  <a class="nav-link" href="{% url 'mis_notascredito' %}">
+                    Lista de Notas de Crédito
                   </a>
                 </nav>
               </div>

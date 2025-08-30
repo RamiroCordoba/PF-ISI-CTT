@@ -34,7 +34,12 @@ urlpatterns = [
     path('venta/editar_venta/<int:pk>/', VentaUpdate.as_view(), name='editar_venta'),
     path('venta/informacion/<int:pk>/', VentaDetail.as_view(), name='detalles_venta'),
     path('venta/eliminar_venta/<int:pk>/', VentaDelete.as_view(), name='eliminar_venta'),
+    path('venta/<int:pk>/pdf/', venta_pdf_view, name='venta_pdf'),
     path('ajax/obtener_precio/', obtener_precio, name='obtener_precio_producto'),
     path('ajax/buscar_productos2/', buscar_productos2, name='buscar_productos2'),
     path('autocomplete-productos2/', autocomplete_productos2, name='autocomplete_productos2'),
+    path('autocomplete-clientes/', autocomplete_clientes, name='autocomplete_clientes'),
+    # Notas de crédito
+    path('notacredito/', NotaCreditoList.as_view(), name='mis_notascredito'),
+    path('notacredito/<int:pk>/', NotaCreditoDetail.as_view(), name='detalles_notacredito'),
 ]

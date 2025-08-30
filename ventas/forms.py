@@ -2,6 +2,14 @@ from django import forms
 from .models import *
 from django_select2.forms import Select2Widget
 from django.forms import inlineformset_factory
+from django.forms.models import BaseInlineFormSet
+from django.core.exceptions import ValidationError
+
+#_______ Formulario de proveedor
+from django import forms
+from .models import *
+from django_select2.forms import Select2Widget
+from django.forms import inlineformset_factory
 
 #_______ Formulario de proveedor
 class ClienteForm(forms.ModelForm):
@@ -11,6 +19,7 @@ class ClienteForm(forms.ModelForm):
         widgets = {
             'condicion_fiscal': Select2Widget,
         }
+
 
 
 class IVAForm(forms.ModelForm):
@@ -40,6 +49,7 @@ class CondicionFiscalForm(forms.ModelForm):
             "nombre": forms.TextInput(attrs={"class": "form-control"}),
             "activo": forms.CheckboxInput(attrs={"class": "form-check-input"})
         }
+
 
 
 class ClienteForm(forms.ModelForm):
@@ -94,8 +104,9 @@ class ClienteForm(forms.ModelForm):
 
     def clean_direccion(self):
         direccion = self.cleaned_data.get('direccion')
-        if not all(c.isalnum() or c.isspace() or c in ',.-#' for c in direccion):
-            raise forms.ValidationError('La dirección contiene caracteres no permitidos.')
+        if direccion:
+            if not all(c.isalnum() or c.isspace() or c in ',.-#' for c in direccion):
+                raise forms.ValidationError('La dirección contiene caracteres no permitidos.')
         return direccion
 
 class VentaItemForm(forms.ModelForm):
@@ -111,10 +122,37 @@ class VentaItemForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['producto'].queryset = Producto.objects.none()
+        try:
+            if self.instance and getattr(self.instance, 'producto', None):
+                self.fields['producto'].queryset = Producto.objects.filter(pk=self.instance.producto.pk)
+            else:
+                self.fields['producto'].queryset = Producto.objects.all()
+        except Exception:
+            self.fields['producto'].queryset = Producto.objects.all()
 
 
-VentaItemFormSet = inlineformset_factory(Venta, VentaItem, form=VentaItemForm, extra=1, can_delete=True)
+class BaseVentaItemFormSet(BaseInlineFormSet):
+    def clean(self):
+        super().clean()
+        seen = set()
+        duplicates = []
+        for cd in getattr(self, 'cleaned_data', []):
+            if not cd or cd.get('DELETE'):
+                continue
+            producto = cd.get('producto')
+            if producto is None:
+                continue
+            if producto.id in seen:
+                duplicates.append(producto)
+            else:
+                seen.add(producto.id)
+
+        if duplicates:
+            names = ', '.join(str(p.nombre) for p in duplicates)
+            raise ValidationError(f'No puede repetir el mismo producto en la venta: {names}')
+
+
+VentaItemFormSet = inlineformset_factory(Venta, VentaItem, form=VentaItemForm, formset=BaseVentaItemFormSet, extra=1, can_delete=False)
 
 class VentaForm(forms.ModelForm):
     class Meta:
@@ -129,3 +167,20 @@ class VentaForm(forms.ModelForm):
             'descuento': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0', 'max': '100'}),
             'iva': Select2Widget(attrs={'class': 'form-control'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and getattr(self.instance, 'pk', None):
+            self.fields['cliente'].disabled = True
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if self.instance and getattr(self.instance, 'pk', None) and getattr(self.instance, 'completado', False):
+            cleaned_data['completado'] = True
+
+        if self.instance and getattr(self.instance, 'pk', None):
+            cliente_enviado = cleaned_data.get('cliente')
+            if cliente_enviado != self.instance.cliente:
+                self.add_error('cliente', 'No se puede modificar el cliente de una venta ya creada.')
+
+        return cleaned_data

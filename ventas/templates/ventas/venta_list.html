@@ -4,19 +4,15 @@
   <h1 class="mt-4">Ventas</h1>
   <hr style="height: 5px; background-color: black; border: none" />
 
-  <!-- Fila de funciones generales -->
   <div class="d-flex justify-content-between align-items-center py-2">
-    <!-- Botones de acciones -->
     <div class="d-flex gap-2 flex-wrap">
       <a href="{% url 'nueva_venta' %}" class="btn btn-primary btn-sm d-flex align-items-center justify-content-center px-4">
         Nueva venta
       </a>
     </div>
 
-    <!-- Filtros y buscador -->
     <div class="d-flex align-items-end gap-3 flex-wrap">
       <form method="get" class="d-flex align-items-end gap-3 flex-wrap">
-        <!-- Rango de fechas -->
         <div class="d-flex flex-column">
           <label class="form-label mb-0">Desde:</label>
           <input type="date" name="fecha_inicio" class="form-control form-control-sm" value="{{ request.GET.fecha_inicio }}">
@@ -26,7 +22,6 @@
           <input type="date" name="fecha_fin" class="form-control form-control-sm" value="{{ request.GET.fecha_fin }}">
         </div>
 
-        <!-- Clientes -->
         <div class="dropdown">
           <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
             Cliente
@@ -44,15 +39,12 @@
           </ul>
         </div>
 
-        <!-- Buscador -->
         <div class="d-flex align-items-end gap-2">
           <input type="text" name="buscar" class="form-control form-control-sm" placeholder="Buscar venta..." value="{{ request.GET.buscar }}">
         </div>
 
-        <!-- Botón filtrar -->
         <button type="submit" class="btn btn-sm btn-primary mb-0">Filtrar</button>
 
-        <!-- Botón restablecer filtros -->
         {% if filtros_activos or request.GET.buscar %}
           <a href="{% url 'mis_ventas' %}" class="btn btn-outline-danger btn-sm" title="Restablecer filtros">
             <i class="fa-solid fa-rotate-left"></i>
@@ -62,7 +54,6 @@
     </div>
   </div>
 
-  <!-- Indicador de filtros activos -->
   {% if filtros_activos or request.GET.buscar %}
   <div class="text-secondary small mt-3">
     Se está filtrando por
@@ -85,7 +76,6 @@
 
   <hr style="height: 5px; background-color: black; border: none" />
 
-  <!-- Tabla de ventas -->
   <table class="table table-striped table-bordered text-center">
     <thead>
       <tr>
@@ -108,7 +98,6 @@
               <i class="fa fa-edit fa-sm" title="Editar"></i>
             </a>
 
-            <!-- Modal eliminar -->
             <button type="button" class="btn btn-outline-danger mt-2 btn-sm" data-bs-toggle="modal" data-bs-target="#modalEliminarVenta{{ venta.id }}" title="Eliminar">
               <i class="fa fa-trash fa-sm"></i>
             </button>
@@ -134,12 +123,12 @@
               </div>
             </div>
 
-            <a href="{% url 'detalle_venta' venta.id %}" class="btn btn-outline-primary mt-2 btn-sm">
+            <a href="{% url 'detalles_venta' venta.id %}" class="btn btn-outline-primary mt-2 btn-sm">
               <i class="fa-solid fa-eye" title="Ver"></i>
             </a>
-            <a href="{% url 'venta_pdf' venta.id %}" class="btn btn-outline-dark mt-2 btn-sm" target="_blank" title="Descargar PDF">
+            <!--<a href="{//% url 'venta_pdf' venta.id %}" class="btn btn-outline-dark mt-2 btn-sm" target="_blank" title="Descargar PDF">
               <i class="fa-solid fa-download"></i>
-            </a>
+            </a>-->
           {% endif %}
         </td>
         <td>{{ venta.id }}</td>
@@ -158,7 +147,6 @@
     </tbody>
   </table>
 
-  <!-- Paginación -->
   {% if is_paginated %}
   <nav aria-label="Paginación de ventas">
     <ul class="pagination justify-content-center">

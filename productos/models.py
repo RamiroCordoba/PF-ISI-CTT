@@ -4,6 +4,7 @@ from django.utils import timezone
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 from django.db.models import F
+from django.db import transaction
 
 class Categoria(models.Model):
   nombre = models.CharField(max_length=40, unique=True, null=False, blank=False)
@@ -84,6 +85,8 @@ class Estacionalidad(models.Model):
 
 class Pedido(models.Model):
   proveedor = models.ForeignKey('Proveedor', on_delete=models.PROTECT, related_name='pedidos')
+  vendedor = models.CharField(max_length=100, blank=True, null=True)
+  moneda = models.ForeignKey('ventas.Moneda', on_delete=models.PROTECT, null=True, blank=True)
   fecha = models.DateField(auto_now_add=True)
   fechaIngreso = models.DateField(null=True, blank=True)
   comentarios = models.TextField(null=True, blank=True)
@@ -122,31 +125,71 @@ def pedido_pre_save(sender, instance, **kwargs):
 def pedido_post_save(sender, instance, created, **kwargs):
   prev = getattr(instance, '_prev_completado', False)
   if not created and (not prev) and instance.completado:
-    unapplied_items = instance.items.select_related('producto').filter(stock_aplicado=False)
-    for item in unapplied_items:
-      # Use atomic DB update to increment stock and set fecha_ultimo_ingreso
-      Producto.objects.filter(pk=item.producto_id).update(
-        stock=F('stock') + (item.cantidad or 0),
-        fecha_ultimo_ingreso=timezone.now()
-      )
-      PedidoItem.objects.filter(pk=item.pk).update(stock_aplicado=True)
-    remaining = instance.items.filter(stock_aplicado=False).exists()
-    if not remaining:
-      Pedido.objects.filter(pk=instance.pk).update(stock_actualizado=True)
+    def _apply():
+      unapplied_items = instance.items.select_related('producto').filter(stock_aplicado=False)
+      for item in unapplied_items:
+        Producto.objects.filter(pk=item.producto_id).update(
+          stock=F('stock') + (item.cantidad or 0),
+          fecha_ultimo_ingreso=timezone.now()
+        )
+        PedidoItem.objects.filter(pk=item.pk).update(stock_aplicado=True)
+      remaining = instance.items.filter(stock_aplicado=False).exists()
+      if not remaining:
+        Pedido.objects.filter(pk=instance.pk).update(stock_actualizado=True)
+
+    try:
+      transaction.on_commit(_apply)
+    except Exception:
+      _apply()
 
 
 @receiver(post_save, sender=PedidoItem)
 def pedidoitem_post_save(sender, instance, created, **kwargs):
   pedido = instance.pedido
-  if pedido.completado and not instance.stock_aplicado:
-    Producto.objects.filter(pk=instance.producto_id).update(
-      stock=F('stock') + (instance.cantidad or 0),
-      fecha_ultimo_ingreso=timezone.now()
-    )
-    PedidoItem.objects.filter(pk=instance.pk).update(stock_aplicado=True)
+  needs_apply = PedidoItem.objects.filter(pk=instance.pk, stock_aplicado=False).exists()
+  if pedido.completado and needs_apply:
+    def _apply_item():
+      Producto.objects.filter(pk=instance.producto_id).update(
+        stock=F('stock') + (instance.cantidad or 0),
+        fecha_ultimo_ingreso=timezone.now()
+      )
+      PedidoItem.objects.filter(pk=instance.pk).update(stock_aplicado=True)
+      remaining = pedido.items.filter(stock_aplicado=False).exists()
+      if not remaining:
+        Pedido.objects.filter(pk=pedido.pk).update(stock_actualizado=True)
+
+    try:
+      transaction.on_commit(_apply_item)
+    except Exception:
+      _apply_item()
+
+
+def apply_stock_for_pedido(pedido):
+  from django.db import transaction
+  unapplied = pedido.items.filter(stock_aplicado=False).select_related('producto')
+  with transaction.atomic():
+    for item in unapplied:
+      Producto.objects.filter(pk=item.producto_id).update(
+        stock=F('stock') + (item.cantidad or 0),
+        fecha_ultimo_ingreso=timezone.now()
+      )
+      PedidoItem.objects.filter(pk=item.pk).update(stock_aplicado=True)
     remaining = pedido.items.filter(stock_aplicado=False).exists()
     if not remaining:
       Pedido.objects.filter(pk=pedido.pk).update(stock_actualizado=True)
+
+
+def revert_stock_for_pedido(pedido):
+  from django.db import transaction
+  applied_items = pedido.items.filter(stock_aplicado=True).select_related('producto')
+  with transaction.atomic():
+    for item in applied_items:
+      Producto.objects.filter(pk=item.producto_id).update(
+        stock=F('stock') - (item.cantidad or 0),
+        fecha_ultimo_ingreso=timezone.now()
+      )
+      PedidoItem.objects.filter(pk=item.pk).update(stock_aplicado=False)
+    Pedido.objects.filter(pk=pedido.pk).update(stock_actualizado=False)
     
 
 class FormaPago(models.Model):

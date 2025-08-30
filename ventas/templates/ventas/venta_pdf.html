@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Venta #{{ venta.id }}</title>
+    {% load humanize %}
+    <style>
+    body {
+        font-family: 'Arial', sans-serif;
+        margin: 0;
+        color: #333;
+        background: #fff;
+    }
+    .header-top {
+        width:100%;
+        background:#f36f25;
+        padding:10px 0;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+    }
+    .logo { margin-left:30px; }
+    .header-center { text-align:center; width:60%; }
+    .header-right { margin-right:30px; text-align:right; color:#fff; font-weight:bold; }
+    .header-center h1 { margin:0; color:#1f2d2d; font-size:28px; }
+    .header-center p { margin:0; font-size:12px; color:#333; }
+
+    .section { margin: 20px 30px; }
+    .table-container { margin: 0 30px 10px 30px; }
+    table { width:100%; border-collapse: collapse; font-size:12px; table-layout: fixed; }
+    table th, table td { border:1px solid #d6d6d6; padding:8px; text-align:left; word-wrap:break-word; }
+    table th { background:#f36f25; color:#fff; font-weight:bold; }
+    table .col-num { width:5%; text-align:center; }
+    table .col-product { width:55%; }
+    table .col-price { width:12%; text-align:right; }
+    table .col-cant { width:8%; text-align:center; }
+    table .col-desc { width:10%; text-align:center; }
+    table .col-sub { width:10%; text-align:right; }
+
+    .total-row td { background:#f36f25; color:#fff; font-weight:bold; }
+    .observaciones { margin: 20px 30px; }
+    .qr { margin: 30px 30px 60px 30px; }
+    </style>
+</head>
+<body>
+    <div class="header-top">
+        <div class="logo">
+            <img src="data:image/png;base64,{{ logo_base64 }}" alt="Logo" width="90" height="90">
+        </div>
+        <div class="header-center">
+            <h1>FERRETERIA SANTA RITA</h1>
+            <p>Baigorria 1990, Rosario, Santa Fe. CP:2000 &nbsp; CUIT: 23-16275962-9 &nbsp; TEL: (341) 3591328</p>
+            <p>proyectoferreretiasr@gmail.com</p>
+        </div>
+        <div class="header-right">
+            <div>Nº VENTA: {{ venta.id|stringformat:"04d" }}</div>
+        </div>
+    </div>
+
+    <div class="section">
+    <p><strong>FECHA VENTA:</strong> {{ venta.fecha|date:"j" }} de {{ venta.fecha|date:"F" }} de {{ venta.fecha|date:"Y" }}</p>
+        <p><strong>Cliente:</strong> {{ venta.cliente }}</p>
+        <p><strong>Vendedor:</strong> {{ venta.vendedor }}</p>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th class="col-num">#</th>
+                    <th class="col-product">Producto</th>
+                    <th class="col-price">Precio</th>
+                    <th class="col-cant">Cantidad</th>
+                    <th class="col-desc">Desc %</th>
+                    <th class="col-sub">Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td class="col-num">{{ forloop.counter }}</td>
+                    <td class="col-product">{{ item.producto }}</td>
+                    <td class="col-price">${{ item.precio|floatformat:2|intcomma }}</td>
+                    <td class="col-cant">{{ item.cantidad }}</td>
+                    <td class="col-desc">{{ item.descuento|default:0 }}%</td>
+                    <td class="col-sub">${{ item.subtotal|floatformat:2|intcomma }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6">No hay productos en esta venta.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <table style="margin-top:8px; width:100%;">
+            <tr class="total-row">
+                <td colspan="5" style="text-align:right; padding-right:12px;">TOTAL:</td>
+                <td style="text-align:right; padding-left:12px;">${{ total|floatformat:2|intcomma }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="observaciones">
+        <h4 style="color:#a85a0a;">OBSERVACIONES</h4>
+        <div style="border-top:1px dashed #a85a0a; padding-top:8px;">
+            {% if venta.comentarios %}
+                {{ venta.comentarios|linebreaksbr }}
+            {% else %}
+                <span style="color:#aaa;">Sin observaciones.</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <div style="display:flex; justify-content:flex-start; align-items:flex-start;">
+        <div class="qr">
+            <img src="data:image/png;base64,{{ qr_base64 }}" alt="QR Venta" width="150" height="150" />
+        </div>
+    </div>
+
+</body>
+</html>

@@ -539,6 +539,20 @@ class EstacionalidadList(LoginRequiredMixin,ListView):
 class PedidoCreateView(LoginRequiredMixin, View):
     def get(self, request):
         form = PedidoForm()
+        try:
+            if hasattr(request.user, 'get_full_name') and request.user.get_full_name():
+                form.initial['vendedor'] = request.user.get_full_name()
+            else:
+                form.initial['vendedor'] = request.user.username
+        except Exception:
+            pass
+        try:
+            from ventas.models import Moneda
+            m = Moneda.objects.filter(nombre__iexact='pesos').first()
+            if m:
+                form.initial['moneda'] = m.id
+        except Exception:
+            pass
         PedidoItemFormSetLocal = inlineformset_factory(
             Pedido,
             PedidoItem,
@@ -550,7 +564,20 @@ class PedidoCreateView(LoginRequiredMixin, View):
         return render(request, 'pedidos/pedido_form.html', {'form': form, 'formset': formset})
 
     def post(self, request):
-        form = PedidoForm(request.POST)
+        post_data = request.POST.copy()
+        try:
+            vendedor_val = request.user.get_full_name() or request.user.username
+        except Exception:
+            vendedor_val = getattr(request.user, 'username', '')
+        post_data['vendedor'] = vendedor_val
+        try:
+            from ventas.models import Moneda
+            m = Moneda.objects.filter(nombre__iexact='pesos').first()
+            if m:
+                post_data['moneda'] = str(m.id)
+        except Exception:
+            pass
+        form = PedidoForm(post_data)
         PedidoItemFormSetLocal = inlineformset_factory(
             Pedido,
             PedidoItem,
@@ -559,10 +586,16 @@ class PedidoCreateView(LoginRequiredMixin, View):
             can_delete=True
         )
         if form.is_valid():
-            pedido = form.save() 
+            pedido = form.save()
             formset = PedidoItemFormSetLocal(request.POST, instance=pedido)  
             if formset.is_valid():
                 formset.save()  
+                try:
+                    if pedido.completado:
+                        from .models import apply_stock_for_pedido
+                        apply_stock_for_pedido(pedido)
+                except Exception:
+                    pass
                 messages.success(request, "Pedido creado correctamente.")
                 return redirect('listar_pedidos')
         else:
@@ -638,6 +671,19 @@ def autocomplete_productos(request):
         })
     return JsonResponse(results, safe=False)
 
+
+def autocomplete_proveedores(request):
+    term = request.GET.get('term', '')
+    proveedores = Proveedor.objects.filter(nombreEmpresa__icontains=term)[:20]
+    results = []
+    for p in proveedores:
+        results.append({
+            'id': p.id,
+            'label': p.nombreEmpresa,
+            'value': p.nombreEmpresa,
+        })
+    return JsonResponse(results, safe=False)
+
 def productos_por_proveedor(request):
     proveedor_id = request.GET.get('proveedor_id')
     productos = []
@@ -701,16 +747,35 @@ class PedidoUpdateView(LoginRequiredMixin, UpdateView):
 
         try:
             posted_completado = self.request.POST.get('completado')
-            print('DEBUG PedidoUpdateView POST[completado]=', posted_completado)
+            import logging
+            logging.getLogger(__name__).debug('PedidoUpdateView POST[completado]=%s', posted_completado)
             messages.info(self.request, f"DEBUG POST[completado]={posted_completado}")
             messages.info(self.request, f"DEBUG form.cleaned_data.completado={form.cleaned_data.get('completado')}")
         except Exception:
             pass
 
         if form.is_valid() and formset.is_valid():
+            try:
+                vendedor_val = self.request.user.get_full_name() or self.request.user.username
+            except Exception:
+                vendedor_val = getattr(self.request.user, 'username', '')
+            form.instance.vendedor = vendedor_val
+            try:
+                from ventas.models import Moneda
+                m = Moneda.objects.filter(nombre__iexact='pesos').first()
+                if m:
+                    form.instance.moneda = m
+            except Exception:
+                pass
             self.object = form.save()
             formset.instance = self.object
-            formset.save() 
+            formset.save()
+            try:
+                if self.object.completado and not estaba_completado:
+                    from .models import apply_stock_for_pedido
+                    apply_stock_for_pedido(self.object)
+            except Exception:
+                pass
 
             if self.object.completado and not estaba_completado:
                 msg = "El pedido fue confirmado y el stock actualizado."
@@ -732,8 +797,55 @@ class PedidoDelete(DeleteView):
     success_url = reverse_lazy('listar_pedidos')
     
     def delete(self, request, *args, **kwargs):
+        pedido = self.get_object()
+        try:
+            import logging
+            logging.getLogger(__name__).info("PedidoDelete.delete called for pedido id=%s user=%s", pedido.pk, request.user)
+        except Exception:
+            pass
+        reverted = None
+        reverted_items = []
+        try:
+            if pedido.completado:
+                applied_qs = pedido.items.filter(stock_aplicado=True).select_related('producto')
+                for it in applied_qs:
+                    reverted_items.append({'pedido_item_id': it.pk, 'producto_id': it.producto_id, 'producto_nombre': getattr(it.producto, 'nombre', ''), 'cantidad': it.cantidad})
+
+                from .models import revert_stock_for_pedido
+                try:
+                    applied_count = pedido.items.filter(stock_aplicado=True).count()
+                    messages.info(request, f"Revirtiendo stock de {applied_count} items del pedido.")
+                except Exception:
+                    pass
+                try:
+                    reverted = revert_stock_for_pedido(pedido)
+                except Exception as e:
+                    import logging
+                    logging.getLogger(__name__).exception("Error al revertir stock para pedido %s: %s", getattr(pedido, 'pk', None), str(e))
+                    messages.error(request, f"No se pudo revertir el stock del pedido: {e}")
+        except Exception:
+            pass
+
         messages.success(request, "Pedido eliminado correctamente.")
-        return super().delete(request, *args, **kwargs)
+
+        debug_requested = request.GET.get('debug') == '1' or request.POST.get('debug') == '1' or request.headers.get('x-requested-with') == 'XMLHttpRequest'
+        if debug_requested:
+            return JsonResponse({'deleted': True, 'reverted': reverted or 0, 'items': reverted_items})
+
+        response = super().delete(request, *args, **kwargs)
+        if reverted is not None:
+            try:
+                from urllib.parse import urlencode, urlsplit, urlunsplit, parse_qsl
+                loc = response['Location']
+                scheme, netloc, path, query, frag = urlsplit(loc)
+                q = dict(parse_qsl(query))
+                q['reverted'] = str(reverted)
+                new_query = urlencode(q)
+                new_loc = urlunsplit((scheme, netloc, path, new_query, frag))
+                response['Location'] = new_loc
+            except Exception:
+                pass
+        return response
 
 
 def pedido_pdf_view(request, pk):
