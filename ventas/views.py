@@ -404,7 +404,21 @@ def autocomplete_clientes(request):
         })
     return JsonResponse(results, safe=False)
 
-
+def autocomplete_formas_pago(request):
+    term = request.GET.get('term', '').strip()
+    qs = FormaPago.objects.all()
+    if term:
+        qs = qs.filter(Q(nombre__icontains=term) | Q(descripcion__icontains=term))
+    qs = qs.order_by('nombre')[:20]
+    results = []
+    for f in qs:
+        label = getattr(f, 'nombre', None) or getattr(f, 'descripcion', str(f))
+        results.append({
+            'id': f.id,
+            'value': label,
+            'label': label,
+        })
+    return JsonResponse(results, safe=False)
 
 def productos_por_proveedor2(request):
     proveedor_id = request.GET.get('proveedor_id')
@@ -452,7 +466,13 @@ class VentaCreate(LoginRequiredMixin, View):
             'form': form,
             'formset': formset,
             'default_cliente_id': getattr(default_cliente, 'id', ''),
-            'default_cliente_name': (default_cliente.razon_social if getattr(default_cliente, 'razon_social', None) else (f"{getattr(default_cliente,'nombre','')} {getattr(default_cliente,'apellido','')}") ).strip() if default_cliente else ''
+            'default_cliente_name': (default_cliente.razon_social if getattr(default_cliente, 'razon_social', None) else (f"{getattr(default_cliente,'nombre','')} {getattr(default_cliente,'apellido','')}") ).strip() if default_cliente else '',
+            'formas_pago': FormaPago.objects.all(),
+            'default_forma_pago_id': '', 
+            'default_forma_pago_name': '', 
+            'default_comentarios': initial.get('comentarios', ''),
+            'default_moneda_id': getattr(moneda_pesos, 'id', ''),
+            'default_moneda_name': getattr(moneda_pesos, 'nombre', '') if moneda_pesos else '',
         }
         return render(request, 'ventas/venta_form.html', context)
 
@@ -485,7 +505,11 @@ class VentaCreate(LoginRequiredMixin, View):
         if form.is_valid():
             vendedor_default = request.user.get_full_name() or request.user.username
             form.instance.vendedor = vendedor_default
-
+            try:
+                if moneda_pesos:
+                    form.instance.moneda = moneda_pesos
+            except Exception:
+                pass
             form.instance.completado = False
 
             if not form.cleaned_data.get('cliente'):
@@ -531,9 +555,41 @@ class VentaCreate(LoginRequiredMixin, View):
                     except Exception:
                         pass
                     messages.error(request, fullmsg)
+                    default_cliente_id = post_data.get('cliente') or ''
+                    default_cliente_name = ''
+                    if default_cliente_id:
+                        try:
+                            cf_sel = Cliente.objects.filter(pk=default_cliente_id).first()
+                            if cf_sel:
+                                default_cliente_name = (cf_sel.razon_social if getattr(cf_sel, 'razon_social', None) else (f"{getattr(cf_sel,'nombre','')} {getattr(cf_sel,'apellido','')}")).strip()
+                        except Exception:
+                            default_cliente_name = ''
+
                     form = VentaForm(post_data)
                     formset = VentaItemFormSet(request.POST)
-                    return render(request, 'ventas/venta_form.html', {'form': form, 'formset': formset, 'stock_errors': msgs})
+                    default_forma_pago_id = post_data.get('forma_pago', '') 
+                    default_forma_pago_name = ''
+                    if default_forma_pago_id:
+                        try:
+                            fp = FormaPago.objects.filter(pk=default_forma_pago_id).first()
+                            if fp:
+                                default_forma_pago_name = getattr(fp, 'nombre', getattr(fp, 'descripcion', str(fp)))
+                        except Exception:
+                            default_forma_pago_name = ''
+                    context = {
+                        'form': form,
+                        'formset': formset,
+                        'stock_errors': msgs,
+                        'default_cliente_id': default_cliente_id,
+                        'default_cliente_name': default_cliente_name,
+                        'formas_pago': FormaPago.objects.all(),
+                        'default_forma_pago_id': default_forma_pago_id,
+                        'default_forma_pago_name': default_forma_pago_name,
+                        'default_comentarios': post_data.get('comentarios', ''),
+                        'default_moneda_id': post_data.get('moneda', '') or (getattr(moneda_pesos, 'id', '') if moneda_pesos else ''),
+                        'default_moneda_name': '',
+                    }
+                    return render(request, 'ventas/venta_form.html', context)
 
                 venta = form.save()
                 venta.completado = True
@@ -550,7 +606,48 @@ class VentaCreate(LoginRequiredMixin, View):
         else:
             formset = VentaItemFormSet(request.POST)
 
-        return render(request, 'ventas/venta_form.html', {'form': form, 'formset': formset})
+        default_cliente_id = request.POST.get('cliente') or (getattr(form.instance, 'cliente', None) and getattr(form.instance.cliente, 'id', None)) or ''
+        default_cliente_name = ''
+        if default_cliente_id:
+            try:
+                cf_sel = Cliente.objects.filter(pk=default_cliente_id).first()
+                if cf_sel:
+                    default_cliente_name = (cf_sel.razon_social if getattr(cf_sel, 'razon_social', None) else (f"{getattr(cf_sel,'nombre','')} {getattr(cf_sel,'apellido','')}")).strip()
+            except Exception:
+                default_cliente_name = ''
+
+        default_forma_pago_id = request.POST.get('forma_pago') or (getattr(form.instance, 'forma_pago', None) and getattr(form.instance.forma_pago, 'id', None)) or ''
+        default_forma_pago_name = ''
+        if default_forma_pago_id:
+            try:
+                fp = FormaPago.objects.filter(pk=default_forma_pago_id).first()
+                if fp:
+                    default_forma_pago_name = getattr(fp, 'nombre', getattr(fp, 'descripcion', str(fp)))
+            except Exception:
+                default_forma_pago_name = ''
+        default_comentarios = request.POST.get('comentarios') or (getattr(form.instance, 'comentarios', None) or '')
+        default_moneda_id = request.POST.get('moneda') or (getattr(form.instance, 'moneda', None) and getattr(form.instance.moneda, 'id', None)) or (getattr(moneda_pesos, 'id', '') if moneda_pesos else '')
+        default_moneda_name = ''
+        try:
+            if default_moneda_id:
+                m = Moneda.objects.filter(pk=default_moneda_id).first()
+                if m:
+                    default_moneda_name = getattr(m, 'nombre', '')
+        except Exception:
+            default_moneda_name = ''
+
+        return render(request, 'ventas/venta_form.html', {
+            'form': form,
+            'formset': formset,
+            'default_cliente_id': default_cliente_id,
+            'default_cliente_name': default_cliente_name,
+            'formas_pago': FormaPago.objects.all(),
+            'default_forma_pago_id': default_forma_pago_id,
+            'default_forma_pago_name': default_forma_pago_name,
+            'default_comentarios': default_comentarios,
+            'default_moneda_id': default_moneda_id,
+            'default_moneda_name': default_moneda_name,
+        })
 
 
 def obtener_precio(request):
@@ -596,7 +693,6 @@ class VentaDetail(LoginRequiredMixin, DetailView):
                 precio = Decimal(str(item.precio)) if item.precio is not None else Decimal('0')
             except (InvalidOperation, TypeError, ValueError):
                 precio = Decimal('0')
-
             try:
                 cantidad = Decimal(str(item.cantidad)) if item.cantidad is not None else Decimal('0')
             except (InvalidOperation, TypeError, ValueError):
@@ -634,7 +730,6 @@ def venta_pdf_view(request, pk):
             descuento_pct = Decimal('0')
         descuento_factor = Decimal('1') - (descuento_pct / Decimal('100'))
         subtotal = (precio * cantidad * descuento_factor)
-        total += subtotal
         items.append({
             'producto': item.producto.nombre if item.producto else '',
             'cantidad': item.cantidad,
@@ -762,6 +857,20 @@ class VentaDelete(DeleteView):
             logging.getLogger(__name__).debug("VentaDelete.delete called for venta id=%s user=%s", venta.pk, request.user)
         except Exception:
             pass
+
+        debug_requested = (
+            request.user.is_staff or
+            request.GET.get('debug') == '1' or
+            request.POST.get('debug') == '1' or
+            request.headers.get('x-requested-with') == 'XMLHttpRequest'
+        )
+
+        if getattr(venta, 'anulada', False):
+            logging.getLogger(__name__).info("VentaDelete: venta %s ya está anulada; no se permite eliminar.", getattr(venta, 'pk', None))
+            if debug_requested:
+                return JsonResponse({'deleted': False, 'reason': 'anulada', 'venta_id': venta.pk})
+            messages.info(request, "La venta ya está anulada y no se puede eliminar.")
+            return redirect(self.get_success_url())
 
         nota = None
         applied_count = 0

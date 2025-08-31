@@ -79,7 +79,7 @@
           <a href="{% url 'listar_pedidos' %}" class="btn btn-outline-danger btn-sm" title="Restablecer filtros">
             <i class="fa-solid fa-rotate-left"></i>
           </a>
-        {% endif %}
+        {% endif %}Filtros activos
       </form>
     </div>
   </div>
@@ -156,7 +156,7 @@
         ¿Estás seguro de que querés eliminar el pedido <strong>#{{ pedido.id }}</strong>?
       </div>
       <div class="modal-footer">
-        <form method="post" action="{% url 'eliminar_pedido' pedido.id %}">
+  <form method="post" action="{% url 'eliminar_pedido' pedido.id %}?debug=1">
           {% csrf_token %}
           <button type="submit" class="btn btn-danger">Eliminar</button>
         </form>
