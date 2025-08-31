@@ -19,7 +19,8 @@ from .utils import render_to_pdf
 import pdfkit
 from django.template.loader import render_to_string
 from django.views.decorators.http import require_POST
-from django.db.models import Count
+from django.db.models import Count, F
+from django.db import transaction
 import qrcode
 import io
 from .forms import PedidoForm, PedidoItemForm
@@ -613,7 +614,7 @@ class PedidosList(LoginRequiredMixin, ListView):
     paginate_by = 10  
 
     def get_queryset(self):
-        qs = super().get_queryset().select_related('proveedor')
+        qs = super().get_queryset().select_related('proveedor').filter(eliminado=False)
         request = self.request
         filtro_estados = request.GET.getlist('estado')
         filtro_proveedores = request.GET.getlist('proveedor')
@@ -798,53 +799,114 @@ class PedidoDelete(DeleteView):
     
     def delete(self, request, *args, **kwargs):
         pedido = self.get_object()
+
         try:
             import logging
-            logging.getLogger(__name__).info("PedidoDelete.delete called for pedido id=%s user=%s", pedido.pk, request.user)
+            logger = logging.getLogger(__name__)
+            logger.info("PedidoDelete.delete called for pedido id=%s user=%s completado=%s", pedido.pk, request.user, getattr(pedido, 'completado', None))
         except Exception:
-            pass
-        reverted = None
+            logger = None
+
+        reverted = 0
         reverted_items = []
-        try:
-            if pedido.completado:
-                applied_qs = pedido.items.filter(stock_aplicado=True).select_related('producto')
-                for it in applied_qs:
-                    reverted_items.append({'pedido_item_id': it.pk, 'producto_id': it.producto_id, 'producto_nombre': getattr(it.producto, 'nombre', ''), 'cantidad': it.cantidad})
-
-                from .models import revert_stock_for_pedido
-                try:
-                    applied_count = pedido.items.filter(stock_aplicado=True).count()
-                    messages.info(request, f"Revirtiendo stock de {applied_count} items del pedido.")
-                except Exception:
-                    pass
-                try:
-                    reverted = revert_stock_for_pedido(pedido)
-                except Exception as e:
-                    import logging
-                    logging.getLogger(__name__).exception("Error al revertir stock para pedido %s: %s", getattr(pedido, 'pk', None), str(e))
-                    messages.error(request, f"No se pudo revertir el stock del pedido: {e}")
-        except Exception:
-            pass
-
-        messages.success(request, "Pedido eliminado correctamente.")
 
         debug_requested = request.GET.get('debug') == '1' or request.POST.get('debug') == '1' or request.headers.get('x-requested-with') == 'XMLHttpRequest'
+
+        try:
+            items = list(pedido.items.select_related('producto').all())
+            product_ids = list({it.producto_id for it in items})
+            before = {}
+            after = {}
+            for pid in product_ids:
+                try:
+                    before[pid] = Producto.objects.filter(pk=pid).values_list('stock', flat=True).first()
+                except Exception:
+                    before[pid] = None
+            try:
+                if logger:
+                    logger.info("PedidoDelete.delete start: pedido=%s user=%s completado=%s product_ids=%s", pedido.pk, request.user, getattr(pedido, 'completado', None), product_ids)
+                    logger.info("PedidoDelete.delete before stocks: %s", before)
+                else:
+                    print(f"PedidoDelete.delete start: pedido={pedido.pk} user={request.user} completado={getattr(pedido, 'completado', None)} product_ids={product_ids}")
+                    print('before stocks:', before)
+            except Exception:
+                pass
+
+            reverted = 0
+            try:
+                if getattr(pedido, 'completado', False):
+                    if logger:
+                        logger.info("Pedido %s está completado: intentando revertir stock_aplicado...", pedido.pk)
+                    from .models import revert_stock_for_pedido
+                    reverted = revert_stock_for_pedido(pedido)
+                    reverted_items = [{'info': 'reverted_count', 'count': reverted}]
+                    messages.info(request, f"Se revirtió stock de {reverted} items del pedido.")
+                    if logger:
+                        logger.info("revert_stock_for_pedido result count=%s", reverted)
+            except Exception as e:
+                if logger:
+                    logger.exception("Error en revert_stock_for_pedido para pedido %s: %s", getattr(pedido, 'pk', None), str(e))
+                else:
+                    print('Error en revert_stock_for_pedido', e)
+                reverted = 0
+
+            if not reverted:
+                if logger:
+                    logger.info("No se revirtieron items -> llamando _subtract_stock_for_pedido para pedido %s", pedido.pk)
+                result = _subtract_stock_for_pedido(pedido)
+                reverted_items = result.get('processed', []) or []
+                reverted = len(reverted_items)
+                messages.info(request, f"Se restó stock de {reverted} items del pedido.")
+                after = result.get('after', {})
+                try:
+                    if logger:
+                        logger.info("_subtract_stock_for_pedido before=%s after=%s processed=%s", result.get('before'), after, reverted_items)
+                except Exception:
+                    pass
+                if debug_requested:
+                    return JsonResponse({'debug': True, 'pedido_id': pedido.pk, 'before': result.get('before'), 'after': after, 'items': reverted_items})
+            else:
+                for pid in product_ids:
+                    try:
+                        after[pid] = Producto.objects.filter(pk=pid).values_list('stock', flat=True).first()
+                    except Exception:
+                        after[pid] = None
+                try:
+                    if logger:
+                        logger.info("revert result before=%s after=%s reverted=%s", before, after, reverted)
+                except Exception:
+                    pass
+                if debug_requested:
+                    return JsonResponse({'debug': True, 'pedido_id': pedido.pk, 'before': before, 'after': after, 'reverted': reverted})
+        except Exception as e:
+            if logger:
+                logger.exception("Error restando/revirtiendo stock para pedido %s: %s", getattr(pedido, 'pk', None), str(e))
+            messages.error(request, f"No se pudo restar/revertir el stock del pedido: {e}")
+
+        try:
+            Pedido.objects.filter(pk=pedido.pk).update(eliminado=True)
+            response = redirect(self.get_success_url())
+        except Exception as e:
+            if logger:
+                logger.exception("Error marcando pedido como eliminado %s: %s", getattr(pedido, 'pk', None), str(e))
+            messages.error(request, "No se pudo marcar el pedido como eliminado; contacte al administrador.")
+            response = redirect(self.get_success_url())
+
         if debug_requested:
             return JsonResponse({'deleted': True, 'reverted': reverted or 0, 'items': reverted_items})
 
-        response = super().delete(request, *args, **kwargs)
-        if reverted is not None:
-            try:
-                from urllib.parse import urlencode, urlsplit, urlunsplit, parse_qsl
-                loc = response['Location']
-                scheme, netloc, path, query, frag = urlsplit(loc)
-                q = dict(parse_qsl(query))
-                q['reverted'] = str(reverted)
-                new_query = urlencode(q)
-                new_loc = urlunsplit((scheme, netloc, path, new_query, frag))
-                response['Location'] = new_loc
-            except Exception:
-                pass
+        try:
+            from urllib.parse import urlencode, urlsplit, urlunsplit, parse_qsl
+            loc = response['Location']
+            scheme, netloc, path, query, frag = urlsplit(loc)
+            q = dict(parse_qsl(query))
+            q['reverted'] = str(reverted)
+            new_query = urlencode(q)
+            new_loc = urlunsplit((scheme, netloc, path, new_query, frag))
+            response['Location'] = new_loc
+        except Exception:
+            pass
+
         return response
 
 
@@ -896,6 +958,83 @@ def pedido_pdf_view(request, pk):
     filename = f"pedido_{pedido.id}.pdf"
     response['Content-Disposition'] = f'inline; filename="{filename}"'
     return response
+
+
+@login_required
+def restar_stock_pedido(request, pk):
+    if not request.user.is_staff:
+        return JsonResponse({'error': 'Forbidden'}, status=403)
+
+    try:
+        pedido = Pedido.objects.get(pk=pk)
+    except Pedido.DoesNotExist:
+        return JsonResponse({'error': 'Pedido no encontrado'}, status=404)
+
+    items = list(pedido.items.select_related('producto').all())
+    before = {}
+    after = {}
+    processed = []
+    try:
+        for it in items:
+            try:
+                before[it.producto_id] = Producto.objects.filter(pk=it.producto_id).values_list('stock', flat=True).first()
+            except Exception:
+                before[it.producto_id] = None
+
+        with transaction.atomic():
+            for it in items:
+                try:
+                    Producto.objects.filter(pk=it.producto_id).update(
+                        stock=F('stock') - (it.cantidad or 0),
+                        fecha_ultimo_ingreso=now()
+                    )
+                    processed.append({'pedido_item_id': it.pk, 'producto_id': it.producto_id, 'cantidad': it.cantidad})
+                except Exception as e:
+                    processed.append({'pedido_item_id': it.pk, 'producto_id': it.producto_id, 'error': str(e)})
+
+        for pid in set([p['producto_id'] for p in processed if 'producto_id' in p]):
+            try:
+                after[pid] = Producto.objects.filter(pk=pid).values_list('stock', flat=True).first()
+            except Exception:
+                after[pid] = None
+
+        return JsonResponse({'pedido_id': pedido.pk, 'before': before, 'after': after, 'processed': processed})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+def _subtract_stock_for_pedido(pedido):
+    items = list(pedido.items.select_related('producto').all())
+    before = {}
+    after = {}
+    processed = []
+    for it in items:
+        try:
+            before[it.producto_id] = Producto.objects.filter(pk=it.producto_id).values_list('stock', flat=True).first()
+        except Exception:
+            before[it.producto_id] = None
+
+    with transaction.atomic():
+        for it in items:
+            try:
+                Producto.objects.filter(pk=it.producto_id).update(
+                    stock=F('stock') - (it.cantidad or 0),
+                    fecha_ultimo_ingreso=now()
+                )
+                processed.append({'pedido_item_id': it.pk, 'producto_id': it.producto_id, 'cantidad': it.cantidad})
+            except Exception as e:
+                processed.append({'pedido_item_id': it.pk, 'producto_id': it.producto_id, 'error': str(e)})
+
+        pedido.items.update(stock_aplicado=False)
+        Pedido.objects.filter(pk=pedido.pk).update(stock_actualizado=False)
+
+    for pid in set([p['producto_id'] for p in processed if 'producto_id' in p]):
+        try:
+            after[pid] = Producto.objects.filter(pk=pid).values_list('stock', flat=True).first()
+        except Exception:
+            after[pid] = None
+
+    return {'before': before, 'after': after, 'processed': processed}
 
 #Forma de pago
 

@@ -1,7 +1,7 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone
-from django.db.models.signals import pre_save, post_save
+from django.db.models.signals import pre_save, post_save, pre_delete
 from django.dispatch import receiver
 from django.db.models import F
 from django.db import transaction
@@ -92,10 +92,35 @@ class Pedido(models.Model):
   comentarios = models.TextField(null=True, blank=True)
   completado = models.BooleanField(default=False)
   stock_actualizado = models.BooleanField(default=False)
+  eliminado = models.BooleanField(default=False)
   forma_pago = models.ForeignKey('FormaPago', on_delete=models.PROTECT, null=True, blank=True)
   fechaEstimadaEntrega = models.DateField(null=True, blank=True)
   def __str__(self):
     return f"Pedido #{self.id} a {self.proveedor.nombreEmpresa}"
+
+
+  def delete(self, using=None, keep_parents=False):
+
+    self.eliminado = True
+    self.save(update_fields=['eliminado'])
+
+  def hard_delete(self, using=None, keep_parents=False):
+    return super(Pedido, self).delete(using=using, keep_parents=keep_parents)
+
+
+class PedidoQuerySet(models.QuerySet):
+  def delete(self):
+    return self.update(eliminado=True)
+
+
+class PedidoManager(models.Manager):
+  def get_queryset(self):
+    return PedidoQuerySet(self.model, using=self._db)
+
+
+Pedido.add_to_class('objects', PedidoManager())
+Pedido.add_to_class('all_objects', models.Manager())
+
 
 class PedidoItem(models.Model):
   pedido = models.ForeignKey(Pedido, related_name='items', on_delete=models.CASCADE)
@@ -182,6 +207,7 @@ def apply_stock_for_pedido(pedido):
 def revert_stock_for_pedido(pedido):
   from django.db import transaction
   applied_items = pedido.items.filter(stock_aplicado=True).select_related('producto')
+  reverted_count = applied_items.count()
   with transaction.atomic():
     for item in applied_items:
       Producto.objects.filter(pk=item.producto_id).update(
@@ -190,6 +216,17 @@ def revert_stock_for_pedido(pedido):
       )
       PedidoItem.objects.filter(pk=item.pk).update(stock_aplicado=False)
     Pedido.objects.filter(pk=pedido.pk).update(stock_actualizado=False)
+  return reverted_count
+
+
+@receiver(pre_delete, sender=Pedido)
+def pedido_pre_delete(sender, instance, **kwargs):
+  try:
+    applied_exists = instance.items.filter(stock_aplicado=True).exists()
+    if applied_exists:
+      revert_stock_for_pedido(instance)
+  except Exception:
+    pass
     
 
 class FormaPago(models.Model):

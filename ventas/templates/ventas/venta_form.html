@@ -48,10 +48,17 @@
             {% if form.instance.completado %}
               <div class="form-control-plaintext">{% if form.instance.forma_pago %}{{ form.instance.forma_pago.nombre }}{% else %}-{% endif %}</div>
             {% else %}
-              {{ form.forma_pago|add_class:"form-control form-control-lg" }}
-              {% if form.forma_pago.errors %}
-                <div class="text-danger small mt-1">{{ form.forma_pago.errors|striptags }}</div>
-              {% endif %}
+              {# Select2-backed dropdown for forma de pago (ajax) - no default selected unless provided #}
+              <select id="forma-pago-select" name="{{ form.forma_pago.html_name }}" class="form-control form-control-lg">
+                {% if default_forma_pago_id %}
+                  <option value="{{ default_forma_pago_id }}" selected>{{ default_forma_pago_name }}</option>
+                {% else %}
+                  <option></option>
+                {% endif %}
+              </select>
+               {% if form.forma_pago.errors %}
+                 <div class="text-danger small mt-1">{{ form.forma_pago.errors|striptags }}</div>
+               {% endif %}
             {% endif %}
           </div>
 
@@ -265,6 +272,7 @@ $(document).ready(function() {
   const autocompleteUrl = "{% url 'autocomplete_productos2' %}";
   const buscarProductosUrl = "{% url 'buscar_productos2' %}";
   const autocompleteClientesUrl = "{% url 'autocomplete_clientes' %}";
+  const autocompleteFormasPagoUrl = "{% url 'autocomplete_formas_pago' %}";
 
   function formatNumber(number) {
     return parseFloat(number || 0).toFixed(2);
@@ -415,6 +423,26 @@ $(document).ready(function() {
     }
   }
 
+  if ($('#forma-pago-select').length) {
+    $('#forma-pago-select').select2({
+      placeholder: 'Buscar forma de pago...',
+      allowClear: true,
+      ajax: {
+        url: autocompleteFormasPagoUrl,
+        dataType: 'json',
+        delay: 250,
+        data: function(params) { return { term: params.term }; },
+        processResults: function(data) { return { results: data.map(function(d){ return { id: d.id, text: d.value }; }) }; }
+      },
+      width: '100%'
+    });
+    const hasFpDefault = $('#forma-pago-select option[selected]').length > 0;
+    if (hasFpDefault) {
+      const val = $('#forma-pago-select').val();
+      if (val) { $('#forma-pago-select').trigger('change'); }
+    }
+  }
+  
   $(document).on('input change blur', '.cantidad-input, .precio-input, .dto-input', calcularTotales);
 
   $('#agregar-producto').click(function() {
