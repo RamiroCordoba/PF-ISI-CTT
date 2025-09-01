@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Venta #{{ venta.id }}</title>
+    <title>Nota de Crédito #{{ nota.id }}</title>
     {% load humanize %}
     <style>
     body {
@@ -56,6 +56,7 @@
     .totals-qr .totals-table td { border:1px solid #d6d6d6; padding:8px; }
 
     .qr { margin: 0 auto; width: auto; text-align: center; page-break-inside: avoid; break-inside: avoid; -webkit-column-break-inside: avoid; display: block; }
+
     table { page-break-inside: auto; }
     tbody { page-break-inside: avoid; page-break-after: auto; }
     tr { page-break-inside: avoid; page-break-after: auto; }
@@ -67,19 +68,19 @@
             <img src="data:image/png;base64,{{ logo_base64 }}" alt="Logo" width="90" height="90">
         </div>
         <div class="header-center">
-            <h1>FERRETERIA SANTA RITA</h1>
+            <h1>NOTA DE CRÉDITO</h1>
             <p>Baigorria 1990, Rosario, Santa Fe. CP:2000 &nbsp; CUIT: 23-16275962-9 &nbsp; TEL: (341) 3591328</p>
             <p>proyectoferreretiasr@gmail.com</p>
         </div>
         <div class="header-right">
-            <div>Nº VENTA: {{ venta.id|stringformat:"04d" }}</div>
+            <div>Nº NOTA: {{ nota.id|stringformat:"04d" }}</div>
         </div>
     </div>
 
     <div class="section">
-    <p><strong>FECHA VENTA:</strong> {{ venta.fecha|date:"j" }} de {{ venta.fecha|date:"F" }} de {{ venta.fecha|date:"Y" }}</p>
-        <p><strong>Cliente:</strong> {{ venta.cliente }}</p>
-        <p><strong>Vendedor:</strong> {{ venta.vendedor }}</p>
+        <p><strong>FECHA:</strong> {{ nota.fecha|date:"j" }} de {{ nota.fecha|date:"F" }} de {{ nota.fecha|date:"Y" }}</p>
+        <p><strong>Cliente:</strong> {{ nota.cliente }}</p>
+        <p><strong>Vendedor:</strong> {{ nota.vendedor }}</p>
     </div>
 
     <div class="table-container">
@@ -106,7 +107,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="6">No hay productos en esta venta.</td>
+                    <td colspan="6">No hay productos en esta nota.</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -125,8 +126,8 @@
     <div class="observaciones">
         <h4 style="color:#a85a0a;">OBSERVACIONES</h4>
         <div style="border-top:1px dashed #a85a0a; padding-top:8px;">
-            {% if venta.comentarios %}
-                {{ venta.comentarios|linebreaksbr }}
+            {% if nota.comentarios %}
+                {{ nota.comentarios|linebreaksbr }}
             {% else %}
                 <span style="color:#aaa;">Sin observaciones.</span>
             {% endif %}
@@ -135,7 +136,7 @@
 
     <div style="display:flex; justify-content:center; align-items:flex-start; margin-top:8px;">
         <div class="qr">
-            <img src="data:image/png;base64,{{ qr_base64 }}" alt="QR Venta" width="150" height="150" />
+            <img src="data:image/png;base64,{{ qr_base64 }}" alt="QR Nota" width="150" height="150" />
         </div>
     </div>
 

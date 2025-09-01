@@ -132,9 +132,9 @@
             <a href="{% url 'detalles_venta' venta.id %}" class="btn btn-outline-primary mt-2 btn-sm">
               <i class="fa-solid fa-eye" title="Ver"></i>
             </a>
-            <!--<a href="{//% url 'venta_pdf' venta.id %}" class="btn btn-outline-dark mt-2 btn-sm" target="_blank" title="Descargar PDF">
+            <a href="{% url 'venta_pdf' venta.id %}" class="btn btn-outline-dark mt-2 btn-sm" target="_blank" title="Descargar PDF">
               <i class="fa-solid fa-download"></i>
-            </a>-->
+            </a>
           {% endif %}
         </td>
         <td>{{ venta.id }}</td>

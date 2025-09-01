@@ -775,6 +775,70 @@ def venta_pdf_view(request, pk):
     return response
 
 
+def nota_credito_pdf_view(request, pk):
+    try:
+        from .models import NotaCredito
+        nota = NotaCredito.objects.get(pk=pk)
+    except Exception:
+        return HttpResponse("Nota de crédito no encontrada", status=404)
+
+    items = []
+    total = Decimal('0')
+    for item in nota.items.all():
+        precio = Decimal(str(item.precio)) if item.precio is not None else Decimal('0')
+        cantidad = Decimal(str(item.cantidad)) if item.cantidad is not None else Decimal('0')
+        try:
+            descuento_pct = Decimal(str(item.descuento or 0))
+        except Exception:
+            descuento_pct = Decimal('0')
+        descuento_factor = Decimal('1') - (descuento_pct / Decimal('100'))
+        subtotal = (precio * cantidad * descuento_factor)
+        items.append({
+            'producto': item.producto.nombre if item.producto else '',
+            'cantidad': item.cantidad,
+            'precio': item.precio,
+            'descuento': item.descuento,
+            'subtotal': subtotal,
+        })
+        total += subtotal
+
+    import base64
+    logo_path = r"productos\static\pdf\assets\img\logoFerre.png"
+    logo_base64 = ''
+    try:
+        with open(logo_path, "rb") as image_file:
+            logo_base64 = base64.b64encode(image_file.read()).decode("utf-8")
+    except Exception:
+        logo_base64 = ''
+
+    pdf_url = request.build_absolute_uri(f'/ventas/notacredito/{nota.id}/pdf/')
+    qr = qrcode.QRCode(box_size=4, border=2)
+    qr.add_data(pdf_url)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+    buffer = io.BytesIO()
+    img.save(buffer, format="PNG")
+    qr_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
+
+    html = render_to_string('notacredito/nota_credito_pdf.html', {
+        'nota': nota,
+        'items': items,
+        'total': total,
+        'logo_base64': logo_base64,
+        'qr_base64': qr_base64,
+    })
+
+    path_wkhtmltopdf = r"C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe"
+    config = pdfkit.configuration(wkhtmltopdf=path_wkhtmltopdf)
+
+    pdf = pdfkit.from_string(html, False, configuration=config)
+
+    response = HttpResponse(pdf, content_type='application/pdf')
+    filename = f"nota_credito_{nota.id}.pdf"
+    response['Content-Disposition'] = f'inline; filename="{filename}"'
+    return response
+
+
 
 
 class VentaUpdate(LoginRequiredMixin, UpdateView):

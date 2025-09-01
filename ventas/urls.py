@@ -42,6 +42,7 @@ urlpatterns = [
     # Notas de crédito
     path('notacredito/', NotaCreditoList.as_view(), name='mis_notascredito'),
     path('notacredito/<int:pk>/', NotaCreditoDetail.as_view(), name='detalles_notacredito'),
+    path('notacredito/<int:pk>/pdf/', nota_credito_pdf_view, name='notacredito_pdf'),
     path('autocomplete/formas-pago/', autocomplete_formas_pago, name='autocomplete_formas_pago'),
 
 ]

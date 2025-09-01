@@ -56,6 +56,9 @@
           <a href="{% url 'detalles_notacredito' nota.id %}" class="btn btn-outline-primary mt-2 btn-sm" title="Ver">
             <i class="fa-solid fa-eye" aria-hidden="true"></i>
           </a>
+          <a href="{% url 'notacredito_pdf' nota.id %}" class="btn btn-outline-dark mt-2 btn-sm" target="_blank" title="Descargar PDF">
+            <i class="fa-solid fa-download" aria-hidden="true"></i>
+          </a>
         </td>
         <td>{{ nota.id }}</td>
         <td>{% if nota.venta_original %}#{{ nota.venta_original.id }}{% else %}-{% endif %}</td>
