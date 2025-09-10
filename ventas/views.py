@@ -183,9 +183,11 @@ class CondicionFiscalDetail(DetailView):
 
 
 class ClienteList(LoginRequiredMixin, ListView):
+
     model = Cliente
     template_name = "cliente/cliente_list.html"
     context_object_name = "clientes"
+    paginate_by = 20
 
     def get_queryset(self):
         queryset = super().get_queryset().order_by("id")
@@ -208,8 +210,27 @@ class ClienteList(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["buscar"] = self.request.GET.get("buscar", "")
-        context["filtro_estados"] = self.request.GET.getlist("estado")  
+        request = self.request
+        queryset = self.get_queryset()
+        from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+        paginator = Paginator(queryset, self.paginate_by)
+        page = request.GET.get('page')
+        try:
+            clientes_paginated = paginator.page(page)
+        except PageNotAnInteger:
+            clientes_paginated = paginator.page(1)
+        except EmptyPage:
+            clientes_paginated = paginator.page(paginator.num_pages)
+
+        context["page_obj"] = clientes_paginated
+        context["clientes"] = clientes_paginated.object_list
+        context["buscar"] = request.GET.get("buscar", "")
+        context["filtro_estados"] = request.GET.getlist("estado")  
+        context['request'] = request
+        context['filtros_activos'] = any([
+            request.GET.getlist('estado'),
+            request.GET.get('buscar')
+        ])
         return context
 
 
@@ -330,11 +351,26 @@ class NotaCreditoList(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx['request'] = self.request
+        request = self.request
+        # Paginacion de notas de crédito
+        queryset = self.get_queryset()
+        from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+        paginator = Paginator(queryset, self.paginate_by)
+        page = request.GET.get('page')
+        try:
+            notas_paginated = paginator.page(page)
+        except PageNotAnInteger:
+            notas_paginated = paginator.page(1)
+        except EmptyPage:
+            notas_paginated = paginator.page(paginator.num_pages)
+
+        ctx["page_obj"] = notas_paginated
+        ctx["notas"] = notas_paginated.object_list
+        ctx['request'] = request
         ctx['filtros_activos'] = any([
-            self.request.GET.get('fecha_inicio'),
-            self.request.GET.get('fecha_fin'),
-            self.request.GET.get('buscar')
+            request.GET.get('fecha_inicio'),
+            request.GET.get('fecha_fin'),
+            request.GET.get('buscar')
         ])
         return ctx
 
