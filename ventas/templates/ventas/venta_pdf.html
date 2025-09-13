@@ -14,16 +14,26 @@
     .header-top {
         width:100%;
         background:#f36f25;
-        padding:10px 0;
-        display:flex;
-        align-items:center;
-        justify-content:space-between;
+        padding:10px 30px;
     }
-    .logo { margin-left:30px; }
-    .header-center { text-align:center; width:60%; }
-    .header-right { margin-right:30px; text-align:right; color:#fff; font-weight:bold; }
-    .header-center h1 { margin:0; color:#1f2d2d; font-size:28px; }
-    .header-center p { margin:0; font-size:12px; color:#333; }
+    .header-top h1 { margin:0; color:#1f2d2d; font-size:28px; }
+    .header-top p { margin:0; font-size:12px; color:#333; }
+
+    .logo-container {
+        text-align:right;
+        padding-right:30px;
+    }
+    .logo-container img {
+        display:block;
+        margin-left:auto;
+        margin-bottom:4px;
+    }
+    .venta-num {
+        text-align:right;
+        font-weight:bold;
+        color:#fff;
+        margin-top:4px;
+    }
 
     .section { margin: 20px 30px; }
     .table-container { margin: 0 30px 10px 30px; }
@@ -39,49 +49,38 @@
 
     .total-row td { background:#f36f25; color:#fff; font-weight:bold; }
     .observaciones { margin: 20px 30px; }
-    .table-container { margin: 0 30px 10px 30px; }
-
-    .totals-qr {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-end;
-        margin: 8px 30px 10px 30px;
-        page-break-inside: avoid;
-        break-inside: avoid;
-        -webkit-column-break-inside: avoid;
-        -webkit-region-break-inside: avoid;
-    }
-
-    .totals-qr .totals-table { width: 68%; border-collapse: collapse; }
-    .totals-qr .totals-table td { border:1px solid #d6d6d6; padding:8px; }
-
-    .qr { margin: 0 auto; width: auto; text-align: center; page-break-inside: avoid; break-inside: avoid; -webkit-column-break-inside: avoid; display: block; }
-    table { page-break-inside: auto; }
-    tbody { page-break-inside: avoid; page-break-after: auto; }
-    tr { page-break-inside: avoid; page-break-after: auto; }
     </style>
 </head>
 <body>
     <div class="header-top">
-        <div class="logo">
-            <img src="data:image/png;base64,{{ logo_base64 }}" alt="Logo" width="90" height="90">
-        </div>
-        <div class="header-center">
-            <h1>FERRETERIA SANTA RITA</h1>
-            <p>Baigorria 1990, Rosario, Santa Fe. CP:2000 &nbsp; CUIT: 23-16275962-9 &nbsp; TEL: (341) 3591328</p>
-            <p>proyectoferreretiasr@gmail.com</p>
-        </div>
-        <div class="header-right">
-            <div>Nº VENTA: {{ venta.id|stringformat:"04d" }}</div>
-        </div>
+        <table style="width:100%; border-collapse:collapse; border:none;">
+            <tr>
+                <!-- Datos empresa -->
+                <td style="text-align:left; vertical-align:top; border:none; color:white;">
+                    <h1>FERRETERIA SANTA RITA</h1>
+                    <p>
+                        Baigorria 1990, Rosario, Santa Fe. CP:2000 &nbsp; 
+                        CUIT: 23-16275962-9 &nbsp; 
+                        TEL: (341) 3591328
+                    </p>
+                    <p>proyectoferreretiasr@gmail.com</p>
+                </td>
+                <td style="text-align:right; vertical-align:top; border:none; width:150px;">
+                    <div class="logo-container">
+                        <img src="data:image/png;base64,{{ logo_base64 }}" alt="Logo" width="110" height="90">
+                        <div class="venta-num">Nº VENTA: {{ venta.id|stringformat:"04d" }}</div>
+                    </div>
+                </td>
+            </tr>
+        </table>
     </div>
-
     <div class="section">
-    <p><strong>FECHA VENTA:</strong> {{ venta.fecha|date:"j" }} de {{ venta.fecha|date:"F" }} de {{ venta.fecha|date:"Y" }}</p>
+        <p><strong>FECHA VENTA:</strong> {{ venta.fecha|date:"j" }} de {{ venta.fecha|date:"F" }} de {{ venta.fecha|date:"Y" }}</p>
         <p><strong>Cliente:</strong> {{ venta.cliente }}</p>
         <p><strong>Vendedor:</strong> {{ venta.vendedor }}</p>
     </div>
 
+    <!-- TABLA DE PRODUCTOS -->
     <div class="table-container">
         <table>
             <thead>
@@ -112,16 +111,16 @@
             </tbody>
         </table>
 
-        <div class="totals-qr">
-            <table class="totals-table" style="margin-top:8px; width:100%;">
-                <tr class="total-row">
-                    <td style="text-align:right; padding-right:12px;">TOTAL:</td>
-                    <td style="text-align:right; padding-left:12px;">${{ total|floatformat:2|intcomma }}</td>
-                </tr>
-            </table>
-        </div>
+        <!-- TOTAL -->
+        <table style="margin-top:10px; width:100%; border-collapse:collapse;">
+            <tr class="total-row">
+                <td style="text-align:right; padding-right:12px;">TOTAL:</td>
+                <td style="text-align:right; padding-left:12px;">${{ total|floatformat:2|intcomma }}</td>
+            </tr>
+        </table>
     </div>
 
+    <!-- OBSERVACIONES -->
     <div class="observaciones">
         <h4 style="color:#a85a0a;">OBSERVACIONES</h4>
         <div style="border-top:1px dashed #a85a0a; padding-top:8px;">
@@ -133,11 +132,11 @@
         </div>
     </div>
 
+    <!-- QR -->
     <div style="display:flex; justify-content:center; align-items:flex-start; margin-top:8px;">
         <div class="qr">
             <img src="data:image/png;base64,{{ qr_base64 }}" alt="QR Venta" width="150" height="150" />
         </div>
     </div>
-
 </body>
 </html>
