@@ -773,6 +773,16 @@ def venta_pdf_view(request, pk):
             'descuento': item.descuento,
             'subtotal': subtotal,
         })
+        # Acumular el total de la venta (por item)
+        total += subtotal
+
+    # Recalcular por seguridad sumando todos los subtotales generados
+    # (evita cualquier efecto lateral si se modifica 'total' arriba)
+    try:
+        total = sum((i.get('subtotal', Decimal('0')) or Decimal('0')) for i in items)
+    except Exception:
+        # Si algo falla, al menos conservar el acumulado previo
+        pass
 
     import base64
     logo_path = r"productos\static\pdf\assets\img\logoFerre.png"
