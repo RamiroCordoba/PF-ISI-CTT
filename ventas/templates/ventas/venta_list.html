@@ -86,6 +86,7 @@
         <th>Vendedor</th>
         <th>Moneda</th>
         <th>Forma de Pago</th>
+        <th>¿Completa?</th>
         <th>¿Anulada?</th>
       </tr>
     </thead>
@@ -144,6 +145,13 @@
         <td>{{ venta.moneda.nombre|default:"-" }}</td>
         <td>{{ venta.forma_pago.nombre|default:"-" }}</td>
         <td>
+          {% if venta.completado %}
+            <span class="badge bg-success">Sí</span>
+          {% else %}
+            <span class="badge bg-warning text-dark">No</span>
+          {% endif %}
+        </td>
+        <td>
           {% if venta.anulada %}
             <span class="badge bg-danger">Anulada</span>
           {% else %}
@@ -153,7 +161,7 @@
       </tr>
       {% empty %}
       <tr>
-        <td colspan="8">No hay ventas registradas.</td>
+        <td colspan="9">No hay ventas registradas.</td>
       </tr>
       {% endfor %}
     </tbody>

@@ -4,6 +4,71 @@
 {% load widget_tweaks %}
 
 <div class="container-fluid px-4">
+<!-- Modal Nuevo Cliente -->
+<div class="modal fade" id="modalNuevoCliente" tabindex="-1" aria-labelledby="modalNuevoClienteLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header" style="background: #ff8800;">
+        <h5 class="modal-title text-white" id="modalNuevoClienteLabel"><i class="fa fa-user-plus me-2"></i>Nuevo Cliente</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <form id="formNuevoCliente" autocomplete="off">
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="nc_nombre" class="form-label fw-semibold">Nombre</label>
+              <input type="text" name="nombre" class="form-control form-control-lg" id="nc_nombre" required>
+            </div>
+            <div class="col-md-6">
+              <label for="nc_apellido" class="form-label fw-semibold">Apellido</label>
+              <input type="text" name="apellido" class="form-control form-control-lg" id="nc_apellido" required>
+            </div>
+            <div class="col-md-6">
+              <label for="nc_razon_social" class="form-label fw-semibold">Razón Social</label>
+              <input type="text" name="razon_social" class="form-control form-control-lg" id="nc_razon_social">
+            </div>
+            <div class="col-md-6">
+              <label for="nc_email" class="form-label fw-semibold">Email</label>
+              <input type="email" name="email" class="form-control form-control-lg" id="nc_email">
+            </div>
+            <div class="col-md-6">
+              <label for="nc_cuit" class="form-label fw-semibold">CUIT</label>
+              <input type="text" name="cuit" class="form-control form-control-lg" id="nc_cuit">
+            </div>
+            <div class="col-md-6">
+              <label for="nc_telefono" class="form-label fw-semibold">Teléfono</label>
+              <input type="text" name="telefono" class="form-control form-control-lg" id="nc_telefono">
+            </div>
+            <div class="col-md-6">
+              <label for="nc_direccion" class="form-label fw-semibold">Dirección</label>
+              <input type="text" name="direccion" class="form-control form-control-lg" id="nc_direccion">
+            </div>
+            <div class="col-md-6">
+              <label for="nc_condicion_fiscal" class="form-label fw-semibold">Condición Fiscal</label>
+              <select name="condicion_fiscal" id="nc_condicion_fiscal" class="form-select form-select-lg">
+                {% for opcion in condiciones_fiscales %}
+                  <option value="{{ opcion.pk }}">{{ opcion.nombre }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="nc_activo" class="form-label fw-semibold">Estado</label>
+              <select name="activo" id="nc_activo" class="form-select form-select-lg">
+                <option value="True" selected>Activo</option>
+                <option value="False">Inactivo</option>
+              </select>
+            </div>
+          </div>
+          <div id="nuevoClienteErrores" class="text-danger mt-3" style="display:none;"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary"><i class="fa fa-save me-1"></i>Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
   <h1 class="mt-4">
     {% if form.instance.pk %}
       <i class="fa fa-edit me-2"></i>Editar Venta
@@ -25,22 +90,26 @@
         <div class="row">
           <div class="col-12 mb-3">
             <label for="{{ form.cliente.id_for_label }}" class="form-label fw-semibold">Cliente</label>
-            {% if form.instance and form.instance.pk %}
-              <input type="hidden" id="id_cliente" name="cliente" value="{{ form.instance.cliente.id }}">
-              <div class="form-control-plaintext">{{ form.instance.cliente.nombre }} {{ form.instance.cliente.apellido }}</div>
-            {% else %}
-              {# Select2-backed dropdown for cliente with default option if available #}
-              <select id="cliente-select" name="{{ form.cliente.html_name }}" class="form-control form-control-lg">
-                {% if default_cliente_id %}
-                  <option value="{{ default_cliente_id }}" selected>{{ default_cliente_name }}</option>
-                {% else %}
-                  <option></option>
+            <div class="d-flex gap-2 align-items-center">
+              {% if form.instance and form.instance.pk %}
+                <input type="hidden" id="id_cliente" name="cliente" value="{{ form.instance.cliente.id }}">
+                <div class="form-control-plaintext">{{ form.instance.cliente.nombre }} {{ form.instance.cliente.apellido }}</div>
+              {% else %}
+                <select id="cliente-select" name="{{ form.cliente.html_name }}" class="form-control form-control-lg">
+                  {% if default_cliente_id %}
+                    <option value="{{ default_cliente_id }}" selected>{{ default_cliente_name }}</option>
+                  {% else %}
+                    <option></option>
+                  {% endif %}
+                </select>
+                <button type="button" class="btn btn-outline-primary btn-sm px-2 py-1" id="btn-nuevo-cliente" title="Agregar nuevo cliente" style="font-size:1.15em;">
+                  <i class="fa fa-user-plus"></i>
+                </button>
+                {% if form.cliente.errors %}
+                  <div class="text-danger small mt-1">{{ form.cliente.errors|striptags }}</div>
                 {% endif %}
-              </select>
-              {% if form.cliente.errors %}
-                <div class="text-danger small mt-1">{{ form.cliente.errors|striptags }}</div>
               {% endif %}
-            {% endif %}
+            </div>
           </div>
 
           <div class="col-md-6 mb-3">
@@ -53,7 +122,13 @@
                 {% if default_forma_pago_id %}
                   <option value="{{ default_forma_pago_id }}" selected>{{ default_forma_pago_name }}</option>
                 {% else %}
-                  <option></option>
+                  {% for fp in formas_pago %}
+                    {% if fp.nombre|lower == 'efectivo' %}
+                      <option value="{{ fp.id }}" selected>{{ fp.nombre }}</option>
+                    {% else %}
+                      <option value="{{ fp.id }}">{{ fp.nombre }}</option>
+                    {% endif %}
+                  {% endfor %}
                 {% endif %}
               </select>
                {% if form.forma_pago.errors %}
@@ -267,6 +342,43 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <script>
+  // Alta de cliente por AJAX
+  $('#formNuevoCliente').on('submit', function(e) {
+    e.preventDefault();
+    var $form = $(this);
+    var $errores = $('#nuevoClienteErrores');
+    $errores.hide().empty();
+    var datos = $form.serialize();
+    $.ajax({
+      url: '{% url "ajax_nuevo_cliente" %}',
+      method: 'POST',
+      data: datos,
+      headers: { 'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val() },
+      success: function(resp) {
+        if (resp && resp.id && resp.nombre) {
+          // Agregar y seleccionar el nuevo cliente en el select2
+          var option = new Option(resp.nombre, resp.id, true, true);
+          $('#cliente-select').append(option).trigger('change');
+          var modal = bootstrap.Modal.getInstance(document.getElementById('modalNuevoCliente'));
+          modal.hide();
+        } else if (resp && resp.errors) {
+          $errores.html(resp.errors).show();
+        }
+      },
+      error: function(xhr) {
+        var msg = 'Error al crear el cliente.';
+        if (xhr.responseJSON && xhr.responseJSON.errors) {
+          msg = xhr.responseJSON.errors;
+        }
+        $errores.html(msg).show();
+      }
+    });
+  });
+  // Abrir modal de nuevo cliente
+  $(document).on('click', '#btn-nuevo-cliente', function() {
+    var modal = new bootstrap.Modal(document.getElementById('modalNuevoCliente'));
+    modal.show();
+  });
 $(document).ready(function() {
   const formsetPrefix = "{{ formset.prefix }}";
   const autocompleteUrl = "{% url 'autocomplete_productos2' %}";

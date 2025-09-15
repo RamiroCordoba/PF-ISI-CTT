@@ -1,3 +1,7 @@
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from .forms import ClienteForm
+from django.views.decorators.http import require_POST
 from django.shortcuts import render,redirect
 from .models import *
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -325,6 +329,20 @@ class VentaList(LoginRequiredMixin, ListView):
 
         return context
 
+@require_POST
+@csrf_exempt
+def ajax_nuevo_cliente(request):
+    form = ClienteForm(request.POST)
+    if form.is_valid():
+        cliente = form.save()
+        nombre = cliente.razon_social or f"{cliente.nombre} {cliente.apellido}".strip()
+        return JsonResponse({'id': cliente.id, 'nombre': nombre})
+    else:
+        errores = []
+        for field, msgs in form.errors.items():
+            for msg in msgs:
+                errores.append(f"<div>{msg}</div>")
+        return JsonResponse({'errors': ''.join(errores)}, status=400)
 
 class NotaCreditoList(LoginRequiredMixin, ListView):
     model = NotaCredito
@@ -499,16 +517,17 @@ class VentaCreate(LoginRequiredMixin, View):
         form = VentaForm(initial=initial)
         formset = VentaItemFormSet(instance=Venta())
         context = {
-            'form': form,
-            'formset': formset,
-            'default_cliente_id': getattr(default_cliente, 'id', ''),
-            'default_cliente_name': (default_cliente.razon_social if getattr(default_cliente, 'razon_social', None) else (f"{getattr(default_cliente,'nombre','')} {getattr(default_cliente,'apellido','')}") ).strip() if default_cliente else '',
-            'formas_pago': FormaPago.objects.all(),
-            'default_forma_pago_id': '', 
-            'default_forma_pago_name': '', 
-            'default_comentarios': initial.get('comentarios', ''),
-            'default_moneda_id': getattr(moneda_pesos, 'id', ''),
-            'default_moneda_name': getattr(moneda_pesos, 'nombre', '') if moneda_pesos else '',
+          'form': form,
+          'formset': formset,
+          'default_cliente_id': getattr(default_cliente, 'id', ''),
+          'default_cliente_name': (default_cliente.razon_social if getattr(default_cliente, 'razon_social', None) else (f"{getattr(default_cliente,'nombre','')} {getattr(default_cliente,'apellido','')}") ).strip() if default_cliente else '',
+          'formas_pago': FormaPago.objects.all(),
+          'default_forma_pago_id': '', 
+          'default_forma_pago_name': '', 
+          'default_comentarios': initial.get('comentarios', ''),
+          'default_moneda_id': getattr(moneda_pesos, 'id', ''),
+          'default_moneda_name': getattr(moneda_pesos, 'nombre', '') if moneda_pesos else '',
+          'condiciones_fiscales': CondicionFiscal.objects.filter(activo=True).order_by('nombre'),
         }
         return render(request, 'ventas/venta_form.html', context)
 

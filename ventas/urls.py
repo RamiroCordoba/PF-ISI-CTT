@@ -39,6 +39,7 @@ urlpatterns = [
     path('ajax/buscar_productos2/', buscar_productos2, name='buscar_productos2'),
     path('autocomplete-productos2/', autocomplete_productos2, name='autocomplete_productos2'),
     path('autocomplete-clientes/', autocomplete_clientes, name='autocomplete_clientes'),
+    path('ajax/nuevo_cliente/', ajax_nuevo_cliente, name='ajax_nuevo_cliente'),
     # Notas de crédito
     path('notacredito/', NotaCreditoList.as_view(), name='mis_notascredito'),
     path('notacredito/<int:pk>/', NotaCreditoDetail.as_view(), name='detalles_notacredito'),
