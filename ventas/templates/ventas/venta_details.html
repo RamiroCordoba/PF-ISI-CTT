@@ -22,7 +22,6 @@
         <i class="fa fa-arrow-left me-1"></i> Volver
       </a>
       {% if request.user.is_staff %}
-      <a href="{% url 'editar_venta' venta.id %}" class="btn btn-outline-success">
         <i class="fa fa-edit me-1"></i> Editar
       </a>
       {% endif %}

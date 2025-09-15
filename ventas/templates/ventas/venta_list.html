@@ -86,7 +86,6 @@
         <th>Vendedor</th>
         <th>Moneda</th>
         <th>Forma de Pago</th>
-        <th>¿Completa?</th>
         <th>¿Anulada?</th>
       </tr>
     </thead>
@@ -94,10 +93,7 @@
       {% for venta in ventas %}
       <tr>
         <td>
-          {% if request.user.is_staff %}
-            <a href="{% url 'editar_venta' venta.id %}" class="btn btn-outline-success mt-2 btn-sm">
-              <i class="fa fa-edit fa-sm" title="Editar"></i>
-            </a>
+          <!-- Opción de editar venta eliminada -->
 
             {% if not venta.anulada %}
               <button type="button" class="btn btn-outline-danger mt-2 btn-sm" data-bs-toggle="modal" data-bs-target="#modalEliminarVenta{{ venta.id }}" title="Eliminar">
@@ -144,13 +140,6 @@
         <td>{{ venta.vendedor|default:"-" }}</td>
         <td>{{ venta.moneda.nombre|default:"-" }}</td>
         <td>{{ venta.forma_pago.nombre|default:"-" }}</td>
-        <td>
-          {% if venta.completado %}
-            <span class="badge bg-success">Sí</span>
-          {% else %}
-            <span class="badge bg-warning text-dark">No</span>
-          {% endif %}
-        </td>
         <td>
           {% if venta.anulada %}
             <span class="badge bg-danger">Anulada</span>
