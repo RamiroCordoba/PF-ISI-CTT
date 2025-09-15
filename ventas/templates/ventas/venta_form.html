@@ -210,7 +210,7 @@
     </div>
     {% endif %}
 
-        <div class="mt-4 d-flex gap-2">
+    <div class="mt-4 d-flex gap-2">
       {% if not form.instance.completado %}
         <button class="btn px-4 text-white" style="background: #ff8800;" type="submit">
           <i class="fa fa-save me-1"></i>Guardar
@@ -477,63 +477,14 @@ $(document).ready(function() {
   });
 
   $('#ventaForm').on('submit', function(e) {
-    e.preventDefault();
-    const $form = $(this);
-
-    $('.venta-item-row').each(function() {
-      const $row = $(this);
-      const productoId = $row.find('.producto-id').val();
-      const productoNombre = ($row.find('.producto-search').val() || '').trim();
-      if (productoNombre && !productoId) {
-
-        try {
-          const resp = $.ajax({
-            url: buscarProductosUrl,
-            data: { q: productoNombre },
-            dataType: 'json',
-            async: false
-          }).responseJSON;
-          if (resp && resp.length) {
-            const nombreNorm = normalizeName(productoNombre);
-            let match = resp.find(function(p) { return p.nombre && normalizeName(p.nombre) === nombreNorm; });
-            if (!match && resp.length === 1) match = resp[0];
-            if (!match) match = resp.find(function(p) { return p.nombre && normalizeName(p.nombre).startsWith(nombreNorm); });
-            if (!match) match = resp.find(function(p) { return p.nombre && normalizeName(p.nombre).includes(nombreNorm); });
-            if (!match) match = resp.find(function(p) { return p.nombre && nombreNorm.includes(normalizeName(p.nombre)); });
-            if (!match) {
-              let best = null, bestDist = Infinity;
-              resp.forEach(function(p) {
-                if (!p.nombre) return;
-                const dist = levenshtein(normalizeName(p.nombre), nombreNorm);
-                if (dist < bestDist) { bestDist = dist; best = p; }
-              });
-              if (best && bestDist <= 2) match = best;
-            }
-            if (match) {
-              $row.find('.producto-id').val(match.id);
-              try {
-                const precioResp = $.ajax({
-                  url: "{% url 'obtener_precio_producto' %}",
-                  data: { producto_id: match.id },
-                  dataType: 'json',
-                  async: false
-                }).responseJSON;
-                if (precioResp && precioResp.precio !== undefined) {
-                  $row.find('.precio-input').val(Number(precioResp.precio).toFixed(2)).trigger('change');
-                }
-              } catch (err) { }
-            }
-          }
-        } catch (err) {
-        }
-      }
-    });
-
+    // Validación mínima en cliente; si falla, prevenimos el submit.
     let isValid = true;
     const errores = [];
 
-  const clienteVal = ($('#id_cliente').length ? $('#id_cliente').val() : ( $('#cliente-select').length ? $('#cliente-select').val() : '' ));
-  if (!clienteVal) { isValid = false; errores.push('Debe seleccionar un cliente'); }
+    const clienteVal = ($('#id_cliente').length ? $('#id_cliente').val() : ($('#cliente-select').length ? $('#cliente-select').val() : ''));
+    if (!clienteVal) {
+      isValid = false; errores.push('Debe seleccionar un cliente');
+    }
 
     let hasItems = false;
     $('.venta-item-row').each(function() {
@@ -561,6 +512,7 @@ $(document).ready(function() {
     if (!hasItems) { isValid = false; errores.push('Debe agregar al menos un producto a la venta'); }
 
     if (!isValid) {
+      e.preventDefault();
       const $modal = $('#validationErrorsModal');
       const $list = $modal.find('.modal-body .error-list');
       $list.empty();
@@ -570,10 +522,6 @@ $(document).ready(function() {
       validationModal.show();
       return;
     }
-
-
-    $form.off('submit');
-    $form.submit();
   });
 
   calcularTotales();
