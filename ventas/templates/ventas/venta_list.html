@@ -93,6 +93,7 @@
       {% for venta in ventas %}
       <tr>
         <td>
+          {% if request.user.is_staff %}
           <!-- Opción de editar venta eliminada -->
 
             {% if not venta.anulada %}
