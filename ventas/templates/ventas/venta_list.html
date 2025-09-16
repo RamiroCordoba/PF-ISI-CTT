@@ -94,9 +94,7 @@
       <tr>
         <td>
           {% if request.user.is_staff %}
-            <a href="{% url 'editar_venta' venta.id %}" class="btn btn-outline-success mt-2 btn-sm">
-              <i class="fa fa-edit fa-sm" title="Editar"></i>
-            </a>
+          <!-- Opción de editar venta eliminada -->
 
             {% if not venta.anulada %}
               <button type="button" class="btn btn-outline-danger mt-2 btn-sm" data-bs-toggle="modal" data-bs-target="#modalEliminarVenta{{ venta.id }}" title="Eliminar">
@@ -153,7 +151,7 @@
       </tr>
       {% empty %}
       <tr>
-        <td colspan="8">No hay ventas registradas.</td>
+        <td colspan="9">No hay ventas registradas.</td>
       </tr>
       {% endfor %}
     </tbody>

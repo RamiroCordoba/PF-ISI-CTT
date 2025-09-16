@@ -14,16 +14,26 @@
     .header-top {
         width:100%;
         background:#f36f25;
-        padding:10px 0;
-        display:flex;
-        align-items:center;
-        justify-content:space-between;
+        padding:10px 30px;
     }
-    .logo { margin-left:30px; }
-    .header-center { text-align:center; width:60%; }
-    .header-right { margin-right:30px; text-align:right; color:#fff; font-weight:bold; }
-    .header-center h1 { margin:0; color:#1f2d2d; font-size:28px; }
-    .header-center p { margin:0; font-size:12px; color:#333; }
+    .header-top h1 { margin:0; color:#1f2d2d; font-size:28px; }
+    .header-top p { margin:0; font-size:12px; color:#333; }
+
+    .logo-container {
+        text-align:right;
+        padding-right:30px;
+    }
+    .logo-container img {
+        display:block;
+        margin-left:auto;
+        margin-bottom:4px;
+    }
+    .venta-num {
+        text-align:right;
+        font-weight:bold;
+        color:#fff;
+        margin-top:4px;
+    }
 
     .section { margin: 20px 30px; }
     .table-container { margin: 0 30px 10px 30px; }
@@ -64,17 +74,26 @@
 </head>
 <body>
     <div class="header-top">
-        <div class="logo">
-            <img src="data:image/png;base64,{{ logo_base64 }}" alt="Logo" width="90" height="90">
-        </div>
-        <div class="header-center">
-            <h1>NOTA DE CRÉDITO</h1>
-            <p>Baigorria 1990, Rosario, Santa Fe. CP:2000 &nbsp; CUIT: 23-16275962-9 &nbsp; TEL: (341) 3591328</p>
-            <p>proyectoferreretiasr@gmail.com</p>
-        </div>
-        <div class="header-right">
-            <div>Nº NOTA: {{ nota.id|stringformat:"04d" }}</div>
-        </div>
+        <table style="width:100%; border-collapse:collapse; border:none;">
+            <tr>
+                <!-- Datos empresa -->
+                <td style="text-align:left; vertical-align:top; border:none; color:white;">
+                    <h1>FERRETERIA SANTA RITA</h1>
+                    <p>
+                        Baigorria 1990, Rosario, Santa Fe. CP:2000 &nbsp; 
+                        CUIT: 23-16275962-9 &nbsp; 
+                        TEL: (341) 3591328
+                    </p>
+                    <p>proyectoferreretiasr@gmail.com</p>
+                </td>
+                <td style="text-align:right; vertical-align:top; border:none; width:150px;">
+                    <div class="logo-container">
+                        <img src="data:image/png;base64,{{ logo_base64 }}" alt="Logo" width="110" height="90">
+                        <div class="venta-num">Nº NOTA: {{ nota.id|stringformat:"04d" }}</div>
+                    </div>
+                </td>
+            </tr>
+        </table>
     </div>
 
     <div class="section">

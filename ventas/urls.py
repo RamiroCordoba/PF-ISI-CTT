@@ -31,7 +31,6 @@ urlpatterns = [
     #Venta
     path('venta/', VentaList.as_view(), name='mis_ventas'),
     path('venta/nueva_venta/', VentaCreate.as_view(), name='nueva_venta'),
-    path('venta/editar_venta/<int:pk>/', VentaUpdate.as_view(), name='editar_venta'),
     path('venta/informacion/<int:pk>/', VentaDetail.as_view(), name='detalles_venta'),
     path('venta/eliminar_venta/<int:pk>/', VentaDelete.as_view(), name='eliminar_venta'),
     path('venta/<int:pk>/pdf/', venta_pdf_view, name='venta_pdf'),
@@ -39,10 +38,10 @@ urlpatterns = [
     path('ajax/buscar_productos2/', buscar_productos2, name='buscar_productos2'),
     path('autocomplete-productos2/', autocomplete_productos2, name='autocomplete_productos2'),
     path('autocomplete-clientes/', autocomplete_clientes, name='autocomplete_clientes'),
+    path('ajax/nuevo_cliente/', ajax_nuevo_cliente, name='ajax_nuevo_cliente'),
     # Notas de crédito
     path('notacredito/', NotaCreditoList.as_view(), name='mis_notascredito'),
     path('notacredito/<int:pk>/', NotaCreditoDetail.as_view(), name='detalles_notacredito'),
     path('notacredito/<int:pk>/pdf/', nota_credito_pdf_view, name='notacredito_pdf'),
     path('autocomplete/formas-pago/', autocomplete_formas_pago, name='autocomplete_formas_pago'),
-
 ]
