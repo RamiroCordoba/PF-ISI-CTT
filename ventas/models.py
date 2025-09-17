@@ -84,6 +84,32 @@ class Venta(models.Model):
     def __str__(self):
         return f"Pedido #{self.id} a {self.cliente.nombre}"
 
+    @property
+    def total(self):
+        """Return the sum of all venta item subtotals (precio * cantidad * (1 - descuento%))."""
+        total = Decimal('0')
+        try:
+            items = self.items.all()
+            for it in items:
+                try:
+                    precio = Decimal(str(it.precio)) if it.precio is not None else Decimal('0')
+                except Exception:
+                    precio = Decimal('0')
+                try:
+                    cantidad = Decimal(str(it.cantidad)) if it.cantidad is not None else Decimal('0')
+                except Exception:
+                    cantidad = Decimal('0')
+                try:
+                    descuento_pct = Decimal(str(it.descuento or 0))
+                except Exception:
+                    descuento_pct = Decimal('0')
+                descuento_factor = Decimal('1') - (descuento_pct / Decimal('100'))
+                subtotal = (precio * cantidad * descuento_factor)
+                total += subtotal
+        except Exception:
+            pass
+        return total
+
     def delete(self, *args, **kwargs):
         if self.anulada:
             return
