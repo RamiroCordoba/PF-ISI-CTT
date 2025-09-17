@@ -510,8 +510,6 @@ def crear_nota_desde_venta(request):
         venta = Venta.objects.get(pk=venta_id)
     except Venta.DoesNotExist:
         return JsonResponse({'error': 'venta no encontrada'}, status=404)
-
-    # Do not create nota for anuladas ventas
     if getattr(venta, 'anulada', False):
         return JsonResponse({'error': 'venta anulada'}, status=400)
 
@@ -526,15 +524,14 @@ def crear_nota_desde_venta(request):
             nota = create_nota_from_venta(venta, comentarios=comentarios)
             if nota is None:
                 raise Exception('No se pudo crear la nota de crédito')
-
-            # apply stock for nota (will only apply unapplied items)
             try:
                 applied_count = apply_stock_for_nota(nota) or 0
             except Exception:
-                # if apply_stock_for_nota fails, raise to rollback
                 raise
-
-            # mark venta as anulada
+            try:
+                applied_count = apply_stock_for_nota(nota) or 0
+            except Exception:
+                raise
             Venta.objects.filter(pk=venta.pk).update(anulada=True)
 
     except Exception as e:
