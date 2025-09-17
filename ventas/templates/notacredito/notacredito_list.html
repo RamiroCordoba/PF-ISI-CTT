@@ -6,6 +6,9 @@
 
   <div class="d-flex justify-content-between align-items-center py-2">
     <div class="d-flex gap-2 flex-wrap">
+      <button type="button" class="btn btn-primary btn-sm d-flex align-items-center justify-content-center px-4" id="btn-nueva-nota" data-bs-toggle="modal" data-bs-target="#modalNuevaNota">
+        Nueva nota de crédito
+      </button>
     </div>
 
     <div class="d-flex align-items-end gap-3 flex-wrap">
@@ -166,4 +169,123 @@
     </td>
   </tr>
 </tfoot>
+
+<!-- Modal: Nueva Nota de Crédito -->
+<div class="modal fade" id="modalNuevaNota" tabindex="-1" aria-labelledby="modalNuevaNotaLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header" style="background: #ff8800;">
+        <h5 class="modal-title text-white" id="modalNuevaNotaLabel"><i class="fa fa-plus me-2"></i>Nueva nota de crédito</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <form id="formNuevaNota" method="post">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-8">
+              <label class="form-label">Cliente</label>
+              <select id="nc_cliente_select" class="form-control"></select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Ventas (no anuladas)</label>
+              <select id="nc_venta_select" name="venta_original" class="form-control">
+                <option value="">-- Seleccione cliente primero --</option>
+              </select>
+            </div>
+
+            <div class="col-12 mt-2">
+              <label class="form-label">Comentarios (opcional)</label>
+              <textarea name="comentarios" class="form-control" rows="3"></textarea>
+            </div>
+          </div>
+          <div id="nc_alert" class="mt-3" style="display:none;"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Crear nota</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts for modal: Select2 + AJAX to load ventas by cliente -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+  (function(){
+    const ajaxVentasUrl = "{% url 'ajax_ventas_por_cliente' %}";
+    const createNotaUrl = "{% url 'notacredito_nueva' %}";
+
+    function showAlert(msg, type) {
+      const $a = $('#nc_alert');
+      $a.removeClass().addClass('alert alert-' + (type||'info')).text(msg).show();
+    }
+
+    $(document).ready(function(){
+      // init select2 for cliente
+      $('#nc_cliente_select').select2({
+        placeholder: 'Buscar cliente...',
+        allowClear: true,
+        dropdownParent: $('#modalNuevaNota'),
+        ajax: {
+          url: '{% url "autocomplete_clientes" %}',
+          dataType: 'json',
+          delay: 250,
+          data: function(params){ return { term: params.term }; },
+          processResults: function(data){
+            var arr = data;
+            if (!Array.isArray(data) && data && data.results) arr = data.results;
+            return { results: (arr || []).map(function(d){ return { id: d.id, text: d.value || d.text || d.label || d.display }; }) };
+          },
+          error: function(xhr, status, err){ console.error('autocomplete_clientes ajax error', status, err, xhr && xhr.responseText); }
+        },
+        width: '100%'
+      });
+      $('#nc_cliente_select').on('select2:select', function(e){
+        const clienteId = e.params.data.id;
+        $('#nc_venta_select').empty().append('<option>Cargando...</option>');
+        $.getJSON(ajaxVentasUrl, { cliente_id: clienteId }).done(function(resp){
+          $('#nc_venta_select').empty();
+          if (!resp || resp.length === 0) {
+            $('#nc_venta_select').append('<option value="">(No tiene ventas)</option>');
+            return;
+          }
+          $('#nc_venta_select').append('<option value="">-- Seleccione venta --</option>');
+          resp.forEach(function(v){
+            const txt = '#' + v.id + ' - ' + (v.fecha || '') + ' - $' + (v.total || '0.00');
+            $('#nc_venta_select').append($('<option>').val(v.id).text(txt));
+          });
+        }).fail(function(){
+          $('#nc_venta_select').empty().append('<option value="">Error al cargar ventas</option>');
+        });
+      });
+      $('#nc_cliente_select').on('select2:clear', function(){
+        $('#nc_venta_select').empty().append('<option value="">-- Seleccione cliente primero --</option>');
+      });
+
+      $('#formNuevaNota').on('submit', function(ev){
+        ev.preventDefault();
+        $('#nc_alert').hide();
+        const formData = new FormData(this);
+        if (!formData.get('venta_original')) { showAlert('Seleccione una venta válida.', 'warning'); return; }
+        fetch(createNotaUrl, {
+          method: 'POST',
+          headers: { 'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val() },
+          body: formData,
+        }).then(function(r){ return r.text().then(function(t){ return { ok: r.ok, status: r.status, text: t }; }); })
+          .then(function(resp){
+            if (resp.ok) {
+              var modal = bootstrap.Modal.getInstance(document.getElementById('modalNuevaNota'));
+              if (modal) modal.hide();
+              window.location.reload();
+            } else {
+              showAlert('Error al crear nota. Revise los datos o recargue.', 'danger');
+            }
+          }).catch(function(){ showAlert('Error de red al crear nota.', 'danger'); });
+      });
+    });
+  })();
+  </script>
 {% endblock %}

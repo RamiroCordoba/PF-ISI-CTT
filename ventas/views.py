@@ -455,6 +455,7 @@ def autocomplete_clientes(request):
             'id': c.id,
             'value': display,
             'label': display,
+            'text': display,
         })
     return JsonResponse(results, safe=False)
 
@@ -488,6 +489,58 @@ def productos_por_proveedor2(request):
     )
 
     return JsonResponse({'productos': list(productos)})
+
+
+def ventas_por_cliente(request):
+    cliente_id = request.GET.get('cliente_id')
+    if not cliente_id:
+        return JsonResponse({'ventas': []})
+    ventas = Venta.objects.filter(cliente_id=cliente_id, anulada=False).order_by('-id')[:100]
+    data = [{'id': v.id, 'display': f"#{v.id} - {getattr(v.cliente,'nombre','')} ({v.fecha})", 'fecha': v.fecha.strftime('%d/%m/%Y') if getattr(v, 'fecha', None) else '', 'total': str(getattr(v, 'total', '') or '')} for v in ventas]
+    return JsonResponse(data, safe=False)
+
+
+@require_POST
+def crear_nota_desde_venta(request):
+    """Create a NotaCredito from a Venta (given venta id) and return JSON result."""
+    venta_id = request.POST.get('venta_original') or request.POST.get('venta')
+    if not venta_id:
+        return JsonResponse({'error': 'venta id requerido'}, status=400)
+    try:
+        venta = Venta.objects.get(pk=venta_id)
+    except Venta.DoesNotExist:
+        return JsonResponse({'error': 'venta no encontrada'}, status=404)
+
+    # Do not create nota for anuladas ventas
+    if getattr(venta, 'anulada', False):
+        return JsonResponse({'error': 'venta anulada'}, status=400)
+
+    comentarios = request.POST.get('comentarios', '')
+    try:
+        from .models import create_nota_from_venta, apply_stock_for_nota
+        from django.db import transaction
+
+        nota = None
+        applied_count = 0
+        with transaction.atomic():
+            nota = create_nota_from_venta(venta, comentarios=comentarios)
+            if nota is None:
+                raise Exception('No se pudo crear la nota de crédito')
+
+            # apply stock for nota (will only apply unapplied items)
+            try:
+                applied_count = apply_stock_for_nota(nota) or 0
+            except Exception:
+                # if apply_stock_for_nota fails, raise to rollback
+                raise
+
+            # mark venta as anulada
+            Venta.objects.filter(pk=venta.pk).update(anulada=True)
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+    return JsonResponse({'ok': True, 'nota_id': getattr(nota, 'id', None), 'applied_count': applied_count})
 
 class VentaCreate(LoginRequiredMixin, View):
     def get(self, request):

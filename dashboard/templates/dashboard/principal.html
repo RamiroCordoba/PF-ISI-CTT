@@ -608,9 +608,9 @@
       const searchButton = document.getElementById('btnNavbarSearch');
 
       function filtrarMenu() {
-        const search = searchInput.value.toLowerCase();
+        const search = (searchInput && searchInput.value || '').toLowerCase();
         document.querySelectorAll('.sb-sidenav-menu .nav-link, .sb-sidenav-menu-nested .nav-link').forEach(function(link) {
-          const text = link.textContent.toLowerCase();
+          const text = (link.textContent || '').toLowerCase();
           if (text.includes(search)) {
             link.style.display = '';
           } else {
@@ -629,68 +629,73 @@
         });
       }
 
-      searchInput.addEventListener('input', filtrarMenu);
-      searchButton.addEventListener('click', filtrarMenu);
+      if (searchInput) searchInput.addEventListener('input', filtrarMenu);
+      if (searchButton) searchButton.addEventListener('click', filtrarMenu);
 
       // Top 10 productos más pedidos (se mantiene el gráfico horizontal)
-      fetch('/dashboard/top-10-productos/')
-        .then(response => response.json())
-        .then(({ labels, data }) => {
-          const ctx = document.getElementById('myAreaChart').getContext('2d');
-          new Chart(ctx, {
-            type: 'bar',
-            data: {
-              labels: labels,
-              datasets: [{
-                label: 'Cantidad Pedida',
-                data: data,
-                backgroundColor: 'rgba(255, 166, 0, 0.7)',
-                borderColor: 'rgba(255, 136, 0, 1)',
-                borderWidth: 1
-              }]
-            },
-            options: {
-              indexAxis: 'y',
-              responsive: true,
-              plugins: {
-                legend: { display: false },
-                tooltip: { mode: 'index', intersect: false },
-                datalabels: {
-                  anchor: 'end',
-                  align: 'right',
-                  color: '#000',
-                  font: { weight: 'bold' },
-                  formatter: function(value) {
-                    return value;
+      const myAreaEl = document.getElementById('myAreaChart');
+      if (myAreaEl) {
+        fetch('/dashboard/top-10-productos/')
+          .then(response => response.json())
+          .then(({ labels, data }) => {
+            const ctx = myAreaEl.getContext('2d');
+            new Chart(ctx, {
+              type: 'bar',
+              data: {
+                labels: labels,
+                datasets: [{
+                  label: 'Cantidad Pedida',
+                  data: data,
+                  backgroundColor: 'rgba(255, 166, 0, 0.7)',
+                  borderColor: 'rgba(255, 136, 0, 1)',
+                  borderWidth: 1
+                }]
+              },
+              options: {
+                indexAxis: 'y',
+                responsive: true,
+                plugins: {
+                  legend: { display: false },
+                  tooltip: { mode: 'index', intersect: false },
+                  datalabels: {
+                    anchor: 'end',
+                    align: 'right',
+                    color: '#000',
+                    font: { weight: 'bold' },
+                    formatter: function(value) {
+                      return value;
+                    }
                   }
+                },
+                scales: {
+                  x: { beginAtZero: true },
+                  y: { beginAtZero: true }
                 }
               },
-              scales: {
-                x: { beginAtZero: true },
-                y: { beginAtZero: true }
-              }
-            },
-            plugins: [ChartDataLabels]
+              plugins: [ChartDataLabels]
+            });
           });
-        });
+      }
 
       // Tabla de productos por debajo del stock mínimo
-      fetch('/dashboard/productos-stock-minimo/')
-        .then(response => response.json())
-        .then(productos => {
-          const tbody = document.getElementById('tabla-stock-minimo');
-          const mensajeVacio = document.getElementById('mensaje-stock-vacio');
-          if (productos.length === 0) {
-            if (mensajeVacio) mensajeVacio.style.display = '';
-          } else {
-            if (mensajeVacio) mensajeVacio.style.display = 'none';
-            productos.forEach(prod => {
-              const tr = document.createElement('tr');
-              tr.innerHTML = `<td>${prod.nombre}</td><td>${prod.stock_actual}</td><td>${prod.stock_minimo}</td>`;
-              tbody.appendChild(tr);
-            });
-          }
-        });
+      const tablaStock = document.getElementById('tabla-stock-minimo');
+      const mensajeVacio = document.getElementById('mensaje-stock-vacio');
+      if (tablaStock) {
+        fetch('/dashboard/productos-stock-minimo/')
+          .then(response => response.json())
+          .then(productos => {
+            if (productos.length === 0) {
+              if (mensajeVacio) mensajeVacio.style.display = '';
+            } else {
+              if (mensajeVacio) mensajeVacio.style.display = 'none';
+              productos.forEach(prod => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${prod.nombre}</td><td>${prod.stock_actual}</td><td>${prod.stock_minimo}</td>`;
+                tablaStock.appendChild(tr);
+              });
+            }
+          });
+      }
     });
     </script>
   </body>
