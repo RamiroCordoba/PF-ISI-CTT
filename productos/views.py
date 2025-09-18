@@ -25,6 +25,7 @@ import qrcode
 import io
 from .forms import PedidoForm, PedidoItemForm
 from django.forms import inlineformset_factory
+
 #______ Categorias CRUD
 class CategoriaList(LoginRequiredMixin, ListView):
   model=Categoria
@@ -384,10 +385,27 @@ class CargaMasivaProductosView(View):
 
 class ExportarProductosExcelView(View):
     def get(self, request):
-        productos = Producto.objects.all().select_related('categoria')
-        data = []
+        # Obtener queryset filtrado igual que ArticuloList
+        queryset = Producto.objects.all().select_related('categoria')
+        buscar = request.GET.get('buscar')
+        categoria_ids = request.GET.getlist("categoria")
+        proveedor_ids = request.GET.getlist("proveedor")
+        estados = request.GET.getlist("estado")
 
-        for p in productos:
+        if buscar:
+            queryset = queryset.filter(nombre__icontains=buscar)
+        if categoria_ids:
+            queryset = queryset.filter(categoria_id__in=categoria_ids)
+        if proveedor_ids:
+            queryset = queryset.filter(proveedores__id__in=proveedor_ids)
+        if 'activos' in estados and 'inactivos' not in estados:
+            queryset = queryset.filter(activo=True)
+        elif 'inactivos' in estados and 'activos' not in estados:
+            queryset = queryset.filter(activo=False)
+        queryset = queryset.distinct()
+
+        data = []
+        for p in queryset:
             prov_nombres = list(p.proveedores.values_list('nombreEmpresa', flat=True))
             prov_str = ', '.join(prov_nombres) if prov_nombres else '' 
             data.append({
@@ -1080,3 +1098,4 @@ class FormaPagoList(LoginRequiredMixin,ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         return context
+
