@@ -25,6 +25,10 @@ import qrcode
 import io
 from .forms import PedidoForm, PedidoItemForm
 from django.forms import inlineformset_factory
+from openpyxl import Workbook
+from openpyxl.styles import PatternFill, Font, Alignment
+from openpyxl.worksheet.table import Table, TableStyleInfo
+
 
 #______ Categorias CRUD
 class CategoriaList(LoginRequiredMixin, ListView):
@@ -426,7 +430,46 @@ class ExportarProductosExcelView(View):
         filename = f'listado_productos_{timestamp}.xlsx'
         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         response['Content-Disposition'] = f'attachment; filename={filename}'
-        df.to_excel(response, index=False, engine='openpyxl')
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Productos"
+
+        if len(df) == 0:
+            ws.append(["No se encuentran productos que cumplan con esos filtros"])
+            ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=6)
+            cell = ws.cell(row=1, column=1)
+            cell.font = Font(color="FFFFFF", bold=True)
+            cell.fill = PatternFill(start_color="FF8800", end_color="FF8800", fill_type="solid")
+            cell.alignment = Alignment(horizontal="center")
+        else:
+            # Escribir el DataFrame en la hoja
+            for r_idx, row in enumerate(dataframe_to_rows(df, index=False, header=True), 1):
+                ws.append(row)
+            # Formato de encabezado: fondo naranja oscuro y letras blancas
+            header_fill = PatternFill(start_color="FF8800", end_color="FF8800", fill_type="solid")
+            header_font = Font(color="FFFFFF", bold=True)
+            for cell in ws[1]:
+                cell.fill = header_fill
+                cell.font = header_font
+            # Formato de tabla
+            tab = Table(displayName="ProductosTable", ref=f"A1:{chr(64+len(df.columns))}{ws.max_row}")
+            style = TableStyleInfo(name="TableStyleMedium9", showFirstColumn=False,
+                                  showLastColumn=False, showRowStripes=True, showColumnStripes=False)
+            tab.tableStyleInfo = style
+            ws.add_table(tab)
+            # Ajuste automático de ancho de columnas
+            for col in ws.columns:
+                max_length = 0
+                col_letter = col[0].column_letter
+                for cell in col:
+                    try:
+                        if cell.value:
+                            max_length = max(max_length, len(str(cell.value)))
+                    except:
+                        pass
+                ws.column_dimensions[col_letter].width = max_length + 2
+
+        wb.save(response)
         return response
 
 #______ Productos CRUD
