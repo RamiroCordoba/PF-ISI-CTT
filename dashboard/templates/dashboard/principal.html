@@ -490,7 +490,7 @@
             <div class="row">
               <div class="dashboard-cards row" style="margin-bottom: 30px;">
                 <div class="col-xl-3 col-md-6">
-                  <div class="dashboard-card dashboard-card-articulos text-center" style="background:#7AC943;padding:20px 0;border-radius:8px;">
+                  <div class="dashboard-card dashboard-card-articulos text-center" style="background:#29ABE2;padding:20px 0;border-radius:8px;">
                     <div style="display:flex;align-items:center;justify-content:center;">
                       <i class="fas fa-box" style="font-size:2.5rem;color:#fff;"></i>
                       <span class="dashboard-card-number" style="font-size:2.5rem;font-weight:bold;color:#fff;margin-left:15px;">{{ total_productos }}</span>
@@ -508,12 +508,12 @@
                   </div>
                 </div>
                 <div class="col-xl-3 col-md-6">
-                  <div class="dashboard-card dashboard-card-productos text-center" style="background:#29ABE2;padding:20px 0;border-radius:8px;">
+                  <div class="dashboard-card dashboard-card-productos text-center" style="background:#7AC943;padding:20px 0;border-radius:8px;">
                     <div style="display:flex;align-items:center;justify-content:center;">
                       <i class="fa-solid fa-file-invoice-dollar" style="font-size:2.5rem;color:#fff;"></i>
-                      <span class="dashboard-card-number" style="font-size:2.5rem;font-weight:bold;color:#fff;margin-left:15px;">200</span>
+                      <span class="dashboard-card-number" style="font-size:2.5rem;font-weight:bold;color:#fff;margin-left:15px;">{{ ventas_mes_actual }}</span>
                     </div>
-                    <div class="dashboard-card-label" style="font-size:1rem;color:#fff;margin-top:10px;">Ganancias del mes (miles ARS)</div>
+                    <div class="dashboard-card-label" style="font-size:1rem;color:#fff;margin-top:10px;">Ventas realizadas en {{ mes_actual_nombre }}</div>
                   </div>
                 </div>
                 <div class="col-xl-3 col-md-6">

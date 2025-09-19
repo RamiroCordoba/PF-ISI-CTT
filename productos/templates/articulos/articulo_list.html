@@ -21,13 +21,20 @@
         class="btn btn-success btn-sm d-flex align-items-center justify-content-center px-4">
         <i class="fas fa-file-excel me-2"></i> Carga masiva
       </a>
-      <a href="{% url 'exportar_productos' %}" 
-        class="btn btn-outline-primary btn-sm d-flex align-items-center justify-content-center px-3"
-        data-bs-toggle="tooltip" 
-        data-bs-placement="top" 
-        title="Descargar lista de productos">
+      <button id="descargarExcel" class="btn btn-outline-primary btn-sm d-flex align-items-center justify-content-center px-3" title="Descargar lista de productos">
         <i class="fa-solid fa-download"></i>
-      </a>
+      </button>
+      <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        var btn = document.getElementById('descargarExcel');
+        if (!btn) return;
+        btn.addEventListener('click', function() {
+          var params = new URLSearchParams(window.location.search);
+          var url = '/productos/exportar-excel/?' + params.toString();
+          window.location.href = url;
+        });
+      });
+      </script>
     </div>
     
     <!-- Filtros y buscador -->

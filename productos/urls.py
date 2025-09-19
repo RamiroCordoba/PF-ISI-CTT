@@ -18,9 +18,9 @@ urlpatterns = [
     path('articulos/<int:pk>/proveedores/', proveedores_grilla, name='proveedores_grilla'),
     path('articulos/<int:pk>/proveedores/quitar/<int:proveedor_id>/', quitar_proveedor, name='quitar_proveedor'),
 
-    #__ Carga masiva
+    #__ Carga masiva & Exportar excel
     path('articulos/carga_masiva_productos/', CargaMasivaProductosView.as_view(), name='carga_masiva_productos'),
-    path('articulos/exportar_productos/', ExportarProductosExcelView.as_view(), name='exportar_productos'),
+    path('exportar-excel/', ExportarProductosExcelView.as_view(), name='exportar_productos_excel'),
 
     #__________ Proveedor
     path('Proveedor/', ProveedorList.as_view(), name='mis_proveedores'),
