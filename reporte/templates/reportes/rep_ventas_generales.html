@@ -1,0 +1,18 @@
+{% extends 'dashboard/principal.html' %}
+{% block Contenido %}
+<div class="container mt-5">
+  <h2>Reporte de Ventas Generales</h2>
+  <div class="card mt-4">
+    <div class="card-body">
+      <h5 class="card-title">Filtros seleccionados</h5>
+      <ul>
+        <li><strong>Fecha desde:</strong> {{ fecha_desde }}</li>
+        <li><strong>Fecha hasta:</strong> {{ fecha_hasta }}</li>
+        <li><strong>Vendedores:</strong> {% if vendedores %}{{ vendedores|join:', ' }}{% else %}Ninguno{% endif %}</li>
+        <li><strong>Categorías:</strong> {% if categorias %}{{ categorias|join:', ' }}{% else %}Ninguna{% endif %}</li>
+      </ul>
+    </div>
+  </div>
+  <!-- Aquí irán los cálculos y resultados del reporte -->
+</div>
+{% endblock %}
