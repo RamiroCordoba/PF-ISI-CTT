@@ -24,7 +24,10 @@
   <body class="sb-nav-fixed">
     <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
       <!-- Navbar Brand-->
-      <a class="navbar-brand ps-3" href="index.html">Ferreteria Santa Rita</a>
+      <a class="navbar-brand ps-3" href="{% url 'dashboard' %}">
+        <i class="fas fa-tools" style="margin-right:8px;"></i>
+        Ferreteria Santa Rita
+      </a>
 
       <!-- Sidebar Toggle-->
       <button
@@ -34,18 +37,25 @@
       >
         <i class="fas fa-bars"></i>
       </button>
-      <div class="ms-auto me-3 me-lg-4">
-        <ul class="navbar-nav">
+      <div class="ms-auto me-5 me-lg-4">
+        <ul class="navbar-nav align-items-center">
           <li class="nav-item dropdown">
             <a
-              class="nav-link dropdown-toggle"
+              class="nav-link dropdown-toggle d-flex align-items-center"
               id="navbarDropdown"
               href="#"
               role="button"
               data-bs-toggle="dropdown"
               aria-expanded="false"
             >
-              <i class="fas fa-user fa-fw"></i>
+              <span class="navbar-text text-white me-2">{{ user.username }}</span>
+              {% if user.is_superuser %}
+                <img src="{% static 'principal/assets/img/superadmin.png' %}" alt="Superadmin" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.10);">
+              {% elif user.is_staff %}
+                <img src="{% static 'principal/assets/img/administrador.png' %}" alt="Administrador" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.10);">
+              {% else %}
+                <img src="{% static 'principal/assets/img/vendedor.png' %}" alt="Vendedor" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.10);">
+              {% endif %}
             </a>
             <ul
               class="dropdown-menu dropdown-menu-end"
