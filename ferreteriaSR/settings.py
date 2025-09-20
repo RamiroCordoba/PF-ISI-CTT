@@ -162,6 +162,9 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     BASE_DIR / 'productos' / 'static',
+    BASE_DIR / 'reporte' / 'static',
+    BASE_DIR / 'reporte' / 'static' / 'CSS',
+    BASE_DIR / 'reporte' / 'static' / 'js',
 ]
 
 # Default primary key field type

@@ -3,115 +3,7 @@
 {% block Contenido %}
 <!-- FontAwesome CDN for icons -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-<style>
-  body {
-    background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%) !important;
-    font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
-  }
-  .report-header {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-    margin-top: 32px;
-    margin-bottom: 16px;
-  }
-  .report-logo {
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #F15A29 60%, #a33510ff 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    font-size: 2rem;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.10);
-  }
-  .report-title {
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: #22223b;
-    letter-spacing: 1px;
-    margin-bottom: 0;
-  }
-  .report-subtitle {
-    font-size: 1.1rem;
-    color: #4e4e4e;
-    margin-top: 4px;
-    text-align: center;
-  }
-  .tab-fichero {
-    border-radius: 12px 12px 0 0;
-    color: #fff;
-    font-weight: 600;
-    margin-right: 12px;
-    padding: 12px 32px;
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.10);
-    transition: background 0.3s, box-shadow 0.3s, transform 0.2s;
-    font-size: 1.1rem;
-    opacity: 0.92;
-    border: none;
-    outline: none;
-  }
-  .tab-fichero:hover {
-    opacity: 1;
-    transform: translateY(-2px) scale(1.04);
-    box-shadow: 0 4px 16px rgba(0,0,0,0.14);
-  }
-  .tab-fichero.active {
-    box-shadow: 0 6px 24px rgba(0,0,0,0.16);
-    border-bottom: 4px solid #fff;
-    opacity: 1;
-    transform: scale(1.06);
-  }
-  .tab-ventas { background: #F15A29; }
-  .tab-ventas.active { background: #c13e0f; }
-  .tab-estacionarios { background: #29ABE2; }
-  .tab-estacionarios.active { background: #1a7ca6; }
-  .tab-proyeccion { background: #7AC943; }
-  .tab-proyeccion.active { background: #4e8c1a; }
-  .tab-proveedores { background: #FBB03B; }
-  .tab-proveedores.active { background: #b8860b; }
-  .tab-financiero { background: #8e44ad; }
-  .tab-financiero.active { background: #5e3370; }
-  .tab-content-fichero {
-    background: #fff7e6;
-    border-radius: 0 0 18px 18px;
-    padding: 40px 32px;
-    margin-top: -8px;
-    min-height: 320px;
-    box-shadow: 0 2px 16px rgba(0,0,0,0.09);
-    animation: fadeIn 0.5s;
-  }
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  .tab-content-fichero h3 {
-    font-size: 2rem;
-    color: #22223b;
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .tab-content-fichero p {
-    font-size: 1.15rem;
-    color: #444;
-    margin-bottom: 18px;
-  }
-  .tab-content-fichero hr {
-    height: 4px;
-    background: linear-gradient(90deg, #F15A29 60%, #29ABE2 100%);
-    border: none;
-    margin-bottom: 0;
-  }
-</style>
+<link rel="stylesheet" href="{% static 'CSS/report_filters.css' %}" />
 <div class="container-fluid px-4" style="background: transparent; min-height: 100vh;">
   <div class="row justify-content-center">
     <div class="report-header">
@@ -135,38 +27,42 @@
       <p>Este informe contendrá un resumen de las ventas generales de la ferretería en el rango de fechas y categorías seleccionadas.</p>
       <hr />
         <!-- Filtros de reportes -->
-        <div id="report-filters" style="margin-top: 32px; margin-bottom: 24px; background: #f3f4f6; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); padding: 24px 32px;">
-          <div style="display: flex; flex-wrap: wrap; gap: 32px; align-items: flex-end;">
+        <div id="report-filters" style="margin-top: 32px; margin-bottom: 24px; background: #fff7e6; border-radius: 18px; box-shadow: 0 2px 16px rgba(0,0,0,0.09); padding: 32px 40px;">
+          <div style="display: flex; flex-wrap: wrap; gap: 40px; align-items: stretch; justify-content: space-between;">
             <!-- Fecha desde -->
-            <div>
-              <label for="fecha-desde" style="font-weight: 600; color: #22223b;">Fecha desde</label><br>
-              <input type="date" id="fecha-desde" name="fecha-desde" class="form-control" style="min-width: 180px;">
+            <div class="filter-card" style="flex:1; min-width:220px; background: #f8fafc; border-radius: 14px; box-shadow: 0 2px 8px rgba(241,90,41,0.08); padding: 18px 22px; margin-bottom: 0; display: flex; flex-direction: column; align-items: flex-start;">
+              <span style="font-size:1.3rem; color:#F15A29; margin-bottom:8px;"><i class="fa-solid fa-calendar-day"></i></span>
+              <label for="fecha-desde" style="font-weight: 600; color: #22223b;">Fecha desde</label>
+              <input type="date" id="fecha-desde" name="fecha-desde" class="form-control" style="min-width: 160px; margin-top:6px;">
             </div>
             <!-- Fecha hasta -->
-            <div>
-              <label for="fecha-hasta" style="font-weight: 600; color: #22223b;">Fecha hasta</label><br>
-              <input type="date" id="fecha-hasta" name="fecha-hasta" class="form-control" style="min-width: 180px;">
+            <div class="filter-card" style="flex:1; min-width:220px; background: #f8fafc; border-radius: 14px; box-shadow: 0 2px 8px rgba(41,171,226,0.08); padding: 18px 22px; margin-bottom: 0; display: flex; flex-direction: column; align-items: flex-start;">
+              <span style="font-size:1.3rem; color:#29ABE2; margin-bottom:8px;"><i class="fa-solid fa-calendar-check"></i></span>
+              <label for="fecha-hasta" style="font-weight: 600; color: #22223b;">Fecha hasta</label>
+              <input type="date" id="fecha-hasta" name="fecha-hasta" class="form-control" style="min-width: 160px; margin-top:6px;">
             </div>
             <!-- Vendedores -->
-            <div>
-              <label style="font-weight: 600; color: #22223b;">Vendedores</label><br>
-              <div id="vendedores-checklist" style="background: #fff; border-radius: 8px; padding: 12px 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); max-height: 180px; overflow-y: auto; min-width: 220px;">
-                <label><input type="checkbox" id="vendedor-todos" value="todos"> Todos</label><br>
+            <div class="filter-card" style="flex:1; min-width:220px; background: #f8fafc; border-radius: 14px; box-shadow: 0 2px 8px rgba(122,201,67,0.08); padding: 18px 22px; margin-bottom: 0; display: flex; flex-direction: column; align-items: flex-start;">
+              <span style="font-size:1.3rem; color:#7AC943; margin-bottom:8px;"><i class="fa-solid fa-user-tie"></i></span>
+              <label style="font-weight: 600; color: #22223b;">Vendedores</label>
+              <div id="vendedores-checklist" style="background: #fff; border-radius: 8px; padding: 10px 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); max-height: 140px; overflow-y: auto; min-width: 180px; margin-top:8px;">
+                <label style="font-weight:500; color:#F15A29;"><input type="checkbox" id="vendedor-todos" value="todos"> Todos</label><br>
                 <!-- Aquí se insertarán dinámicamente los vendedores -->
               </div>
             </div>
             <!-- Categoría de productos -->
-            <div>
-              <label style="font-weight: 600; color: #22223b;">Categoría de productos</label><br>
-              <div id="categorias-checklist" style="background: #fff; border-radius: 8px; padding: 12px 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); max-height: 180px; overflow-y: auto; min-width: 220px;">
-                <label><input type="checkbox" id="categoria-todas" value="todas"> Todas</label><br>
+            <div class="filter-card" style="flex:1; min-width:220px; background: #f8fafc; border-radius: 14px; box-shadow: 0 2px 8px rgba(251,176,59,0.08); padding: 18px 22px; margin-bottom: 0; display: flex; flex-direction: column; align-items: flex-start;">
+              <span style="font-size:1.3rem; color:#FBB03B; margin-bottom:8px;"><i class="fa-solid fa-cubes"></i></span>
+              <label style="font-weight: 600; color: #22223b;">Categoría de productos</label>
+              <div id="categorias-checklist" style="background: #fff; border-radius: 8px; padding: 10px 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); max-height: 140px; overflow-y: auto; min-width: 180px; margin-top:8px;">
+                <label style="font-weight:500; color:#29ABE2;"><input type="checkbox" id="categoria-todas" value="todas"> Todas</label><br>
                 <!-- Aquí se insertarán dinámicamente las categorías -->
               </div>
             </div>
           </div>
-            <div style="margin-top: 32px; text-align: right;">
-              <button id="btn-generar-reporte" class="btn btn-primary" style="font-size: 1.1rem; padding: 10px 32px; border-radius: 8px; background: #F15A29; border: none; font-weight: 600; box-shadow: 0 2px 8px rgba(0,0,0,0.10); transition: background 0.3s; color: #fff;">Generar reporte</button>
-            </div>
+          <div style="margin-top: 32px; text-align: right;">
+            <button id="btn-generar-reporte" class="btn btn-primary" style="font-size: 1.1rem; padding: 10px 32px; border-radius: 8px; background: linear-gradient(90deg,#F15A29 60%,#29ABE2 100%); border: none; font-weight: 600; box-shadow: 0 2px 8px rgba(0,0,0,0.10); transition: background 0.3s; color: #fff;"> <i class="fa-solid fa-file-lines"></i> Generar reporte</button>
+          </div>
         </div>
     </div>
     <div id="tab-content-estacionarios" class="tab-content-fichero" style="display:none;">
@@ -200,5 +96,5 @@ function showTabFichero(tab) {
   });
 }
 </script>
-<script src="{% static 'reportes/report_filters.js' %}"></script>
+<script src="{% static 'js/report_filters.js' %}"></script>
 {% endblock Contenido %}
