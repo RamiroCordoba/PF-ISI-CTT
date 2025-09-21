@@ -1,18 +1,293 @@
 {% extends 'dashboard/principal.html' %}
+{% load static %}
 {% block Contenido %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+<link rel="stylesheet" href="{% static 'CSS/report_filters.css' %}" />
+<link rel="stylesheet" href="{% static 'CSS/rep_ventas_generales.css' %}" />
 <div class="container mt-5">
   <h2>Reporte de Ventas Generales</h2>
+  <!-- Parte 1: Filtros editables -->
   <div class="card mt-4">
     <div class="card-body">
-      <h5 class="card-title">Filtros seleccionados</h5>
-      <ul>
-        <li><strong>Fecha desde:</strong> {{ fecha_desde }}</li>
-        <li><strong>Fecha hasta:</strong> {{ fecha_hasta }}</li>
-        <li><strong>Vendedores:</strong> {% if vendedores %}{{ vendedores|join:', ' }}{% else %}Ninguno{% endif %}</li>
-        <li><strong>Categorías:</strong> {% if categorias %}{{ categorias|join:', ' }}{% else %}Ninguna{% endif %}</li>
-      </ul>
+      <div class="d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0"><i class="fa-solid fa-filter"></i> Filtros aplicados</h5>
+        <button id="toggle-filtros" type="button" class="btn btn-link" style="font-size:1.2rem; text-decoration:none; color:#333;">
+          <span id="toggle-icon"><i class="fa-solid fa-chevron-up"></i></span>
+        </button>
+      </div>
+      <div id="filtros-content">
+        <form method="get" id="filtros-form" class="report-filters" autocomplete="off" onsubmit="return validarFiltrosReporte();">
+          <div style="display: flex; flex-wrap: wrap; gap: 40px; align-items: stretch; justify-content: space-between;">
+            <!-- Fecha desde -->
+            <div class="filter-card">
+              <span style="font-size:1.3rem; color:#F15A29; margin-bottom:8px;"><i class="fa-solid fa-calendar-day"></i></span>
+              <label for="fecha_desde" class="form-label">Fecha desde</label>
+              <input type="date" class="form-control" id="fecha_desde" name="fecha_desde" value="{{ fecha_desde }}" required>
+              <div id="error-fecha-desde" class="filter-error" style="display:none;"></div>
+            </div>
+            <!-- Fecha hasta -->
+            <div class="filter-card">
+              <span style="font-size:1.3rem; color:#29ABE2; margin-bottom:8px;"><i class="fa-solid fa-calendar-check"></i></span>
+              <label for="fecha_hasta" class="form-label">Fecha hasta</label>
+              <input type="date" class="form-control" id="fecha_hasta" name="fecha_hasta" value="{{ fecha_hasta }}" required>
+              <div id="error-fecha-hasta" class="filter-error" style="display:none;"></div>
+            </div>
+            <!-- Vendedores -->
+            <div class="filter-card">
+              <span style="font-size:1.3rem; color:#7AC943; margin-bottom:8px;"><i class="fa-solid fa-user-tie"></i></span>
+              <label class="form-label">Vendedores</label>
+              <div id="vendedores-checklist">
+                <label style="font-weight:500; color:#F15A29;"><input type="checkbox" id="vendedor-todos" value="todos" {% if 'todos' in vendedores_seleccionados %}checked{% endif %}> Todos</label><br>
+                {% for v in vendedores %}
+                  <label><input type="checkbox" class="vendedor-check" name="vendedores" value="{{ v.id }}" {% if v.id in vendedores_seleccionados or 'todos' in vendedores_seleccionados %}checked{% endif %}> {{ v.nombre }}</label><br>
+                {% endfor %}
+              </div>
+              <div id="error-vendedores" class="filter-error" style="display:none;"></div>
+            </div>
+            <!-- Categorías -->
+            <div class="filter-card">
+              <span style="font-size:1.3rem; color:#FBB03B; margin-bottom:8px;"><i class="fa-solid fa-cubes"></i></span>
+              <label class="form-label">Categorías</label>
+              <div id="categorias-checklist">
+                <label style="font-weight:500; color:#29ABE2;"><input type="checkbox" id="categoria-todas" value="todas" {% if 'todas' in categorias_seleccionadas %}checked{% endif %}> Todas</label><br>
+                {% for c in categorias %}
+                  <label><input type="checkbox" class="categoria-check" name="categorias" value="{{ c.id }}" {% if c.id in categorias_seleccionadas or 'todas' in categorias_seleccionadas %}checked{% endif %}> {{ c.nombre }}</label><br>
+                {% endfor %}
+              </div>
+              <div id="error-categorias" class="filter-error" style="display:none;"></div>
+            </div>
+          </div>
+          <div style="margin-top: 32px; text-align: right;">
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-rotate"></i> Actualizar</button>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
-  <!-- Aquí irán los cálculos y resultados del reporte -->
+
+  <!-- Parte 2: Resultados BI -->
+  <div class="card mt-4">
+    <div class="card-body">
+      <h5 class="card-title"><i class="fa-solid fa-chart-column"></i> Resultados y análisis</h5>
+      <div id="bi-results">
+        <!-- KPIs principales -->
+        <div class="row mb-4">
+          <div class="col-md-3">
+            <div class="kpi-card kpi-bg-green">
+              <span class="kpi-icon"><i class="fa-solid fa-check-circle"></i></span>
+              <span class="kpi-label">Ventas activas</span>
+              <span class="kpi-value text-success">{{ ventas_activas }}</span>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="kpi-card kpi-bg-red">
+              <span class="kpi-icon"><i class="fa-solid fa-ban"></i></span>
+              <span class="kpi-label">Ventas canceladas</span>
+              <span class="kpi-value text-danger">{{ ventas_canceladas }}</span>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="kpi-card kpi-bg-blue">
+              <span class="kpi-icon"><i class="fa-solid fa-file-invoice-dollar"></i></span>
+              <span class="kpi-label">Notas de crédito</span>
+              <span class="kpi-value">{{ cantidad_notas_credito }}</span>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="kpi-card kpi-bg-yellow">
+              <span class="kpi-icon"><i class="fa-solid fa-coins"></i></span>
+              <span class="kpi-label">Promedio saldo NC</span>
+              <span class="kpi-value">${{ promedio_saldo_notas|floatformat:2 }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="row mb-4">
+          <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100 shadow-sm">
+              <div class="card-body">
+                <h6 class="card-title text-center">Ventas activas vs canceladas</h6>
+                <canvas id="ventasEstadoChart" style="width:100%;height:180px;min-height:180px;"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-8 col-md-6 mb-4">
+            <div class="card h-100 shadow-sm">
+              <div class="card-body">
+                <h6 class="card-title">Ventas por fecha</h6>
+                <canvas id="ventasFechaChart" style="width:100%;height:260px;min-height:260px;"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row mb-4">
+          <div class="col-lg-6 col-md-12 mb-4">
+            <div class="card h-100 shadow-sm">
+              <div class="card-body">
+                <h6 class="card-title">Ventas por vendedor</h6>
+                <canvas id="ventasVendedorChart" style="width:100%;height:220px;min-height:220px;"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-6 col-md-12 mb-4">
+            <div class="card h-100 shadow-sm">
+              <div class="card-body">
+                <h6 class="card-title">Ventas por categoría</h6>
+                <canvas id="ventasCategoriaChart" style="width:100%;height:220px;min-height:220px;"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{% static 'js/rep_ventas_generales.js' %}"></script>
+<script>
+  // Funcionalidad de minimizar/expandir tarjeta de filtros
+  document.addEventListener('DOMContentLoaded', function() {
+    var toggleBtn = document.getElementById('toggle-filtros');
+    var filtrosContent = document.getElementById('filtros-content');
+    var toggleIcon = document.getElementById('toggle-icon');
+    var expanded = false;
+    filtrosContent.style.display = 'none';
+    toggleIcon.innerHTML = '<i class="fa-solid fa-chevron-down"></i>';
+    toggleBtn.addEventListener('click', function() {
+      expanded = !expanded;
+      if (expanded) {
+        filtrosContent.style.display = '';
+        toggleIcon.innerHTML = '<i class="fa-solid fa-chevron-up"></i>';
+      } else {
+        filtrosContent.style.display = 'none';
+        toggleIcon.innerHTML = '<i class="fa-solid fa-chevron-down"></i>';
+      }
+    });
+
+    // --- BI Charts ---
+    // Ventas activas vs canceladas
+    const ventasEstadoChart = document.getElementById('ventasEstadoChart').getContext('2d');
+    new Chart(ventasEstadoChart, {
+      type: 'doughnut',
+      data: {
+        labels: ['Activas', 'Canceladas'],
+        datasets: [{
+          data: [{{ ventas_activas }}, {{ ventas_canceladas }}],
+          backgroundColor: ['#7AC943', '#F15A29'],
+        }]
+      },
+      options: {responsive:true, plugins:{legend:{position:'bottom'}}}
+    });
+
+    // Ventas por fecha
+    const ventasFechaData = {
+      labels: [{% for fecha in ventas_por_fecha %}'{{ fecha }}',{% endfor %}],
+      datasets: [{
+        label: 'Total ventas',
+  data: [{% for monto in montos_ventas %}{{ monto|floatformat:"0"|default:0 }},{% endfor %}],
+        backgroundColor: '#29ABE2',
+      }]
+    };
+    new Chart(document.getElementById('ventasFechaChart').getContext('2d'), {
+      type: 'bar',
+      data: ventasFechaData,
+      options: {
+        responsive:true,
+        plugins:{
+          legend:{display:false},
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return 'Monto total: $' + Math.round(context.parsed.y).toLocaleString('es-AR');
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            type: 'category',
+            ticks: {
+              autoSkip: false,
+              maxRotation: 45,
+              minRotation: 45,
+              font: {size: 12}
+            }
+          },
+          y: {
+            beginAtZero: true,
+            suggestedMin: Math.min(...ventasFechaData.datasets[0].data, 0),
+            suggestedMax: Math.max(...ventasFechaData.datasets[0].data, 10),
+            ticks: {stepSize: null}
+          }
+        }
+      }
+    });
+
+    // Ventas por vendedor
+    const ventasVendedorData = {
+      labels: [{% for v in ventas_por_vendedor %}'{{ v.vendedor }}',{% endfor %}],
+      datasets: [{
+        label: 'Total ventas',
+        data: [{% for v in ventas_por_vendedor %}{{ v.total|default:0 }},{% endfor %}],
+        backgroundColor: '#FBB03B',
+      }]
+    };
+    const vendedorMax = Math.max(...ventasVendedorData.datasets[0].data);
+    let vendedorMargin = vendedorMax > 0 ? Math.max(1000, Math.round(vendedorMax * 0.05)) : 10000;
+    new Chart(document.getElementById('ventasVendedorChart').getContext('2d'), {
+      type: 'bar',
+      data: ventasVendedorData,
+      options: {
+        responsive:true,
+        plugins:{legend:{display:false}},
+        scales: {
+          y: {
+            beginAtZero: true,
+            min: 0,
+            // Elimina el max fijo para que Chart.js ajuste automáticamente
+            ticks: {
+              stepSize: null,
+              callback: function(value) {
+                return value;
+              }
+            }
+          }
+        }
+      }
+    });
+
+    // Ventas por categoría
+    const ventasCategoriaData = {
+      labels: [{% for v in ventas_por_categoria %}'{{ v.producto__categoria__nombre }}',{% endfor %}],
+      datasets: [{
+        label: 'Total ventas',
+        data: [{% for v in ventas_por_categoria %}{{ v.total|default:0 }},{% endfor %}],
+        backgroundColor: '#7AC943',
+      }]
+    };
+    const categoriaMax = Math.max(...ventasCategoriaData.datasets[0].data);
+    let categoriaMargin = categoriaMax > 0 ? Math.max(1000, Math.round(categoriaMax * 0.05)) : 10000;
+    new Chart(document.getElementById('ventasCategoriaChart').getContext('2d'), {
+      type: 'bar',
+      data: ventasCategoriaData,
+      options: {
+        responsive:true,
+        plugins:{legend:{display:false}},
+        scales: {
+          y: {
+            beginAtZero: true,
+            min: 0,
+            max: categoriaMax > 0 ? categoriaMax + categoriaMargin : 10000,
+            ticks: {
+              stepSize: null,
+              callback: function(value) {
+                return value;
+              }
+            }
+          }
+        }
+      }
+    });
+  });
+</script>
 {% endblock %}
