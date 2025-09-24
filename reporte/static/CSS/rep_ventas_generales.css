@@ -1,0 +1,141 @@
+.kpi-icon {
+  font-size: 2.2rem;
+  margin-bottom: 8px;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.10);
+  display: block;
+}
+.kpi-bg-green {
+  background: linear-gradient(90deg, #7AC943 60%, #3e7c1c 100%) !important;
+}
+.kpi-bg-red {
+  background: linear-gradient(90deg, #F15A29 60%, #a63a0f 100%) !important;
+}
+.kpi-bg-blue {
+  background: linear-gradient(90deg, #29ABE2 60%, #145a7a 100%) !important;
+}
+.kpi-bg-yellow {
+  background: linear-gradient(90deg, #FBB03B 60%, #b88a1a 100%) !important;
+}
+.kpi-card .kpi-label, .kpi-card .kpi-value {
+  color: #fff !important;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.10);
+}
+.kpi-card {
+  box-shadow: 0 2px 12px rgba(41,171,226,0.10);
+}
+/* Tarjetas BI y KPIs */
+.kpi-card {
+  background: linear-gradient(90deg, #f8fafc 60%, #eaf6fb 100%);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(41,171,226,0.08);
+  padding: 22px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 12px;
+  transition: box-shadow 0.2s;
+}
+.kpi-card:hover {
+  box-shadow: 0 4px 16px rgba(41,171,226,0.18);
+}
+.kpi-label {
+  font-size: 1.05rem;
+  color: #29ABE2;
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+.kpi-value {
+  font-size: 2.1rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+.card-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #F15A29;
+  margin-bottom: 10px;
+}
+.card.shadow-sm {
+  border: none;
+  border-radius: 14px;
+  box-shadow: 0 6px 24px rgba(41, 171, 226, 0.18), 0 1.5px 6px rgba(0,0,0,0.08);
+  background: linear-gradient(90deg, #fff 70%, #f8fafc 100%);
+  transition: box-shadow 0.2s;
+}
+.card.shadow-sm:hover {
+  box-shadow: 0 12px 32px rgba(41, 171, 226, 0.22), 0 2px 8px rgba(0,0,0,0.10);
+}
+.card-body {
+  padding: 18px 16px 12px 16px;
+}
+canvas {
+  background: #f8fafc;
+  border-radius: 10px;
+  box-shadow: 0 1px 6px rgba(41,171,226,0.07);
+  margin-bottom: 8px;
+}
+/* Estilos específicos para rep_ventas_generales.html */
+/* Estilos para filtros tipo tarjeta, checklist y disposición visual igual a index_report.html */
+.filter-error {
+  color: #c13e0f;
+  font-weight: 500;
+  font-size: 1rem;
+  margin-top: 8px;
+}
+
+#report-filters, .report-filters {
+  margin-top: 32px;
+  margin-bottom: 24px;
+  background: #fff7e6;
+  border-radius: 18px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.09);
+  padding: 32px 40px;
+}
+.filter-card {
+  flex:1;
+  min-width:220px;
+  background: #f8fafc;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(241,90,41,0.08);
+  padding: 18px 22px;
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+#vendedores-checklist, #categorias-checklist {
+  background: #fff;
+  border-radius: 8px;
+  padding: 10px 12px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  max-height: 140px;
+  overflow-y: auto;
+  min-width: 180px;
+  margin-top:8px;
+}
+#vendedor-todos {
+  accent-color: #F15A29;
+}
+#categoria-todas {
+  accent-color: #29ABE2;
+}
+label[for="fecha_desde"], label[for="fecha_hasta"], .form-label {
+  font-weight: 600;
+  color: #22223b;
+}
+label[for="vendedores"], label[for="categorias"] {
+  font-weight: 600;
+  color: #22223b;
+}
+button[type="submit"] {
+  font-size: 1.1rem;
+  padding: 10px 32px;
+  border-radius: 8px;
+  background: linear-gradient(90deg,#F15A29 60%,#29ABE2 100%);
+  border: none;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+  transition: background 0.3s;
+  color: #fff;
+}
