@@ -6,6 +6,8 @@ from django.http import JsonResponse
 from django.db.models import Sum
 from productos.models import PedidoItem, Producto
 from django.db import models
+from ventas.models import Venta
+from django.utils import timezone
 
 @login_required
 def dashboard_view(request):
@@ -13,10 +15,29 @@ def dashboard_view(request):
     total_productos = Producto.objects.count()
     total_pedidos = Pedido.objects.count()
     total_proveedores = Proveedor.objects.count()
+
+    hoy = timezone.now().date()
+    ventas_mes_actual = Venta.objects.filter(
+        fecha__year=hoy.year,
+        fecha__month=hoy.month,
+        completado=True,
+        anulada=False
+    ).count()
+
+    # Nombre del mes actual en español
+    import calendar
+    meses = [
+        'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+        'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ]
+    mes_actual_nombre = meses[hoy.month - 1]
+
     return render(request, 'dashboard/principal.html', {
         'total_productos': total_productos,
         'total_pedidos': total_pedidos,
-        'total_proveedores': total_proveedores
+        'total_proveedores': total_proveedores,
+        'ventas_mes_actual': ventas_mes_actual,
+        'mes_actual_nombre': mes_actual_nombre
     })
 
 
