@@ -541,7 +541,14 @@ def crear_nota_desde_venta(request):
             if nota is None:
                 raise Exception('No se pudo crear la nota de crédito')
 
-            applied_count = apply_stock_for_nota(nota) or 0
+            try:
+                applied_count = apply_stock_for_nota(nota) or 0
+            except Exception:
+                raise
+            try:
+                applied_count = apply_stock_for_nota(nota) or 0
+            except Exception:
+                raise
 
             Venta.objects.filter(pk=venta.pk).update(anulada=True)
 
