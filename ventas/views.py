@@ -494,9 +494,24 @@ def productos_por_proveedor2(request):
 def ventas_por_cliente(request):
     cliente_id = request.GET.get('cliente_id')
     if not cliente_id:
-        return JsonResponse({'ventas': []})
+        return JsonResponse([], safe=False)
     ventas = Venta.objects.filter(cliente_id=cliente_id, anulada=False).order_by('-id')[:100]
-    data = [{'id': v.id, 'display': f"#{v.id} - {getattr(v.cliente,'nombre','')} ({v.fecha})", 'fecha': v.fecha.strftime('%d/%m/%Y') if getattr(v, 'fecha', None) else '', 'total': str(getattr(v, 'total', '') or '')} for v in ventas]
+    data = []
+    for v in ventas:
+        total_val = getattr(v, 'total', None)
+        try:
+            total_str = f"{total_val:.2f}" if total_val is not None else ''
+        except Exception:
+            try:
+                total_str = f"{float(total_val):.2f}"
+            except Exception:
+                total_str = str(total_val or '')
+        data.append({
+            'id': v.id,
+            'display': f"#{v.id} - {getattr(v.cliente, 'nombre', '')} ({getattr(v, 'fecha', '')})",
+            'fecha': v.fecha.strftime('%d/%m/%Y') if getattr(v, 'fecha', None) else '',
+            'total': total_str,
+        })
     return JsonResponse(data, safe=False)
 
 
@@ -510,6 +525,7 @@ def crear_nota_desde_venta(request):
         venta = Venta.objects.get(pk=venta_id)
     except Venta.DoesNotExist:
         return JsonResponse({'error': 'venta no encontrada'}, status=404)
+
     if getattr(venta, 'anulada', False):
         return JsonResponse({'error': 'venta anulada'}, status=400)
 
@@ -524,6 +540,7 @@ def crear_nota_desde_venta(request):
             nota = create_nota_from_venta(venta, comentarios=comentarios)
             if nota is None:
                 raise Exception('No se pudo crear la nota de crédito')
+
             try:
                 applied_count = apply_stock_for_nota(nota) or 0
             except Exception:
@@ -532,6 +549,7 @@ def crear_nota_desde_venta(request):
                 applied_count = apply_stock_for_nota(nota) or 0
             except Exception:
                 raise
+
             Venta.objects.filter(pk=venta.pk).update(anulada=True)
 
     except Exception as e:

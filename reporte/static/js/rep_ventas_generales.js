@@ -83,6 +83,40 @@ function validarFiltrosReporte() {
   return valid;
 }
 
+// Interceptar el submit del formulario de filtros para construir la URL
+document.addEventListener('DOMContentLoaded', function() {
+  const filtrosForm = document.getElementById('filtros-form');
+  if (!filtrosForm) return;
+  filtrosForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    if (!validarFiltrosReporte()) return false;
+
+    const fechaDesde = document.getElementById('fecha_desde').value;
+    const fechaHasta = document.getElementById('fecha_hasta').value;
+    const vendedoresSeleccionados = Array.from(document.querySelectorAll('.vendedor-check:checked')).map(cb => cb.value);
+    const categoriasSeleccionadas = Array.from(document.querySelectorAll('.categoria-check:checked')).map(cb => cb.value);
+    const todosVendedores = document.getElementById('vendedor-todos').checked;
+    const todasCategorias = document.getElementById('categoria-todas').checked;
+
+    const params = new URLSearchParams();
+    if (fechaDesde) params.append('fecha_desde', fechaDesde);
+    if (fechaHasta) params.append('fecha_hasta', fechaHasta);
+    if (todosVendedores) {
+      params.append('vendedores', 'todos');
+    } else {
+      vendedoresSeleccionados.forEach(v => params.append('vendedores', v));
+    }
+    if (todasCategorias) {
+      params.append('categorias', 'todas');
+    } else {
+      categoriasSeleccionadas.forEach(c => params.append('categorias', c));
+    }
+
+    window.location.href = '/informes/reportes/rep_ventas_generales?' + params.toString();
+    return false;
+  });
+});
+
 // Chart.js ejemplo
 window.addEventListener('DOMContentLoaded', function() {
   if (document.getElementById('ventasChart')) {
