@@ -55,9 +55,68 @@
               <a href="{% url 'editar_categoria' c.id %}" class="btn btn-outline-success mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
                   <i class="fa fa-edit fa-sm" title="Editar"></i>
               </a>
-              <a href="{% url 'eliminar_categoria' c.id %}" class="btn btn-outline-danger mt-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
-                  <i class="fa fa-trash fa-sm" title="Eliminar"></i>
-              </a> 
+
+              {% if c.cantidad_productos > 0 %}
+              <button type="button"
+                      class="btn btn-outline-secondary mt-2"
+                      data-bs-toggle="modal"
+                      data-bs-target="#modalBloqueadoCategoria{{ c.id }}"
+                      style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;"
+                      title="No se puede eliminar">
+                <i class="fa fa-lock fa-sm text-warning"></i>
+              </button>
+
+              <div class="modal fade" id="modalBloqueadoCategoria{{ c.id }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <div class="modal-header bg-warning">
+                      <h5 class="modal-title">Eliminación bloqueada</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                      Esta categoría no puede eliminarse porque tiene:
+                      <ul class="mb-0">
+                        <li>{{ c.cantidad_productos }} productos asociados</li>
+                      </ul>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {% else %}
+              <button type="button"
+                      class="btn btn-outline-danger mt-2"
+                      data-bs-toggle="modal"
+                      data-bs-target="#modalEliminarCategoria{{ c.id }}"
+                      style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;"
+                      title="Eliminar">
+                <i class="fa fa-trash fa-sm"></i>
+              </button>
+
+              <div class="modal fade" id="modalEliminarCategoria{{ c.id }}" tabindex="-1" aria-labelledby="modalEliminarCategoriaLabel{{ c.id }}" aria-hidden="true">
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="modalEliminarCategoriaLabel{{ c.id }}">Confirmar eliminación</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                      ¿Estás seguro de que querés eliminar la categoría <strong>{{ c.nombre }}</strong>?
+                    </div>
+                    <div class="modal-footer">
+                      <form method="post" action="{% url 'eliminar_categoria' c.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Eliminar</button>
+                      </form>
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {% endif %}
         </td>
         {% endif %}
         <td>{{c.nombre}}</td>

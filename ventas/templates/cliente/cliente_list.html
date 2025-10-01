@@ -106,7 +106,38 @@
                 <i class="fa fa-edit fa-sm"></i>
               </a>
 
-              <!-- Botón eliminar -->
+              {% if cliente.cantidad_ventas > 0 %}
+              <button type="button"
+                      class="btn btn-outline-secondary mt-2"
+                      data-bs-toggle="modal"
+                      data-bs-target="#modalBloqueadoCliente{{ cliente.id }}"
+                      style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;"
+                      title="No se puede eliminar">
+                <i class="fa fa-lock fa-sm text-warning"></i>
+              </button>
+
+              <div class="modal fade" id="modalBloqueadoCliente{{ cliente.id }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <div class="modal-header bg-warning">
+                      <h5 class="modal-title">Eliminación bloqueada</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                      Este cliente no puede eliminarse porque tiene:
+                      <ul class="mb-0">
+                        <li>{{ cliente.cantidad_ventas }} ventas asociadas</li>
+                      </ul>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {% else %}
+              <!-- Delete available: show confirmation modal -->
               <button type="button"
                       class="btn btn-outline-danger mt-2"
                       data-bs-toggle="modal"
@@ -116,7 +147,6 @@
                 <i class="fa fa-trash fa-sm"></i>
               </button>
 
-              <!-- Modal eliminar -->
               <div class="modal fade" id="modalEliminarCliente{{ cliente.id }}" tabindex="-1"
                    aria-labelledby="modalEliminarClienteLabel{{ cliente.id }}" aria-hidden="true">
                 <div class="modal-dialog">
@@ -138,6 +168,7 @@
                   </div>
                 </div>
               </div>
+              {% endif %}
 
               <a href="{% url 'detalles_cliente' cliente.id %}" class="btn btn-outline-primary mt-2"
                  style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">

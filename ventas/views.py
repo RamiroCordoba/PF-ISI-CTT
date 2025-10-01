@@ -11,7 +11,8 @@ from .forms import *
 from django.contrib import messages
 from django.http import JsonResponse
 from productos.models import Producto,Proveedor
-from django.db.models import Q
+from django.db.models import Q, Count
+from django.db.models.deletion import ProtectedError
 from django.views import View
 from decimal import Decimal, InvalidOperation
 from django.template.loader import render_to_string
@@ -99,6 +100,8 @@ class MonedaList(LoginRequiredMixin, ListView):
             elif "inactivo" in estados:
                 queryset = queryset.filter(activo=False)
 
+        queryset = queryset.annotate(cantidad_clientes=Count('clientes', distinct=True))
+
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -153,6 +156,8 @@ class CondicionFiscalList(LoginRequiredMixin, ListView):
             elif "inactivo" in estados:
                 queryset = queryset.filter(activo=False)
 
+        queryset = queryset.annotate(cantidad_clientes=Count('clientes', distinct=True))
+
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -179,6 +184,51 @@ class CondicionFiscalDelete(LoginRequiredMixin,DeleteView):
      model=CondicionFiscal
      template_name="condicionFiscal/condicionfiscal_confirm_delete.html"
      success_url = reverse_lazy("mis_condiciones_fiscales")
+     
+     def delete(self, request, *args, **kwargs):
+         self.object = self.get_object()
+         try:
+             if self.object.clientes.exists():
+                 msg = "No se puede eliminar la condición fiscal porque está asociada a clientes."
+                 if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                     return JsonResponse({'success': False, 'error': msg})
+                 messages.error(request, msg)
+                 return redirect('mis_condiciones_fiscales')
+         except Exception:
+             pass
+         try:
+             response = super().delete(request, *args, **kwargs)
+         except ProtectedError:
+             msg = "No se puede eliminar la condición fiscal porque está asociada a clientes."
+             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                 return JsonResponse({'success': False, 'error': msg})
+             messages.error(request, msg)
+             return redirect('mis_condiciones_fiscales')
+         except Exception as e:
+             msg = f"Error al eliminar la condición fiscal: {e}"
+             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                 return JsonResponse({'success': False, 'error': msg})
+             messages.error(request, msg)
+             return redirect('mis_condiciones_fiscales')
+
+         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+             return JsonResponse({'success': True})
+
+         return response
+
+     def post(self, request, *args, **kwargs):
+         self.object = self.get_object()
+         try:
+             if self.object.clientes.exists():
+                 msg = "No se puede eliminar la condición fiscal porque está asociada a clientes."
+                 if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                     return JsonResponse({'success': False, 'error': msg})
+                 messages.error(request, msg)
+                 return redirect('mis_condiciones_fiscales')
+         except Exception:
+             pass
+
+         return super().post(request, *args, **kwargs)
 
 class CondicionFiscalDetail(DetailView):
      model=CondicionFiscal
@@ -209,6 +259,8 @@ class ClienteList(LoginRequiredMixin, ListView):
                 queryset = queryset.filter(activo=True)
             elif "inactivo" in estados:
                 queryset = queryset.filter(activo=False)
+
+        queryset = queryset.annotate(cantidad_ventas=Count('pedidos', distinct=True))
 
         return queryset
 
@@ -255,6 +307,52 @@ class ClienteDelete(LoginRequiredMixin,DeleteView):
      model=Cliente
      template_name="cliente/cliente_confirm_delete.html"
      success_url = reverse_lazy("mis_clientes")
+
+     def delete(self, request, *args, **kwargs):
+         self.object = self.get_object()
+         try:
+             if self.object.pedidos.exists():
+                 msg = "No se puede eliminar el cliente porque tiene ventas asociadas."
+                 if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                     return JsonResponse({'success': False, 'error': msg})
+                 messages.error(request, msg)
+                 return redirect('mis_clientes')
+         except Exception:
+             pass
+
+         try:
+             response = super().delete(request, *args, **kwargs)
+         except ProtectedError:
+             msg = "No se puede eliminar el cliente porque tiene ventas asociadas."
+             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                 return JsonResponse({'success': False, 'error': msg})
+             messages.error(request, msg)
+             return redirect('mis_clientes')
+         except Exception as e:
+             msg = f"Error al eliminar el cliente: {e}"
+             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                 return JsonResponse({'success': False, 'error': msg})
+             messages.error(request, msg)
+             return redirect('mis_clientes')
+
+         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+             return JsonResponse({'success': True})
+
+         return response
+
+     def post(self, request, *args, **kwargs):
+         self.object = self.get_object()
+         try:
+             if self.object.pedidos.exists():
+                 msg = "No se puede eliminar el cliente porque tiene ventas asociadas."
+                 if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                     return JsonResponse({'success': False, 'error': msg})
+                 messages.error(request, msg)
+                 return redirect('mis_clientes')
+         except Exception:
+             pass
+
+         return super().post(request, *args, **kwargs)
 
 class ClienteDetail(DetailView):
      model=Cliente
