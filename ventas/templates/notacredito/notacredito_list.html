@@ -62,6 +62,39 @@
           <a href="{% url 'notacredito_pdf' nota.id %}" class="btn btn-outline-dark mt-2 btn-sm" target="_blank" title="Descargar PDF">
             <i class="fa-solid fa-download" aria-hidden="true"></i>
           </a>
+          <button type="button" class="btn btn-outline-success mt-2 btn-sm" data-bs-toggle="modal" data-bs-target="#enviarNotaModal{{ nota.id }}" title="Enviar por mail">
+            <i class="fa fa-envelope" aria-hidden="true"></i>
+          </button>
+
+          <!-- Modal enviar nota individual -->
+          <div class="modal fade" id="enviarNotaModal{{ nota.id }}" tabindex="-1" aria-labelledby="enviarNotaModalLabel{{ nota.id }}" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="enviarNotaModalLabel{{ nota.id }}">Enviar nota de crédito #{{ nota.id }} por correo</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <form method="post" action="{% url 'notacredito_enviar_mail' nota.id %}" class="enviar-nota-form">
+                  {% csrf_token %}
+                  <div class="modal-body">
+                    <div class="mb-3">
+                      <label class="form-label">Dirección de correo destino</label>
+                      <input type="email" name="to_email" class="form-control" value="{{ nota.cliente.email }}" required>
+                    </div>
+                    <div class="text-center">
+                      <div class="spinner-border text-primary d-none" role="status"></div>
+                      <div class="mt-2 d-none enviar-status-text">Enviando nota, por favor espere...</div>
+                      <div class="mt-2 enviar-result text-start d-none"></div>
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Enviar</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
         </td>
         <td>{{ nota.id }}</td>
         <td>{% if nota.venta_original %}#{{ nota.venta_original.id }}{% else %}-{% endif %}</td>
@@ -214,6 +247,67 @@
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
+    (function(){
+      document.querySelectorAll('form.enviar-nota-form').forEach(function(form){
+        form.addEventListener('submit', function(ev){
+          ev.preventDefault();
+          const spinner = form.querySelector('.spinner-border');
+          const statusText = form.querySelector('.enviar-status-text');
+          const resultBox = form.querySelector('.enviar-result');
+          const submitBtn = form.querySelector('button[type="submit"]');
+
+          if (spinner) spinner.classList.remove('d-none');
+          if (statusText) statusText.classList.remove('d-none');
+          if (resultBox) { resultBox.classList.add('d-none'); resultBox.textContent = ''; }
+          if (submitBtn) submitBtn.disabled = true;
+
+          const action = form.getAttribute('action');
+          const formData = new FormData(form);
+
+          fetch(action, {
+            method: 'POST',
+            headers: {
+              'X-Requested-With': 'XMLHttpRequest',
+              'X-CSRFToken': form.querySelector('input[name="csrfmiddlewaretoken"]').value
+            },
+            body: formData
+          }).then(function(resp){
+            return resp.json().then(function(data){ return {status: resp.status, ok: resp.ok, data: data}; });
+          }).then(function(r){
+            if (spinner) spinner.classList.add('d-none');
+            if (statusText) statusText.classList.add('d-none');
+            if (submitBtn) submitBtn.disabled = false;
+
+            if (r.ok && r.data && r.data.ok) {
+              if (resultBox) {
+                resultBox.classList.remove('d-none');
+                resultBox.classList.remove('text-danger');
+                resultBox.classList.add('text-success');
+                resultBox.textContent = r.data.message || 'Enviado correctamente.';
+              }
+            } else {
+              const msg = (r.data && r.data.message) ? r.data.message : ('Error HTTP ' + r.status);
+              if (resultBox) {
+                resultBox.classList.remove('d-none');
+                resultBox.classList.remove('text-success');
+                resultBox.classList.add('text-danger');
+                resultBox.textContent = msg;
+              }
+            }
+          }).catch(function(err){
+            if (spinner) spinner.classList.add('d-none');
+            if (statusText) statusText.classList.add('d-none');
+            if (submitBtn) submitBtn.disabled = false;
+            if (resultBox) {
+              resultBox.classList.remove('d-none');
+              resultBox.classList.remove('text-success');
+              resultBox.classList.add('text-danger');
+              resultBox.textContent = 'Error de red al enviar el correo.';
+            }
+          });
+        });
+      });
+    })();
   (function(){
     const ajaxVentasUrl = "{% url 'ajax_ventas_por_cliente' %}";
     const createNotaUrl = "{% url 'notacredito_nueva' %}";
