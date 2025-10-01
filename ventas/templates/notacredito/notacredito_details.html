@@ -24,6 +24,9 @@
       <a href="{% url 'notacredito_pdf' nota.id %}" class="btn btn-outline-primary" target="_blank">
         <i class="fa-solid fa-download me-1"></i> Descargar PDF
       </a>
+      <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#enviarNotaModal">
+        <i class="fa fa-envelope me-1"></i> Enviar por mail
+      </button>
     </div>
   </div>
 
@@ -76,6 +79,48 @@
       <h5><span class="badge bg-dark">Total aproximado: ${{ nota.total|floatformat:2 }}</span></h5>
     </div>
   </div>
+  <!-- Modal enviar nota -->
+  <div class="modal fade" id="enviarNotaModal" tabindex="-1" aria-labelledby="enviarNotaModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="enviarNotaModalLabel">Enviar nota de crédito por correo</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <form id="enviarNotaForm" method="post" action="{% url 'notacredito_enviar_mail' nota.id %}">
+          {% csrf_token %}
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="to_email_nc" class="form-label">Dirección de correo destino</label>
+              <input type="email" class="form-control" id="to_email_nc" name="to_email" value="{{ nota.cliente.email }}" required>
+            </div>
+            <div id="spinnerContainerNota" class="d-none text-center">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Enviando...</span>
+              </div>
+              <div class="mt-2">Enviando nota, por favor espere...</div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" id="enviarNotaSubmit" class="btn btn-primary">Enviar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const form = document.getElementById('enviarNotaForm');
+      const spinner = document.getElementById('spinnerContainerNota');
+      const submit = document.getElementById('enviarNotaSubmit');
+      form.addEventListener('submit', function(e){
+        spinner.classList.remove('d-none');
+        submit.disabled = true;
+      });
+    })();
+  </script>
   
 </div>
 {% endblock %}
