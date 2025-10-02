@@ -20,6 +20,7 @@ import pdfkit
 from django.template.loader import render_to_string
 from django.views.decorators.http import require_POST
 from django.db.models import Count, F
+from django.db.models.deletion import ProtectedError
 from django.db import transaction
 import qrcode
 import io
@@ -28,6 +29,7 @@ from django.forms import inlineformset_factory
 from openpyxl import Workbook
 from openpyxl.styles import PatternFill, Font, Alignment
 from openpyxl.worksheet.table import Table, TableStyleInfo
+from openpyxl.utils.dataframe import dataframe_to_rows
 
 
 #______ Categorias CRUD
@@ -43,7 +45,9 @@ class CategoriaList(LoginRequiredMixin, ListView):
 
           if buscar:
               queryset = queryset.filter(nombre__icontains=buscar)
-          
+
+          queryset = queryset.annotate(cantidad_productos=Count('productos', distinct=True))
+
           return queryset
 
 class CategoriaCreate(LoginRequiredMixin,CreateView):
@@ -62,6 +66,28 @@ class CategoriaDelete(LoginRequiredMixin,DeleteView):
      model=Categoria
      template_name="categorias/categoria_confirm_delete.html"
      success_url = reverse_lazy("categorias")
+
+     def delete(self, request, *args, **kwargs):
+         self.object = self.get_object()
+         try:
+             response = super().delete(request, *args, **kwargs)
+         except ProtectedError:
+             msg = "No se puede eliminar la categoría porque tiene productos asociados."
+             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                 return JsonResponse({'success': False, 'error': msg})
+             messages.error(request, msg)
+             return redirect('categorias')
+         except Exception as e:
+             msg = f"Error al eliminar la categoría: {e}"
+             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                 return JsonResponse({'success': False, 'error': msg})
+             messages.error(request, msg)
+             return redirect('categorias')
+
+         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+             return JsonResponse({'success': True})
+
+         return response
 
 #______ Productos CRUD
 class ArticuloList(LoginRequiredMixin, ListView):
@@ -283,23 +309,28 @@ class CargaMasivaProductosView(View):
                     })
                     
                     raw_proveedor = fila.get('proveedores', None)
+                    proveedor_nombres = []
                     if pd.isna(raw_proveedor):
-                        proveedor_nombre = ''
+                        proveedor_nombres = []
                     else:
-                        proveedor_nombre = str(raw_proveedor).strip()
+                        proveedor_text = str(raw_proveedor).strip()
+                        if proveedor_text.lower() == 'nan' or proveedor_text == '':
+                            proveedor_nombres = []
+                        else:
+                            proveedor_nombres = [p.strip() for p in proveedor_text.split(',') if p.strip()]
 
-                    if proveedor_nombre.lower() == 'nan':
-                        proveedor_nombre = ''
+                    proveedor_objs = []
+                    proveedores_faltantes = []
+                    for p_name in proveedor_nombres:
+                        prov = Proveedor.objects.filter(nombreEmpresa__iexact=p_name).first()
+                        if prov:
+                            proveedor_objs.append(prov)
+                        else:
+                            proveedores_faltantes.append(p_name)
 
-                    if proveedor_nombre:
-                        proveedor_obj = Proveedor.objects.filter(nombreEmpresa__iexact=proveedor_nombre).first()
-                        if not proveedor_obj:
-                            proveedor_obj = None  
-                    else:
-                        proveedor_obj = None  
                     if creado:
-                        if proveedor_obj:
-                            producto.proveedores.set([proveedor_obj])
+                        if proveedor_objs:
+                            producto.proveedores.set(proveedor_objs)
                         else:
                             producto.proveedores.clear()
 
@@ -321,22 +352,24 @@ class CargaMasivaProductosView(View):
                             if getattr(producto, campo) != valor_nuevo:
                                 setattr(producto, campo, valor_nuevo)
                                 cambios = True
-                        if proveedor_nombre:
-                            if proveedor_obj:
-                                if not producto.proveedores.filter(pk=proveedor_obj.pk).exists():
-                                    producto.proveedores.add(proveedor_obj)
-                                    cambios = True
-                                    proveedores_actualizados.append(
-                                        f"{nombre} (proveedor agregado: {proveedor_obj.nombreEmpresa})"
-                                    )
-                            else:
-                                proveedores_no_existentes.append(f"{nombre} (proveedor: {proveedor_nombre})")
+                        if proveedor_nombres:
+                            if proveedor_objs:
+                                for prov in proveedor_objs:
+                                    if not producto.proveedores.filter(pk=prov.pk).exists():
+                                        producto.proveedores.add(prov)
+                                        cambios = True
+                                        proveedores_actualizados.append(
+                                            f"{nombre} (proveedor agregado: {prov.nombreEmpresa})"
+                                        )
+                            if proveedores_faltantes:
+                                for missing in proveedores_faltantes:
+                                    proveedores_no_existentes.append(f"{nombre} (proveedor: {missing})")
                         else:
                             if producto.proveedores.exists():
                                 producto.proveedores.clear()
                                 cambios = True
                                 proveedores_actualizados.append(f"{nombre} (proveedores eliminados)")
-
+                        
                         if cambios:
                             producto.fecha_ultimo_ingreso = now()
                             producto.save()
@@ -389,7 +422,6 @@ class CargaMasivaProductosView(View):
 
 class ExportarProductosExcelView(View):
     def get(self, request):
-        # Obtener queryset filtrado igual que ArticuloList
         queryset = Producto.objects.all().select_related('categoria')
         buscar = request.GET.get('buscar')
         categoria_ids = request.GET.getlist("categoria")
@@ -442,16 +474,27 @@ class ExportarProductosExcelView(View):
             cell.fill = PatternFill(start_color="FF8800", end_color="FF8800", fill_type="solid")
             cell.alignment = Alignment(horizontal="center")
         else:
-            # Escribir el DataFrame en la hoja
             for r_idx, row in enumerate(dataframe_to_rows(df, index=False, header=True), 1):
                 ws.append(row)
-            # Formato de encabezado: fondo naranja oscuro y letras blancas
             header_fill = PatternFill(start_color="FF8800", end_color="FF8800", fill_type="solid")
+            try:
+                if 'precio' in df.columns:
+                    precio_col_idx = list(df.columns).index('precio') + 1 
+                    for row_idx in range(2, ws.max_row + 1):
+                        cell = ws.cell(row=row_idx, column=precio_col_idx)
+                        try:
+                            if cell.value is not None:
+                                cell.value = float(cell.value)
+                                cell.number_format = '#,##0.00'
+                        except Exception:
+                            pass
+            except Exception:
+                pass
             header_font = Font(color="FFFFFF", bold=True)
             for cell in ws[1]:
                 cell.fill = header_fill
                 cell.font = header_font
-            # Formato de tabla
+
             tab = Table(displayName="ProductosTable", ref=f"A1:{chr(64+len(df.columns))}{ws.max_row}")
             style = TableStyleInfo(name="TableStyleMedium9", showFirstColumn=False,
                                   showLastColumn=False, showRowStripes=True, showColumnStripes=False)

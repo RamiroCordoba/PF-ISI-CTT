@@ -102,7 +102,37 @@
                 <i class="fa fa-edit fa-sm"></i>
               </a>
 
-              <!-- Botón eliminar -->
+              {% if condicion.cantidad_clientes > 0 %}
+              <button type="button"
+                      class="btn btn-outline-secondary mt-2"
+                      data-bs-toggle="modal"
+                      data-bs-target="#modalBloqueadoCondicion{{ condicion.id }}"
+                      style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;"
+                      title="No se puede eliminar">
+                <i class="fa fa-lock fa-sm text-warning"></i>
+              </button>
+
+              <div class="modal fade" id="modalBloqueadoCondicion{{ condicion.id }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <div class="modal-header bg-warning">
+                      <h5 class="modal-title">Eliminación bloqueada</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                      Esta condición fiscal no puede eliminarse porque tiene:
+                      <ul class="mb-0">
+                        <li>{{ condicion.cantidad_clientes }} clientes asociados</li>
+                      </ul>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {% else %}
               <button type="button"
                       class="btn btn-outline-danger mt-2"
                       data-bs-toggle="modal"
@@ -112,7 +142,6 @@
                 <i class="fa fa-trash fa-sm"></i>
               </button>
 
-              <!-- Modal eliminar -->
               <div class="modal fade" id="modalEliminarCondicion{{ condicion.id }}" tabindex="-1"
                    aria-labelledby="modalEliminarCondicionLabel{{ condicion.id }}" aria-hidden="true">
                 <div class="modal-dialog">
@@ -134,6 +163,7 @@
                   </div>
                 </div>
               </div>
+              {% endif %}
 
               <a href="{% url 'detalles_condicion_fiscal' condicion.id %}" class="btn btn-outline-primary mt-2"
                  style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">

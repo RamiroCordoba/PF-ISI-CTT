@@ -77,5 +77,51 @@
   <a href="{% url 'venta_pdf' venta.id %}" class="btn btn-outline-primary" target="_blank">
     Descargar PDF
 </a>
+  <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#enviarMailModal">
+    Enviar por mail
+  </button>
+
+  <!-- Modal -->
+  <div class="modal fade" id="enviarMailModal" tabindex="-1" aria-labelledby="enviarMailModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="enviarMailModalLabel">Enviar factura por correo</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <form id="enviarMailForm" method="post" action="{% url 'venta_enviar_mail' venta.id %}">
+          {% csrf_token %}
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="to_email" class="form-label">Dirección de correo destino</label>
+              <input type="email" class="form-control" id="to_email" name="to_email" value="{{ venta.cliente.email }}" required>
+            </div>
+            <div id="spinnerContainer" class="d-none text-center">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Enviando...</span>
+              </div>
+              <div class="mt-2">Enviando factura, por favor espere...</div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" id="enviarMailSubmit" class="btn btn-primary">Enviar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const form = document.getElementById('enviarMailForm');
+      const spinner = document.getElementById('spinnerContainer');
+      const submit = document.getElementById('enviarMailSubmit');
+      form.addEventListener('submit', function(e){
+        spinner.classList.remove('d-none');
+        submit.disabled = true;
+      });
+    })();
+  </script>
 </div>
 {% endblock %}

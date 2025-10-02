@@ -11,7 +11,8 @@ from .forms import *
 from django.contrib import messages
 from django.http import JsonResponse
 from productos.models import Producto,Proveedor
-from django.db.models import Q
+from django.db.models import Q, Count
+from django.db.models.deletion import ProtectedError
 from django.views import View
 from decimal import Decimal, InvalidOperation
 from django.template.loader import render_to_string
@@ -20,6 +21,11 @@ import qrcode
 import io
 from django.http import HttpResponse
 import logging
+from django.core.mail import EmailMessage
+from django.conf import settings
+from django.contrib.auth.decorators import login_required
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
 
 class IvaList(LoginRequiredMixin, ListView):
     model = Iva
@@ -99,6 +105,8 @@ class MonedaList(LoginRequiredMixin, ListView):
             elif "inactivo" in estados:
                 queryset = queryset.filter(activo=False)
 
+        queryset = queryset.annotate(cantidad_clientes=Count('clientes', distinct=True))
+
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -153,6 +161,8 @@ class CondicionFiscalList(LoginRequiredMixin, ListView):
             elif "inactivo" in estados:
                 queryset = queryset.filter(activo=False)
 
+        queryset = queryset.annotate(cantidad_clientes=Count('clientes', distinct=True))
+
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -179,6 +189,51 @@ class CondicionFiscalDelete(LoginRequiredMixin,DeleteView):
      model=CondicionFiscal
      template_name="condicionFiscal/condicionfiscal_confirm_delete.html"
      success_url = reverse_lazy("mis_condiciones_fiscales")
+     
+     def delete(self, request, *args, **kwargs):
+         self.object = self.get_object()
+         try:
+             if self.object.clientes.exists():
+                 msg = "No se puede eliminar la condición fiscal porque está asociada a clientes."
+                 if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                     return JsonResponse({'success': False, 'error': msg})
+                 messages.error(request, msg)
+                 return redirect('mis_condiciones_fiscales')
+         except Exception:
+             pass
+         try:
+             response = super().delete(request, *args, **kwargs)
+         except ProtectedError:
+             msg = "No se puede eliminar la condición fiscal porque está asociada a clientes."
+             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                 return JsonResponse({'success': False, 'error': msg})
+             messages.error(request, msg)
+             return redirect('mis_condiciones_fiscales')
+         except Exception as e:
+             msg = f"Error al eliminar la condición fiscal: {e}"
+             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                 return JsonResponse({'success': False, 'error': msg})
+             messages.error(request, msg)
+             return redirect('mis_condiciones_fiscales')
+
+         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+             return JsonResponse({'success': True})
+
+         return response
+
+     def post(self, request, *args, **kwargs):
+         self.object = self.get_object()
+         try:
+             if self.object.clientes.exists():
+                 msg = "No se puede eliminar la condición fiscal porque está asociada a clientes."
+                 if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                     return JsonResponse({'success': False, 'error': msg})
+                 messages.error(request, msg)
+                 return redirect('mis_condiciones_fiscales')
+         except Exception:
+             pass
+
+         return super().post(request, *args, **kwargs)
 
 class CondicionFiscalDetail(DetailView):
      model=CondicionFiscal
@@ -209,6 +264,8 @@ class ClienteList(LoginRequiredMixin, ListView):
                 queryset = queryset.filter(activo=True)
             elif "inactivo" in estados:
                 queryset = queryset.filter(activo=False)
+
+        queryset = queryset.annotate(cantidad_ventas=Count('pedidos', distinct=True))
 
         return queryset
 
@@ -255,6 +312,52 @@ class ClienteDelete(LoginRequiredMixin,DeleteView):
      model=Cliente
      template_name="cliente/cliente_confirm_delete.html"
      success_url = reverse_lazy("mis_clientes")
+
+     def delete(self, request, *args, **kwargs):
+         self.object = self.get_object()
+         try:
+             if self.object.pedidos.exists():
+                 msg = "No se puede eliminar el cliente porque tiene ventas asociadas."
+                 if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                     return JsonResponse({'success': False, 'error': msg})
+                 messages.error(request, msg)
+                 return redirect('mis_clientes')
+         except Exception:
+             pass
+
+         try:
+             response = super().delete(request, *args, **kwargs)
+         except ProtectedError:
+             msg = "No se puede eliminar el cliente porque tiene ventas asociadas."
+             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                 return JsonResponse({'success': False, 'error': msg})
+             messages.error(request, msg)
+             return redirect('mis_clientes')
+         except Exception as e:
+             msg = f"Error al eliminar el cliente: {e}"
+             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                 return JsonResponse({'success': False, 'error': msg})
+             messages.error(request, msg)
+             return redirect('mis_clientes')
+
+         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+             return JsonResponse({'success': True})
+
+         return response
+
+     def post(self, request, *args, **kwargs):
+         self.object = self.get_object()
+         try:
+             if self.object.pedidos.exists():
+                 msg = "No se puede eliminar el cliente porque tiene ventas asociadas."
+                 if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                     return JsonResponse({'success': False, 'error': msg})
+                 messages.error(request, msg)
+                 return redirect('mis_clientes')
+         except Exception:
+             pass
+
+         return super().post(request, *args, **kwargs)
 
 class ClienteDetail(DetailView):
      model=Cliente
@@ -908,6 +1011,115 @@ def venta_pdf_view(request, pk):
     return response
 
 
+def _generate_venta_pdf_bytes(venta, request):
+    items = []
+    total = Decimal('0')
+    for item in venta.items.all():
+        precio = Decimal(str(item.precio)) if item.precio is not None else Decimal('0')
+        cantidad = Decimal(str(item.cantidad)) if item.cantidad is not None else Decimal('0')
+        try:
+            descuento_pct = Decimal(str(item.descuento or 0))
+        except Exception:
+            descuento_pct = Decimal('0')
+        descuento_factor = Decimal('1') - (descuento_pct / Decimal('100'))
+        subtotal = (precio * cantidad * descuento_factor)
+        items.append({
+            'producto': item.producto.nombre if item.producto else '',
+            'cantidad': item.cantidad,
+            'precio': item.precio,
+            'descuento': item.descuento,
+            'subtotal': subtotal,
+        })
+        total += subtotal
+
+    try:
+        total = sum((i.get('subtotal', Decimal('0')) or Decimal('0')) for i in items)
+    except Exception:
+        pass
+
+    import base64
+    logo_path = r"productos\static\pdf\assets\img\logoFerre.png"
+    logo_base64 = ''
+    try:
+        with open(logo_path, "rb") as image_file:
+            logo_base64 = base64.b64encode(image_file.read()).decode("utf-8")
+    except Exception:
+        logo_base64 = ''
+
+    pdf_url = request.build_absolute_uri(f'/ventas/venta/venta/{venta.id}/pdf/')
+    qr = qrcode.QRCode(box_size=4, border=2)
+    qr.add_data(pdf_url)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+    buffer = io.BytesIO()
+    img.save(buffer, format="PNG")
+    qr_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
+
+    html = render_to_string('ventas/venta_pdf.html', {
+        'venta': venta,
+        'items': items,
+        'total': total,
+        'logo_base64': logo_base64,
+        'qr_base64': qr_base64,
+    })
+
+    path_wkhtmltopdf = r"C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe"
+    config = pdfkit.configuration(wkhtmltopdf=path_wkhtmltopdf)
+
+    pdf = pdfkit.from_string(html, False, configuration=config)
+
+    filename = f"venta_{venta.id}.pdf"
+    return pdf, filename
+
+
+@login_required
+def venta_enviar_mail(request, pk):
+    try:
+        venta = Venta.objects.get(pk=pk)
+    except Venta.DoesNotExist:
+        messages.error(request, "Venta no encontrada")
+        return redirect('mis_ventas')
+
+    cliente_email = getattr(getattr(venta, 'cliente', None), 'email', None)
+    to_email = request.POST.get('to_email', '').strip() if request.method == 'POST' else ''
+    destino = to_email or cliente_email
+    if not destino:
+        messages.error(request, "No se especificó una dirección de correo destino.")
+        return redirect('detalles_venta', pk=venta.id)
+
+    try:
+        validate_email(destino)
+    except ValidationError:
+        messages.error(request, "La dirección de correo destino no es válida.")
+        return redirect('detalles_venta', pk=venta.id)
+
+    try:
+        pdf_bytes, filename = _generate_venta_pdf_bytes(venta, request)
+    except Exception as e:
+        messages.error(request, f"Error generando PDF: {e}")
+        return redirect('detalles_venta', pk=venta.id)
+
+    subject = f"Factura - Venta #{venta.id}"
+    body = f"Adjuntamos la factura correspondiente a la venta #{venta.id}.\n\nSaludos,"
+    from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', None) or 'no-reply@localhost'
+
+    email = EmailMessage(subject, body, from_email, [destino])
+    email.attach(filename, pdf_bytes, 'application/pdf')
+    try:
+        email.send(fail_silently=False)
+        success_msg = "Factura enviada por correo correctamente."
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'ok': True, 'message': success_msg})
+        messages.success(request, success_msg)
+    except Exception as e:
+        err = f"Error enviando el correo: {e}"
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'ok': False, 'message': err}, status=500)
+        messages.error(request, err)
+
+    return redirect('detalles_venta', pk=venta.id)
+
+
 def nota_credito_pdf_view(request, pk):
     try:
         from .models import NotaCredito
@@ -970,6 +1182,116 @@ def nota_credito_pdf_view(request, pk):
     filename = f"nota_credito_{nota.id}.pdf"
     response['Content-Disposition'] = f'inline; filename="{filename}"'
     return response
+
+
+def _generate_nota_pdf_bytes(nota, request):
+    items = []
+    total = Decimal('0')
+    for item in nota.items.all():
+        precio = Decimal(str(item.precio)) if item.precio is not None else Decimal('0')
+        cantidad = Decimal(str(item.cantidad)) if item.cantidad is not None else Decimal('0')
+        try:
+            descuento_pct = Decimal(str(item.descuento or 0))
+        except Exception:
+            descuento_pct = Decimal('0')
+        descuento_factor = Decimal('1') - (descuento_pct / Decimal('100'))
+        subtotal = (precio * cantidad * descuento_factor)
+        items.append({
+            'producto': item.producto.nombre if item.producto else '',
+            'cantidad': item.cantidad,
+            'precio': item.precio,
+            'descuento': item.descuento,
+            'subtotal': subtotal,
+        })
+        total += subtotal
+
+    try:
+        total = sum((i.get('subtotal', Decimal('0')) or Decimal('0')) for i in items)
+    except Exception:
+        pass
+
+    import base64
+    logo_path = r"productos\static\pdf\assets\img\logoFerre.png"
+    logo_base64 = ''
+    try:
+        with open(logo_path, "rb") as image_file:
+            logo_base64 = base64.b64encode(image_file.read()).decode("utf-8")
+    except Exception:
+        logo_base64 = ''
+
+    pdf_url = request.build_absolute_uri(f'/ventas/notacredito/{nota.id}/pdf/')
+    qr = qrcode.QRCode(box_size=4, border=2)
+    qr.add_data(pdf_url)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+    buffer = io.BytesIO()
+    img.save(buffer, format="PNG")
+    qr_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
+
+    html = render_to_string('notacredito/nota_credito_pdf.html', {
+        'nota': nota,
+        'items': items,
+        'total': total,
+        'logo_base64': logo_base64,
+        'qr_base64': qr_base64,
+    })
+
+    path_wkhtmltopdf = r"C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe"
+    config = pdfkit.configuration(wkhtmltopdf=path_wkhtmltopdf)
+
+    pdf = pdfkit.from_string(html, False, configuration=config)
+
+    filename = f"nota_credito_{nota.id}.pdf"
+    return pdf, filename
+
+
+@login_required
+def nota_enviar_mail(request, pk):
+    try:
+        from .models import NotaCredito
+        nota = NotaCredito.objects.get(pk=pk)
+    except Exception:
+        messages.error(request, "Nota de crédito no encontrada")
+        return redirect('mis_notascredito')
+
+    cliente_email = getattr(getattr(nota, 'cliente', None), 'email', None)
+    to_email = request.POST.get('to_email', '').strip() if request.method == 'POST' else ''
+    destino = to_email or cliente_email
+    if not destino:
+        messages.error(request, "No se especificó una dirección de correo destino.")
+        return redirect('detalles_notacredito', pk=nota.id)
+
+    try:
+        validate_email(destino)
+    except ValidationError:
+        messages.error(request, "La dirección de correo destino no es válida.")
+        return redirect('detalles_notacredito', pk=nota.id)
+
+    try:
+        pdf_bytes, filename = _generate_nota_pdf_bytes(nota, request)
+    except Exception as e:
+        messages.error(request, f"Error generando PDF: {e}")
+        return redirect('detalles_notacredito', pk=nota.id)
+
+    subject = f"Nota de crédito - #{nota.id}"
+    body = f"Adjuntamos la nota de crédito #{nota.id}.\n\nSaludos,"
+    from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', None) or 'no-reply@localhost'
+
+    email = EmailMessage(subject, body, from_email, [destino])
+    email.attach(filename, pdf_bytes, 'application/pdf')
+    try:
+        email.send(fail_silently=False)
+        success_msg = "Nota de crédito enviada por correo correctamente."
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'ok': True, 'message': success_msg})
+        messages.success(request, success_msg)
+    except Exception as e:
+        err = f"Error enviando el correo: {e}"
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'ok': False, 'message': err}, status=500)
+        messages.error(request, err)
+
+    return redirect('detalles_notacredito', pk=nota.id)
 
 
 

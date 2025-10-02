@@ -130,6 +130,38 @@
             <a href="{% url 'detalles_venta' venta.id %}" class="btn btn-outline-primary mt-2 btn-sm">
               <i class="fa-solid fa-eye" title="Ver"></i>
             </a>
+            <a href="#" class="btn btn-outline-success mt-2 btn-sm" data-bs-toggle="modal" data-bs-target="#enviarVentaModal{{ venta.id }}" title="Enviar por mail">
+              <i class="fa fa-envelope"></i>
+            </a>
+            <!-- Modal enviar venta individual -->
+            <div class="modal fade" id="enviarVentaModal{{ venta.id }}" tabindex="-1" aria-labelledby="enviarVentaModalLabel{{ venta.id }}" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="enviarVentaModalLabel{{ venta.id }}">Enviar factura #{{ venta.id }} por correo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                  </div>
+                  <form method="post" action="{% url 'venta_enviar_mail' venta.id %}" class="enviar-mail-form">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                      <div class="mb-3">
+                        <label class="form-label">Dirección de correo destino</label>
+                        <input type="email" name="to_email" class="form-control" value="{{ venta.cliente.email }}" required>
+                      </div>
+                      <div class="text-center">
+                        <div class="spinner-border text-primary d-none" role="status"></div>
+                        <div class="mt-2 d-none enviar-status-text">Enviando factura, por favor espere...</div>
+                        <div class="mt-2 enviar-result text-start d-none"></div>
+                      </div>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                      <button type="submit" class="btn btn-primary">Enviar</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
             <a href="{% url 'venta_pdf' venta.id %}" class="btn btn-outline-dark mt-2 btn-sm" target="_blank" title="Descargar PDF">
               <i class="fa-solid fa-download"></i>
             </a>
@@ -181,11 +213,73 @@
 </div>
 
 <script>
-  document.querySelector("form").addEventListener("submit", function() {
-    document.querySelectorAll(".dropdown-menu").forEach(menu => {
-      menu.classList.add("show");
+  (function(){
+    const filterForm = document.querySelector('form[method="get"]');
+    if (filterForm) {
+      filterForm.addEventListener('submit', function() {
+        document.querySelectorAll('.dropdown-menu').forEach(menu => menu.classList.add('show'));
+      });
+    }
+    document.querySelectorAll('form.enviar-mail-form').forEach(function(form){
+      form.addEventListener('submit', function(ev){
+        ev.preventDefault();
+        const spinner = form.querySelector('.spinner-border');
+        const statusText = form.querySelector('.enviar-status-text');
+        const resultBox = form.querySelector('.enviar-result');
+        const submitBtn = form.querySelector('button[type="submit"]');
+
+        if (spinner) spinner.classList.remove('d-none');
+        if (statusText) statusText.classList.remove('d-none');
+        if (resultBox) { resultBox.classList.add('d-none'); resultBox.textContent = ''; }
+        if (submitBtn) submitBtn.disabled = true;
+
+        const action = form.getAttribute('action');
+        const formData = new FormData(form);
+
+        fetch(action, {
+          method: 'POST',
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': form.querySelector('input[name="csrfmiddlewaretoken"]').value
+          },
+          body: formData
+        }).then(function(resp){
+          return resp.json().then(function(data){ return {status: resp.status, ok: resp.ok, data: data}; });
+        }).then(function(r){
+          if (spinner) spinner.classList.add('d-none');
+          if (statusText) statusText.classList.add('d-none');
+          if (submitBtn) submitBtn.disabled = false;
+
+          if (r.ok && r.data && r.data.ok) {
+            if (resultBox) {
+              resultBox.classList.remove('d-none');
+              resultBox.classList.remove('text-danger');
+              resultBox.classList.add('text-success');
+              resultBox.textContent = r.data.message || 'Enviado correctamente.';
+            }
+
+          } else {
+            const msg = (r.data && r.data.message) ? r.data.message : ('Error HTTP ' + r.status);
+            if (resultBox) {
+              resultBox.classList.remove('d-none');
+              resultBox.classList.remove('text-success');
+              resultBox.classList.add('text-danger');
+              resultBox.textContent = msg;
+            }
+          }
+        }).catch(function(err){
+          if (spinner) spinner.classList.add('d-none');
+          if (statusText) statusText.classList.add('d-none');
+          if (submitBtn) submitBtn.disabled = false;
+          if (resultBox) {
+            resultBox.classList.remove('d-none');
+            resultBox.classList.remove('text-success');
+            resultBox.classList.add('text-danger');
+            resultBox.textContent = 'Error de red al enviar el correo.';
+          }
+        });
+      });
     });
-  });
+  })();
 </script>
 {% endblock %}
-``
