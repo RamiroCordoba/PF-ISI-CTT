@@ -24,7 +24,7 @@
   <body class="sb-nav-fixed">
     <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
       <!-- Navbar Brand-->
-      <a class="navbar-brand ps-3" href="{% url 'dashboard' %}">
+      <a class="navbar-brand ps-3" id="navbarBrand" href="{% url 'dashboard' %}">
         <i class="fas fa-tools" style="margin-right:8px;"></i>
         Ferreteria Santa Rita
       </a>
@@ -73,7 +73,8 @@
           </li>
         </ul>
       </div>
-    </nav>
+
+  </nav>
 
     <div id="layoutSidenav">
       <div id="layoutSidenav_nav">
@@ -916,6 +917,19 @@
           });
       }
     });
+    </script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const body = document.body;
+        const navbarBrand = document.getElementById('navbarBrand');
+        function updateNavbarBrand() {
+          const isMinimized = body.classList.contains('sb-sidenav-toggled');
+          navbarBrand.style.display = isMinimized ? 'none' : '';
+        }
+        updateNavbarBrand();
+        const observer = new MutationObserver(updateNavbarBrand);
+        observer.observe(body, { attributes: true, attributeFilter: ['class'] });
+      });
     </script>
   </body>
 </html>
