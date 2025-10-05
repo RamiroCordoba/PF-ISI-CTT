@@ -727,65 +727,168 @@
               }
             </style>
             <div class="modal-modern-bg" style="padding:0;margin:0;">
-              <div class="perfil-modern-card">
-                <div class="perfil-img-circulo">
-                  {% if user.is_superuser %}
-                    <img src="{% static 'principal/assets/img/superadmin.png' %}" alt="Superadmin" />
-                  {% elif user.is_staff %}
-                    <img src="{% static 'principal/assets/img/administrador.png' %}" alt="Administrador" />
-                  {% else %}
-                    <img src="{% static 'principal/assets/img/vendedor.png' %}" alt="Vendedor" />
-                  {% endif %}
-                </div>
-                <div class="perfil-btns-top" id="perfilBtnsTop">
-                  <button type="button" class="btn perfil-btn-editar" id="btnEditarPerfil">
-                    <i class="fa fa-edit me-1"></i> Editar
-                  </button>
-                  <a href="{% url 'usuarios:cambiar_contrasena' %}" class="btn perfil-btn-cambiar">
-                    <i class="fa fa-key me-1"></i> Cambiar contraseña
-                  </a>
-                </div>
-                <form id="perfilForm" autocomplete="off">
-                  <div id="perfilCamposLectura">
-                    <label class="perfil-form-label">Nombre</label>
-                    <input type="text" class="perfil-form-input" name="first_name" id="perfilNombre" value="{{ user.first_name }}" disabled>
-                    <label class="perfil-form-label">Apellido</label>
-                    <input type="text" class="perfil-form-input" name="last_name" id="perfilApellido" value="{{ user.last_name }}" disabled>
-                    <label class="perfil-form-label">Usuario</label>
-                    <input type="text" class="perfil-form-input" name="username" id="perfilUsuario" value="{{ user.username }}" disabled>
-                    <label class="perfil-form-label">Email</label>
-                    <input type="email" class="perfil-form-input" name="email" id="perfilEmail" value="{{ user.email }}" disabled>
-                    <label class="perfil-form-label">Rol/es</label>
-                    <input type="text" class="perfil-form-input" disabled
-                      value="{% if user.is_superuser %}👑 Superadmin{% endif %}{% if user.is_superuser and user.is_staff %}, {% endif %}{% if user.is_staff %}Administrador{% endif %}{% if not user.is_superuser and not user.is_staff %}Vendedor{% endif %}">
-                    <div class="text-center my-3">
-                      {% if user.is_active %}
-                        <span class="badge bg-success px-3 py-2">
-                          <i class="fa fa-check-circle me-1"></i> Activo
-                        </span>
-                      {% else %}
-                        <span class="badge bg-danger px-3 py-2">
-                          <i class="fa fa-times-circle me-1"></i> Inactivo
-                        </span>
-                      {% endif %}
+                <div class="perfil-modern-card">
+                  <div class="perfil-img-circulo">
+                    {% if user.is_superuser %}
+                      <img src="{% static 'principal/assets/img/superadmin.png' %}" alt="Superadmin" />
+                    {% elif user.is_staff %}
+                      <img src="{% static 'principal/assets/img/administrador.png' %}" alt="Administrador" />
+                    {% else %}
+                      <img src="{% static 'principal/assets/img/vendedor.png' %}" alt="Vendedor" />
+                    {% endif %}
+                  </div>
+                  <div class="perfil-btns-top" id="perfilBtnsTop">
+                    <button type="button" class="btn perfil-btn-editar" id="btnEditarPerfil">
+                      <i class="fa fa-edit me-1"></i> Editar
+                    </button>
+                    <button type="button" class="btn perfil-btn-cambiar" id="btnCambiarPass">
+                      <i class="fa fa-key me-1"></i> Cambiar contraseña
+                    </button>
+                  </div>
+                  <form id="perfilForm" autocomplete="off">
+                    <div id="perfilCamposLectura">
+                      <label class="perfil-form-label">Nombre</label>
+                      <input type="text" class="perfil-form-input" name="first_name" id="perfilNombre" value="{{ user.first_name }}" disabled>
+                      <label class="perfil-form-label">Apellido</label>
+                      <input type="text" class="perfil-form-input" name="last_name" id="perfilApellido" value="{{ user.last_name }}" disabled>
+                      <label class="perfil-form-label">Usuario</label>
+                      <input type="text" class="perfil-form-input" name="username" id="perfilUsuario" value="{{ user.username }}" disabled>
+                      <label class="perfil-form-label">Email</label>
+                      <input type="email" class="perfil-form-input" name="email" id="perfilEmail" value="{{ user.email }}" disabled>
+                      <label class="perfil-form-label">Rol/es</label>
+                      <input type="text" class="perfil-form-input" disabled
+                        value="{% if user.is_superuser %}👑 Superadmin{% endif %}{% if user.is_superuser and user.is_staff %}, {% endif %}{% if user.is_staff %}Administrador{% endif %}{% if not user.is_superuser and not user.is_staff %}Vendedor{% endif %}">
+                      <div class="text-center my-3">
+                        {% if user.is_active %}
+                          <span class="badge bg-success px-3 py-2">
+                            <i class="fa fa-check-circle me-1"></i> Activo
+                          </span>
+                        {% else %}
+                          <span class="badge bg-danger px-3 py-2">
+                            <i class="fa fa-times-circle me-1"></i> Inactivo
+                          </span>
+                        {% endif %}
+                      </div>
                     </div>
-                  </div>
-                  <div id="perfilCamposEdicion" style="display:none;">
-                    <label class="perfil-form-label">Nombre</label>
-                    <input type="text" class="perfil-form-input" name="first_name" id="perfilNombreEdit" value="{{ user.first_name }}" disabled>
-                    <label class="perfil-form-label">Apellido</label>
-                    <input type="text" class="perfil-form-input" name="last_name" id="perfilApellidoEdit" value="{{ user.last_name }}" disabled>
-                  </div>
-                  <div class="perfil-btns-top" id="perfilBtnsGuardar" style="display:none;">
-                    <button type="button" class="btn btn-success" id="btnGuardarPerfil">
-                      <i class="fa fa-save me-1"></i> Guardar
-                    </button>
-                    <button type="button" class="btn btn-secondary" id="btnCancelarPerfil">
-                      Cancelar
-                    </button>
-                  </div>
-                  <div id="perfilMsg" class="mt-2"></div>
-                </form>
+                    <div id="perfilCamposEdicion" style="display:none;">
+                      <label class="perfil-form-label">Nombre</label>
+                      <input type="text" class="perfil-form-input" name="first_name" id="perfilNombreEdit" value="{{ user.first_name }}" disabled>
+                      <label class="perfil-form-label">Apellido</label>
+                      <input type="text" class="perfil-form-input" name="last_name" id="perfilApellidoEdit" value="{{ user.last_name }}" disabled>
+                    </div>
+                    <div class="perfil-btns-top" id="perfilBtnsGuardar" style="display:none;">
+                      <button type="button" class="btn btn-success" id="btnGuardarPerfil">
+                        <i class="fa fa-save me-1"></i> Guardar
+                      </button>
+                      <button type="button" class="btn btn-secondary" id="btnCancelarPerfil">
+                        Cancelar
+                      </button>
+                    </div>
+                    <div id="perfilMsg" class="mt-2"></div>
+                  </form>
+                  <!-- Formulario de cambio de contraseña -->
+                  <form id="formCambioPass" autocomplete="off" style="display:none;">
+                    <label class="perfil-form-label">Contraseña actual</label>
+                    <input type="password" class="perfil-form-input" name="old_password" id="passActual" autocomplete="current-password">
+                    <label class="perfil-form-label">Nueva contraseña</label>
+                    <input type="password" class="perfil-form-input" name="new_password1" id="passNueva" autocomplete="new-password">
+                    <label class="perfil-form-label">Confirmar nueva contraseña</label>
+                    <input type="password" class="perfil-form-input" name="new_password2" id="passNueva2" autocomplete="new-password">
+                    <div class="perfil-btns-top" id="perfilBtnsPass">
+                      <button type="button" class="btn btn-success" id="btnGuardarPass">
+                        <i class="fa fa-save me-1"></i> Guardar
+                      </button>
+                      <button type="button" class="btn btn-secondary" id="btnCancelarPass">
+                        Cancelar
+                      </button>
+                    </div>
+                    <div id="passMsg" class="mt-2"></div>
+                  </form>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var btnCambiarPass = document.getElementById('btnCambiarPass');
+      var formCambioPass = document.getElementById('formCambioPass');
+      var btnsPass = document.getElementById('perfilBtnsPass');
+      var btnGuardarPass = document.getElementById('btnGuardarPass');
+      var btnCancelarPass = document.getElementById('btnCancelarPass');
+      var passMsg = document.getElementById('passMsg');
+      var passActual = document.getElementById('passActual');
+      var passNueva = document.getElementById('passNueva');
+      var passNueva2 = document.getElementById('passNueva2');
+
+      if(btnCambiarPass) {
+        btnCambiarPass.addEventListener('click', function() {
+          divLectura.style.display = 'none';
+          divEdicion.style.display = 'none';
+          formCambioPass.style.display = 'block';
+          btnsTop.style.display = 'none';
+          btnsGuardar.style.display = 'none';
+          passMsg.textContent = '';
+          passMsg.innerHTML = '';
+          msg.textContent = '';
+          msg.innerHTML = '';
+          passActual.value = '';
+          passNueva.value = '';
+          passNueva2.value = '';
+        });
+      }
+      if(btnCancelarPass) {
+        btnCancelarPass.addEventListener('click', function() {
+          formCambioPass.style.display = 'none';
+          divLectura.style.display = 'block';
+          btnsTop.style.display = 'flex';
+          passMsg.textContent = '';
+          passMsg.innerHTML = '';
+        });
+      }
+      if(btnGuardarPass) {
+        btnGuardarPass.addEventListener('click', function() {
+          passMsg.innerHTML = '<span class="text-info">Guardando...</span>';
+          var data = {
+            old_password: passActual.value,
+            new_password1: passNueva.value,
+            new_password2: passNueva2.value,
+            csrfmiddlewaretoken: '{{ csrf_token }}'
+          };
+          fetch('{% url 'usuarios:cambiar_contrasena_ajax' %}', {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams(data)
+          })
+          .then(response => response.json())
+          .then(json => {
+            if(json.success) {
+              passMsg.innerHTML = '<span class="text-success">Contraseña cambiada correctamente.</span>';
+              formCambioPass.style.display = 'none';
+              divLectura.style.display = 'block';
+              btnsTop.style.display = 'flex';
+            } else {
+              let msgError = '';
+              if (typeof json.error === 'object') {
+                for (const campo in json.error) {
+                  let errores = json.error[campo];
+                  if (Array.isArray(errores)) {
+                    errores.forEach(function(err) {
+                      msgError += `<div>${err}</div>`;
+                    });
+                  } else {
+                    msgError += `<div>${errores}</div>`;
+                  }
+                }
+              } else {
+                msgError = json.error || 'Error al cambiar la contraseña.';
+              }
+              passMsg.innerHTML = '<span class="text-danger">' + msgError + '</span>';
+            }
+          })
+          .catch(() => {
+            passMsg.innerHTML = '<span class="text-danger">Error de red.</span>';
+          });
+        });
+      }
+    });
+</script>
+                </div>
               </div>
             </div>
           </div>
@@ -794,33 +897,10 @@
     </div>
 
     <script>
-    // Forzar apertura del modal por JS si falla el data-bs-toggle
+    // Unificar lógica de edición de perfil y cambio de contraseña en el modal
     document.addEventListener('DOMContentLoaded', function() {
+      // Variables globales del modal
       var btn = document.getElementById('btnMiPerfil');
-      if (btn) {
-        btn.addEventListener('click', function(e) {
-          // Siempre mostrar modo solo lectura al abrir el modal
-          divLectura.style.display = 'block';
-          divEdicion.style.display = 'none';
-          btnsTop.style.display = 'flex';
-          btnsGuardar.style.display = 'none';
-          msg.textContent = '';
-          msg.innerHTML = '';
-          // Restaurar valores de solo lectura y edición
-          camposLectura[0].value = "{{ user.first_name|escapejs }}";
-          camposLectura[1].value = "{{ user.last_name|escapejs }}";
-          camposEdicion[0].value = "{{ user.first_name|escapejs }}";
-          camposEdicion[1].value = "{{ user.last_name|escapejs }}";
-          camposEdicion.forEach(function(campo) { campo.disabled = true; });
-          var modal = document.getElementById('modalMiPerfil');
-          if (modal) {
-            var modalInstance = bootstrap.Modal.getOrCreateInstance(modal);
-            modalInstance.show();
-          }
-        });
-      }
-
-      // Edición de perfil en el modal
       var btnEditar = document.getElementById('btnEditarPerfil');
       var btnsGuardar = document.getElementById('perfilBtnsGuardar');
       var btnsTop = document.getElementById('perfilBtnsTop');
@@ -836,12 +916,54 @@
       ];
       var divLectura = document.getElementById('perfilCamposLectura');
       var divEdicion = document.getElementById('perfilCamposEdicion');
+      // Cambio de contraseña
+      var btnCambiarPass = document.getElementById('btnCambiarPass');
+      var formCambioPass = document.getElementById('formCambioPass');
+      var btnsPass = document.getElementById('perfilBtnsPass');
+      var btnGuardarPass = document.getElementById('btnGuardarPass');
+      var btnCancelarPass = document.getElementById('btnCancelarPass');
+      var passMsg = document.getElementById('passMsg');
+      var passActual = document.getElementById('passActual');
+      var passNueva = document.getElementById('passNueva');
+      var passNueva2 = document.getElementById('passNueva2');
+
+      // Abrir modal: siempre modo solo lectura
+      if (btn) {
+        btn.addEventListener('click', function(e) {
+          divLectura.style.display = 'block';
+          divEdicion.style.display = 'none';
+          formCambioPass.style.display = 'none';
+          btnsTop.style.display = 'flex';
+          btnsGuardar.style.display = 'none';
+          msg.textContent = '';
+          msg.innerHTML = '';
+          passMsg.textContent = '';
+          passMsg.innerHTML = '';
+          // Restaurar valores de solo lectura y edición
+          camposLectura[0].value = "{{ user.first_name|escapejs }}";
+          camposLectura[1].value = "{{ user.last_name|escapejs }}";
+          camposEdicion[0].value = "{{ user.first_name|escapejs }}";
+          camposEdicion[1].value = "{{ user.last_name|escapejs }}";
+          camposEdicion.forEach(function(campo) { campo.disabled = true; });
+          passActual.value = '';
+          passNueva.value = '';
+          passNueva2.value = '';
+          var modal = document.getElementById('modalMiPerfil');
+          if (modal) {
+            var modalInstance = bootstrap.Modal.getOrCreateInstance(modal);
+            modalInstance.show();
+          }
+        });
+      }
+
+      // Edición de perfil en el modal
       if(btnEditar) {
         btnEditar.addEventListener('click', function() {
           msg.textContent = '';
           msg.innerHTML = '';
           divLectura.style.display = 'none';
           divEdicion.style.display = 'block';
+          formCambioPass.style.display = 'none';
           camposEdicion.forEach(function(campo) { campo.disabled = false; });
           btnsTop.style.display = 'none';
           btnsGuardar.style.display = 'flex';
@@ -855,6 +977,7 @@
           camposEdicion.forEach(function(campo) { campo.disabled = true; });
           divEdicion.style.display = 'none';
           divLectura.style.display = 'block';
+          formCambioPass.style.display = 'none';
           btnsGuardar.style.display = 'none';
           btnsTop.style.display = 'flex';
           msg.innerHTML = '';
@@ -878,6 +1001,7 @@
           .then(json => {
             if(json.success) {
               msg.innerHTML = '<span class="text-success">Perfil actualizado correctamente.</span>';
+              setTimeout(function() { msg.innerHTML = ''; }, 1000);
               camposEdicion.forEach(function(campo) { campo.disabled = true; });
               divEdicion.style.display = 'none';
               divLectura.style.display = 'block';
@@ -888,10 +1012,99 @@
               btnsTop.style.display = 'flex';
             } else {
               msg.innerHTML = '<span class="text-danger">' + (json.error || 'Error al actualizar.') + '</span>';
+              setTimeout(function() { msg.innerHTML = ''; }, 1000);
             }
           })
           .catch(() => {
             msg.innerHTML = '<span class="text-danger">Error de red.</span>';
+          });
+        });
+      }
+
+      // Cambio de contraseña en el modal
+      if(btnCambiarPass) {
+        btnCambiarPass.addEventListener('click', function() {
+          divLectura.style.display = 'none';
+          divEdicion.style.display = 'none';
+          formCambioPass.style.display = 'block';
+          btnsTop.style.display = 'none';
+          btnsGuardar.style.display = 'none';
+          passMsg.textContent = '';
+          passMsg.innerHTML = '';
+          passActual.value = '';
+          passNueva.value = '';
+          passNueva2.value = '';
+        });
+      }
+      if(btnCancelarPass) {
+        btnCancelarPass.addEventListener('click', function() {
+          formCambioPass.style.display = 'none';
+          divLectura.style.display = 'block';
+          btnsTop.style.display = 'flex';
+          passMsg.textContent = '';
+          passMsg.innerHTML = '';
+        });
+      }
+      if(btnGuardarPass) {
+        btnGuardarPass.addEventListener('click', function() {
+          passMsg.innerHTML = '<span class="text-info">Guardando...</span>';
+          var data = {
+            old_password: passActual.value,
+            new_password1: passNueva.value,
+            new_password2: passNueva2.value,
+            csrfmiddlewaretoken: '{{ csrf_token }}'
+          };
+          fetch('{% url 'usuarios:cambiar_contrasena_ajax' %}', {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams(data)
+          })
+          .then(response => response.json())
+          .then(json => {
+            if(json.success) {
+              passMsg.innerHTML = '<span class="text-success">Contraseña cambiada correctamente.</span>';
+              setTimeout(function() { passMsg.innerHTML = ''; }, 1000);
+              formCambioPass.style.display = 'none';
+              divLectura.style.display = 'block';
+              btnsTop.style.display = 'flex';
+            } else {
+              let msgError = '';
+              let esObligatorio = false;
+              if (typeof json.error === 'object') {
+                for (const campo in json.error) {
+                  let errores = json.error[campo];
+                  if (Array.isArray(errores)) {
+                    errores.forEach(function(err) {
+                      msgError += `<div>${err}</div>`;
+                      if (err === 'Este campo es obligatorio.') esObligatorio = true;
+                    });
+                  } else {
+                    msgError += `<div>${errores}</div>`;
+                    if (errores === 'Este campo es obligatorio.') esObligatorio = true;
+                  }
+                }
+              } else {
+                msgError = json.error || 'Error al cambiar la contraseña.';
+              }
+              passMsg.innerHTML = '<span class="text-danger">' + msgError + '</span>';
+              if (!esObligatorio) {
+                setTimeout(function() { passMsg.innerHTML = ''; }, 1000);
+              } else {
+                // Limpiar mensaje solo si el usuario escribe en algún campo
+                var limpiarMsgObligatorio = function() {
+                  passMsg.innerHTML = '';
+                  passActual.removeEventListener('input', limpiarMsgObligatorio);
+                  passNueva.removeEventListener('input', limpiarMsgObligatorio);
+                  passNueva2.removeEventListener('input', limpiarMsgObligatorio);
+                };
+                passActual.addEventListener('input', limpiarMsgObligatorio);
+                passNueva.addEventListener('input', limpiarMsgObligatorio);
+                passNueva2.addEventListener('input', limpiarMsgObligatorio);
+              }
+            }
+          })
+          .catch(() => {
+            passMsg.innerHTML = '<span class="text-danger">Error de red.</span>';
           });
         });
       }
