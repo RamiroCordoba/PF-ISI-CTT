@@ -112,6 +112,7 @@
                 </div>
                 Inicio
               </a>
+              {% if user.is_superuser or user.is_staff %}
               <a
                 class="nav-link collapsed"
                 href="#"
@@ -145,6 +146,7 @@
                   >
                 </nav>
               </div>
+              {% endif %}
               <a
                 class="nav-link collapsed"
                 href="#"
