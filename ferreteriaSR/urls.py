@@ -14,3 +14,5 @@ urlpatterns = [
     #path('ventas/', include('ventas.urls')),
     #path('informes/', include('informes.urls')),
 ]
+
+handler403 = 'ferreteriaSR.views.custom_permission_denied_view'

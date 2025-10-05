@@ -185,3 +185,6 @@ PASSMAIL = os.getenv("PASS_MAIL")
 EMAIL_HOST_USER = 'proyectoferreteriasr@gmail.com'
 EMAIL_HOST_PASSWORD = PASSMAIL         
 DEFAULT_FROM_EMAIL = 'Ferretería Santa Rita <proyectoferreteriasr@gmail.com>'
+
+# Custom handler for 403 Forbidden
+HANDLER403 = 'ferreteriaSR.views.custom_permission_denied_view'

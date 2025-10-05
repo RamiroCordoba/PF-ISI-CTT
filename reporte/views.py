@@ -31,10 +31,22 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+from django.contrib.auth.decorators import login_required
+
+@login_required
 def dashboard_view(request):
+    es_vendedor = request.user.groups.filter(name='vendedor').exists()
+    if es_vendedor:
+        from django.core.exceptions import PermissionDenied
+        raise PermissionDenied()
     return render(request, 'reportes/index_report.html')
 
+@login_required
 def rep_ventas_generales_view(request):
+    es_vendedor = request.user.groups.filter(name='vendedor').exists()
+    if es_vendedor:
+        from django.core.exceptions import PermissionDenied
+        raise PermissionDenied()
     # Obtener parámetros GET
     from datetime import datetime
     fecha_desde_str = request.GET.get('fecha_desde', '')

@@ -147,6 +147,7 @@
                 </nav>
               </div>
               {% endif %}
+              {% if not es_vendedor %}
               <a
                 class="nav-link collapsed"
                 href="#"
@@ -178,6 +179,7 @@
                   >
                 </nav>
               </div>
+              {% endif %}
               <a
               class="nav-link collapsed"
               href="#"
@@ -237,6 +239,7 @@
                   </a>
                 </nav>
               </div>
+              {% if not es_vendedor %}
               <a
                 class="nav-link collapsed"
                 href="#"
@@ -265,6 +268,8 @@
                   </a>
                 </nav>
               </div>
+              {% endif %}
+              {% if not es_vendedor %}
               <a
                 class="nav-link collapsed"
                 href="#"
@@ -296,7 +301,9 @@
                   </a>
                 </nav>
               </div>
+              {% endif %}
 
+              {% if not es_vendedor %}
               <a
                 class="nav-link collapsed"
                 href="#"
@@ -328,6 +335,8 @@
                   </a>
                 </nav>
               </div>
+              {% endif %}
+              {% if not es_vendedor %}
                 <a
                 class="nav-link collapsed"
                 href="#"
@@ -359,6 +368,8 @@
                   </a>
                 </nav>
               </div>
+              {% endif %}
+              {% if not es_vendedor %}
                 <a
                 class="nav-link collapsed"
                 href="#"
@@ -390,6 +401,7 @@
                   </a>
                 </nav>
               </div>
+              {% endif %}
                <a
                 class="nav-link collapsed"
                 href="#"
@@ -481,10 +493,12 @@
                   </a>
                 </nav>
               </div>
+              {% if not es_vendedor %}
               <a class="nav-link" href="{% url 'base_para_informes' %}">
                 <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
                 Informes
               </a>
+              {% endif %}
             </div>
           </div>
           <div class="sb-sidenav-footer">

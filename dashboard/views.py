@@ -32,12 +32,14 @@ def dashboard_view(request):
     ]
     mes_actual_nombre = meses[hoy.month - 1]
 
+    es_vendedor = request.user.groups.filter(name='vendedor').exists()
     return render(request, 'dashboard/principal.html', {
         'total_productos': total_productos,
         'total_pedidos': total_pedidos,
         'total_proveedores': total_proveedores,
         'ventas_mes_actual': ventas_mes_actual,
-        'mes_actual_nombre': mes_actual_nombre
+        'mes_actual_nombre': mes_actual_nombre,
+        'es_vendedor': es_vendedor
     })
 
 
