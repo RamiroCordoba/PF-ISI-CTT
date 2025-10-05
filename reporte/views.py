@@ -35,16 +35,16 @@ from django.contrib.auth.decorators import login_required
 
 @login_required
 def dashboard_view(request):
-    es_vendedor = request.user.groups.filter(name='vendedor').exists()
-    if es_vendedor:
+    es_vendedor = request.user.groups.filter(name__iexact='vendedor').exists()
+    if es_vendedor and not (request.user.is_superuser or request.user.is_staff):
         from django.core.exceptions import PermissionDenied
         raise PermissionDenied()
     return render(request, 'reportes/index_report.html')
 
 @login_required
 def rep_ventas_generales_view(request):
-    es_vendedor = request.user.groups.filter(name='vendedor').exists()
-    if es_vendedor:
+    es_vendedor = request.user.groups.filter(name__iexact='vendedor').exists()
+    if es_vendedor and not (request.user.is_superuser or request.user.is_staff):
         from django.core.exceptions import PermissionDenied
         raise PermissionDenied()
     # Obtener parámetros GET
@@ -174,12 +174,6 @@ def rep_ventas_generales_view(request):
     'promedio_saldo_notas': float(promedio_saldo_notas),
     }
     return render(request, 'reportes/rep_ventas_generales.html', context)
-
-# API para obtener categorías de productos
-def categorias_api(request):
-    categorias = Categoria.objects.all().order_by('nombre')
-    data = [{'id': c.id, 'nombre': c.nombre} for c in categorias]
-    return JsonResponse({'categorias': data})
 
 # API para obtener categorías de productos
 def categorias_api(request):
