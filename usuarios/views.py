@@ -112,6 +112,33 @@ class UsuarioUpdateView(UpdateView):
             return reverse('usuarios:mi_perfil')
         return super().get_success_url()
 
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+
+# Vista para edición de perfil desde el modal (solo AJAX, solo datos básicos)
+@method_decorator(csrf_exempt, name='dispatch')
+class PerfilModalUpdateView(LoginRequiredMixin, UpdateView):
+    model = UsuarioPersonalizado
+    fields = ['first_name', 'last_name', 'email']
+
+    def post(self, request, *args, **kwargs):
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            self.object = self.get_object()
+            data = request.POST
+            first_name = data.get('first_name', '').strip()
+            last_name = data.get('last_name', '').strip()
+            errors = {}
+            if not first_name:
+                errors['first_name'] = 'El nombre no puede estar vacío.'
+            if not last_name:
+                errors['last_name'] = 'El apellido no puede estar vacío.'
+            if errors:
+                return JsonResponse({'success': False, 'error': errors})
+            self.object.first_name = first_name
+            self.object.last_name = last_name
+            self.object.save()
+            return JsonResponse({'success': True})
+        return JsonResponse({'success': False, 'error': 'Petición inválida'}, status=400)
 class UsuarioDeleteView(DeleteView):
     model = UsuarioPersonalizado
     template_name = 'usuarios/usuario_confirm_delete.html'
