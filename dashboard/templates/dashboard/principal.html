@@ -112,7 +112,8 @@
                 </div>
                 Inicio
               </a>
-              {% if user.is_superuser or user.is_staff %}
+              {# Solo los usuarios que sean exclusivamente vendedores (no staff ni superuser) están limitados. #}
+              {% if not es_vendedor or user.is_superuser or user.is_staff %}
               <a
                 class="nav-link collapsed"
                 href="#"
@@ -147,7 +148,7 @@
                 </nav>
               </div>
               {% endif %}
-              {% if not es_vendedor %}
+                              {% if not es_vendedor or user.is_superuser or user.is_staff %}
               <a
                 class="nav-link collapsed"
                 href="#"
@@ -239,7 +240,7 @@
                   </a>
                 </nav>
               </div>
-              {% if not es_vendedor %}
+                              {% if not es_vendedor or user.is_superuser or user.is_staff %}
               <a
                 class="nav-link collapsed"
                 href="#"
@@ -269,7 +270,7 @@
                 </nav>
               </div>
               {% endif %}
-              {% if not es_vendedor %}
+                            {% if not es_vendedor or user.is_superuser or user.is_staff %}
               <a
                 class="nav-link collapsed"
                 href="#"
@@ -303,7 +304,7 @@
               </div>
               {% endif %}
 
-              {% if not es_vendedor %}
+                            {% if not es_vendedor or user.is_superuser or user.is_staff %}
               <a
                 class="nav-link collapsed"
                 href="#"
@@ -336,7 +337,7 @@
                 </nav>
               </div>
               {% endif %}
-              {% if not es_vendedor %}
+                            {% if not es_vendedor or user.is_superuser or user.is_staff %}
                 <a
                 class="nav-link collapsed"
                 href="#"
@@ -369,7 +370,7 @@
                 </nav>
               </div>
               {% endif %}
-              {% if not es_vendedor %}
+              {% if not es_vendedor or user.is_superuser or user.is_staff %}
                 <a
                 class="nav-link collapsed"
                 href="#"
@@ -493,7 +494,7 @@
                   </a>
                 </nav>
               </div>
-              {% if not es_vendedor %}
+              {% if not es_vendedor or user.is_superuser or user.is_staff %}
               <a class="nav-link" href="{% url 'base_para_informes' %}">
                 <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
                 Informes

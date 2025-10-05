@@ -36,7 +36,9 @@ from usuarios.decorators import solo_no_vendedores
 # Mixin para bloquear acceso a vendedores
 class NoVendedoresMixin(UserPassesTestMixin):
     def test_func(self):
-        return not self.request.user.groups.filter(name='vendedor').exists()
+        user = self.request.user
+        # Solo restringe si es vendedor y no es staff ni superuser
+        return not (user.groups.filter(name='vendedor').exists() and not (user.is_staff or user.is_superuser))
     def handle_no_permission(self):
         from django.core.exceptions import PermissionDenied
         raise PermissionDenied()
