@@ -1,7 +1,7 @@
 {% extends 'dashboard/principal.html' %}
 {% block Contenido %}
 <style>
-  .error-403-modern {
+  .error-modern {
     background: linear-gradient(135deg, #f8fafc 0%, #e0e7ef 100%);
     border-radius: 18px;
     box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.12);
@@ -13,9 +13,9 @@
     overflow: hidden;
     text-align: center;
   }
-  .error-403-modern .icon-ban {
+  .error-modern .icon {
     font-size: 5rem;
-    color: #e74c3c;
+    color: #e67e22;
     margin-bottom: 12px;
     animation: bounceIn 0.7s;
     display: flex;
@@ -27,28 +27,28 @@
     60% { transform: scale(1.1); opacity: 1; }
     100% { transform: scale(1); }
   }
-  .error-403-modern h1 {
+  .error-modern h1 {
     font-size: 4rem;
     font-weight: 700;
-    color: #e74c3c;
+    color: #e67e22;
     margin-bottom: 0.2em;
     letter-spacing: 2px;
     text-align: center;
   }
-  .error-403-modern h2 {
+  .error-modern h2 {
     font-size: 2rem;
     color: #222;
     margin-bottom: 0.7em;
     font-weight: 600;
     text-align: center;
   }
-  .error-403-modern p.lead {
+  .error-modern p.lead {
     color: #555;
     font-size: 1.15rem;
     margin-bottom: 2em;
     text-align: center;
   }
-  .error-403-modern .btn-home {
+  .error-modern .btn-home {
     background: #ff9800;
     color: #fff;
     border: none;
@@ -61,12 +61,12 @@
     margin: 0 auto;
     display: inline-block;
   }
-  .error-403-modern .btn-home:hover {
+  .error-modern .btn-home:hover {
     background: #ffb347;
     box-shadow: 0 4px 16px rgba(255, 179, 71, 0.22);
     color: #fff;
   }
-  .error-403-modern .tip {
+  .error-modern .tip {
     font-size: 0.98rem;
     color: #888;
     margin-top: 2em;
@@ -74,12 +74,11 @@
     text-align: center;
   }
 </style>
-<div class="error-403-modern">
-  <div class="icon-ban"><i class="fas fa-ban"></i></div>
-  <h1>403</h1>
-  <h2>Acceso Denegado</h2>
-  <p class="lead">No tienes permisos para acceder a esta página.<br>
-    Si crees que esto es un error, solicita los permisos correspondientes a un administrador.</p>
-  <a href="/dashboard/" class="btn btn-home"><i class="fas fa-home"></i> Volver al inicio</a>
+<div class="error-modern">
+  <div class="icon"><i class="fas fa-exclamation-triangle"></i></div>
+  <h1>400</h1>
+  <h2>Solicitud incorrecta</h2>
+  <p class="lead">La solicitud enviada no es válida o está malformada.</p>
+  <a href="/" class="btn btn-home"><i class="fas fa-home"></i> Volver al inicio</a>
 </div>
 {% endblock %}

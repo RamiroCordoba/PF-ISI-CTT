@@ -71,3 +71,33 @@ def productos_stock_minimo(request):
         for p in productos
     ]
     return JsonResponse(resultado, safe=False)
+
+def custom_404_view(request, exception):
+    return render(request, 'errores/404.html', status=404)
+
+def custom_403_view(request, exception=None):
+    return render(request, 'errores/403.html', status=403)
+
+def custom_400_view(request, exception):
+    return render(request, 'errores/400.html', status=400)
+
+def custom_500_view(request):
+    return render(request, 'errores/500.html', status=500)
+
+def custom_401_view(request, exception=None):
+    return render(request, 'errores/401.html', status=401)
+
+def custom_408_view(request, exception=None):
+    return render(request, 'errores/408.html', status=408)
+
+def custom_429_view(request, exception=None):
+    return render(request, 'errores/429.html', status=429)
+
+def custom_502_view(request, exception=None):
+    return render(request, 'errores/502.html', status=502)
+
+def custom_503_view(request, exception=None):
+    return render(request, 'errores/503.html', status=503)
+
+def custom_504_view(request, exception=None):
+    return render(request, 'errores/504.html', status=504)
