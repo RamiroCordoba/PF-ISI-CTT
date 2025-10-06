@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect ,get_object_or_404
 from django.urls import reverse_lazy
 from django.views.generic import ListView,CreateView,UpdateView,DeleteView,DetailView
 from .models import *
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from .forms import ProveedorForm, CargaMasivaProductosForm, ProductoForm,PedidoForm, PedidoItemFormSet,inlineformset_factory, PedidoItemFormSetNoExtra
 from django.views import View
 from django.contrib import messages
@@ -21,6 +21,7 @@ from django.template.loader import render_to_string
 from django.views.decorators.http import require_POST
 from django.db.models import Count, F
 from django.db.models.deletion import ProtectedError
+from django.db.models.deletion import ProtectedError
 from django.db import transaction
 import qrcode
 import io
@@ -30,10 +31,21 @@ from openpyxl import Workbook
 from openpyxl.styles import PatternFill, Font, Alignment
 from openpyxl.worksheet.table import Table, TableStyleInfo
 from openpyxl.utils.dataframe import dataframe_to_rows
+from usuarios.decorators import solo_no_vendedores
 
+
+# Mixin para bloquear acceso a vendedores
+class NoVendedoresMixin(UserPassesTestMixin):
+    def test_func(self):
+        user = self.request.user
+        # Solo restringe si es vendedor y no es staff ni superuser
+        return not (user.groups.filter(name='vendedor').exists() and not (user.is_staff or user.is_superuser))
+    def handle_no_permission(self):
+        from django.core.exceptions import PermissionDenied
+        raise PermissionDenied()
 
 #______ Categorias CRUD
-class CategoriaList(LoginRequiredMixin, ListView):
+class CategoriaList(LoginRequiredMixin, NoVendedoresMixin, ListView):
   model=Categoria
   template_name="categorias/categoria_list.html"
   context_object_name="categorias"
@@ -50,19 +62,19 @@ class CategoriaList(LoginRequiredMixin, ListView):
 
           return queryset
 
-class CategoriaCreate(LoginRequiredMixin,CreateView):
+class CategoriaCreate(LoginRequiredMixin, NoVendedoresMixin, CreateView):
      model=Categoria
      fields=["nombre","descripcion"]
      template_name="categorias/categoria_form.html"
      success_url = reverse_lazy("categorias")
      
-class CategoriaUpdate(LoginRequiredMixin,UpdateView):
+class CategoriaUpdate(LoginRequiredMixin, NoVendedoresMixin, UpdateView):
      model=Categoria
      fields=["nombre","descripcion"]
      template_name="categorias/categoria_form.html"
      success_url = reverse_lazy("categorias")
 
-class CategoriaDelete(LoginRequiredMixin,DeleteView):
+class CategoriaDelete(LoginRequiredMixin, NoVendedoresMixin, DeleteView):
      model=Categoria
      template_name="categorias/categoria_confirm_delete.html"
      success_url = reverse_lazy("categorias")
@@ -601,29 +613,29 @@ class ProveedorList(LoginRequiredMixin, ListView):
         return context
 
 #______ Estacionalidad
-class EstacionalidadCreate(LoginRequiredMixin,CreateView):
+class EstacionalidadCreate(LoginRequiredMixin, NoVendedoresMixin, CreateView):
      model=Estacionalidad
      fields=["producto","nombre","estacion","diaDesde","mesDesde","diaHasta","mesHasta","stockMin","stockMax"]
      template_name="estacionalidades/estacionalidad_form.html"
      success_url = reverse_lazy("mis_estacionalidades")
      
-class EstacionalidadUpdate(LoginRequiredMixin,UpdateView):
+class EstacionalidadUpdate(LoginRequiredMixin, NoVendedoresMixin, UpdateView):
      model=Estacionalidad
      fields=["producto","nombre","estacion","diaDesde","mesDesde","diaHasta","mesHasta","stockMin","stockMax"]
      template_name="estacionalidades/estacionalidad_form.html"
      success_url = reverse_lazy("mis_estacionalidades")
 
-class EstacionalidadDelete(LoginRequiredMixin,DeleteView):
+class EstacionalidadDelete(LoginRequiredMixin, NoVendedoresMixin, DeleteView):
      model=Estacionalidad
      template_name="estacionalidades/estacionalidad_confirm_delete.html"
      success_url = reverse_lazy("mis_estacionalidades")
 
-class EstacionalidadDetail(DetailView):
+class EstacionalidadDetail(NoVendedoresMixin, DetailView):
      model=Estacionalidad
      template_name="estacionalidades/estacionalidad_details.html"
      context_object_name = 'laEstacionalidad'
 
-class EstacionalidadList(LoginRequiredMixin,ListView):
+class EstacionalidadList(LoginRequiredMixin, NoVendedoresMixin, ListView):
     model = Estacionalidad
     template_name = "estacionalidades/estacionalidad_list.html"
     context_object_name = "estacionalidades"
@@ -1142,19 +1154,19 @@ def _subtract_stock_for_pedido(pedido):
 
 #Forma de pago
 
-class FormaPagoCreate(LoginRequiredMixin,CreateView):
+class FormaPagoCreate(LoginRequiredMixin, NoVendedoresMixin, CreateView):
      model=FormaPago
      fields=["nombre","activo"]
      template_name="formasdepago/formasdepago_form.html"
      success_url = reverse_lazy("mis_formasdepago")
      
-class FormaPagoUpdate(LoginRequiredMixin,UpdateView):
+class FormaPagoUpdate(LoginRequiredMixin, NoVendedoresMixin, UpdateView):
      model=FormaPago
      fields=["nombre","activo"]
      template_name="formasdepago/formasdepago_form.html"
      success_url = reverse_lazy("mis_formasdepago")
 
-class FormaPagoDisable(LoginRequiredMixin, View):
+class FormaPagoDisable(LoginRequiredMixin, NoVendedoresMixin, View):
     def post(self, request, pk):
         formapago = get_object_or_404(FormaPago, pk=pk)
         formapago.activo = False
@@ -1162,12 +1174,12 @@ class FormaPagoDisable(LoginRequiredMixin, View):
         return redirect(reverse_lazy("mis_formasdepago"))
 
 
-class FormaPagoDetail(DetailView):
+class FormaPagoDetail(NoVendedoresMixin, DetailView):
      model=FormaPago
      template_name="formasdepago/formasdepago_details.html"
      context_object_name = 'laformaPago'
 
-class FormaPagoList(LoginRequiredMixin,ListView):
+class FormaPagoList(LoginRequiredMixin, NoVendedoresMixin, ListView):
     model = FormaPago
     template_name = "formasdepago/formasdepago_list.html"
     context_object_name = "formasdepagos"

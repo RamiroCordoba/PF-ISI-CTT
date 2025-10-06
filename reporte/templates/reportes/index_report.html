@@ -74,6 +74,26 @@
       <h3><i class="fa-solid fa-chart-area"></i> Proyección de ventas</h3>
       <p>Este informe contendrá un resumen de la proyección de ventas de la ferretería utilizando IA para mejorar la precisión de las predicciones en relación al histórico de ventas.</p>
       <hr />
+      <div id="proyeccion-controls" style="background:#fff7e6; padding:20px; border-radius:12px;">
+        <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:center;">
+          <label style="font-weight:600;">Horizonte (días)</label>
+          <select id="horizonte" class="form-control" style="width:120px;">
+            <option value="7">7</option>
+            <option value="14">14</option>
+            <option value="30" selected>30</option>
+            <option value="60">60</option>
+          </select>
+          <label style="font-weight:600;">Desde</label>
+          <input type="date" id="proj-fecha-desde" class="form-control" style="min-width:140px;">
+          <label style="font-weight:600;">Hasta</label>
+          <input type="date" id="proj-fecha-hasta" class="form-control" style="min-width:140px;">
+          <button id="btn-generar-proyeccion" class="btn btn-primary"> <i class="fa-solid fa-play"></i> Generar proyección</button>
+          <div id="proy-loading" style="display:none; align-items:center; margin-left:8px;"><div class="spinner-border" role="status" style="width:20px; height:20px; margin-right:8px;"></div><span id="proy-status">Generando...</span></div>
+        </div>
+        <div style="margin-top:16px;">
+          <canvas id="proyeccion-chart" height="120"></canvas>
+        </div>
+      </div>
     </div>
     <div id="tab-content-proveedores" class="tab-content-fichero" style="display:none;">
       <h3><i class="fa-solid fa-truck"></i> Proveedores</h3>
@@ -97,4 +117,111 @@ function showTabFichero(tab) {
 }
 </script>
 <script src="{% static 'js/report_filters.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  const btn = document.getElementById('btn-generar-proyeccion');
+  const loading = document.getElementById('proy-loading');
+  const status = document.getElementById('proy-status');
+  const ctx = document.getElementById('proyeccion-chart').getContext('2d');
+  let chart = null;
+
+  function showLoading(show, text){
+    loading.style.display = show ? 'inline-flex' : 'none';
+    status.textContent = text || 'Generando...';
+  }
+
+  btn && btn.addEventListener('click', async function(){
+    const horizonte = document.getElementById('horizonte').value;
+    const fecha_desde = document.getElementById('proj-fecha-desde').value;
+    const fecha_hasta = document.getElementById('proj-fecha-hasta').value;
+    showLoading(true, 'Generando proyección, por favor espere...');
+    try{
+      const params = new URLSearchParams();
+      if(fecha_desde) params.append('fecha_desde', fecha_desde);
+      if(fecha_hasta) params.append('fecha_hasta', fecha_hasta);
+      params.append('horizonte', horizonte);
+  const resp = await fetch(`/informes/reportes/proyeccion_api?${params.toString()}`, {headers:{'X-Requested-With':'XMLHttpRequest'}});
+      if(!resp.ok) throw new Error('Error en la petición: ' + resp.status);
+      const data = await resp.json();
+      renderProyeccion(data);
+      showLoading(false);
+    }catch(err){
+      console.error(err);
+      showLoading(false);
+      alert('No se pudo generar la proyección. Revisa la consola para más detalles.');
+    }
+  });
+
+  function renderProyeccion(data){
+    const hist = data.historical;
+    const proj = data.projected;
+    const labels = hist.dates.concat(proj.dates);
+    const histData = hist.values.concat(Array(proj.dates.length).fill(null));
+    const projData = Array(hist.dates.length).fill(null).concat(proj.values);
+
+    const datasets = [
+      {
+        label: 'Histórico',
+        data: histData,
+        borderColor: 'rgba(33,150,243,0.9)',
+        backgroundColor: 'rgba(33,150,243,0.1)',
+        tension: 0.2,
+        pointRadius: 2,
+      },
+      {
+        label: 'Proyección',
+        data: projData,
+        borderColor: 'rgba(244,67,54,0.9)',
+        backgroundColor: 'rgba(244,67,54,0.08)',
+        borderDash: [6,4],
+        tension: 0.2,
+        pointRadius: 2,
+      }
+    ];
+
+    if(chart){
+      chart.data.labels = labels;
+      chart.data.datasets = datasets;
+      chart.update();
+      return;
+    }
+
+    const formatter = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 2 });
+    chart = new Chart(ctx, {
+      type: 'line',
+      data: { labels: labels, datasets: datasets },
+      options: {
+        responsive: true,
+        interaction: { mode: 'index', intersect: false },
+        stacked: false,
+        plugins: {
+          legend: { position: 'top' },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const v = context.raw;
+                if (v == null) return null;
+                return context.dataset.label + ': ' + formatter.format(v);
+              }
+            }
+          }
+        },
+        scales: {
+          x: { display: true, title: { display: false }, grid: { color: 'rgba(0,0,0,0.03)' } },
+          y: {
+            display: true,
+            title: { display: true, text: 'Monto' },
+            beginAtZero: true,
+            ticks: {
+              callback: function(value){ return formatter.format(value); }
+            },
+            grid: { color: 'rgba(0,0,0,0.03)' }
+          }
+        }
+      }
+    });
+  }
+});
+</script>
 {% endblock Contenido %}

@@ -1,0 +1,84 @@
+{% extends 'dashboard/principal.html' %}
+{% block Contenido %}
+<style>
+  .error-modern {
+    background: linear-gradient(135deg, #f8fafc 0%, #e0e7ef 100%);
+    border-radius: 18px;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.12);
+    padding: 48px 32px 40px 32px;
+    margin: 48px auto 0 auto;
+    max-width: 480px;
+    transition: box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+  }
+  .error-modern .icon {
+    font-size: 5rem;
+    color: #e67e22;
+    margin-bottom: 12px;
+    animation: bounceIn 0.7s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  @keyframes bounceIn {
+    0% { transform: scale(0.7); opacity: 0; }
+    60% { transform: scale(1.1); opacity: 1; }
+    100% { transform: scale(1); }
+  }
+  .error-modern h1 {
+    font-size: 4rem;
+    font-weight: 700;
+    color: #e67e22;
+    margin-bottom: 0.2em;
+    letter-spacing: 2px;
+    text-align: center;
+  }
+  .error-modern h2 {
+    font-size: 2rem;
+    color: #222;
+    margin-bottom: 0.7em;
+    font-weight: 600;
+    text-align: center;
+  }
+  .error-modern p.lead {
+    color: #555;
+    font-size: 1.15rem;
+    margin-bottom: 2em;
+    text-align: center;
+  }
+  .error-modern .btn-home {
+    background: #ff9800;
+    color: #fff;
+    border: none;
+    border-radius: 30px;
+    padding: 0.75em 2.5em;
+    font-size: 1.1rem;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(255, 152, 0, 0.15);
+    transition: background 0.2s, box-shadow 0.2s;
+    margin: 0 auto;
+    display: inline-block;
+  }
+  .error-modern .btn-home:hover {
+    background: #ffb347;
+    box-shadow: 0 4px 16px rgba(255, 179, 71, 0.22);
+    color: #fff;
+  }
+  .error-modern .tip {
+    font-size: 0.98rem;
+    color: #888;
+    margin-top: 2em;
+    opacity: 0.85;
+    text-align: center;
+  }
+</style>
+<div class="error-modern">
+  <div class="icon"><i class="fas fa-tachometer-alt"></i></div>
+  <h1>429</h1>
+  <h2>Demasiadas solicitudes</h2>
+  <p class="lead">Has realizado demasiadas solicitudes en poco tiempo. Intenta nuevamente más tarde.</p>
+  <a href="/" class="btn btn-home"><i class="fas fa-home"></i> Volver al inicio</a>
+</div>
+{% endblock %}

@@ -23,13 +23,11 @@
   </head>
   <body class="sb-nav-fixed">
     <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
-      <!-- Navbar Brand-->
-      <a class="navbar-brand ps-3" href="{% url 'dashboard' %}">
+      <a class="navbar-brand ps-3" id="navbarBrand" href="{% url 'dashboard' %}">
         <i class="fas fa-tools" style="margin-right:8px;"></i>
         Ferreteria Santa Rita
       </a>
 
-      <!-- Sidebar Toggle-->
       <button
         class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0"
         id="sidebarToggle"
@@ -61,7 +59,8 @@
               class="dropdown-menu dropdown-menu-end"
               aria-labelledby="navbarDropdown"
             >
-              <li><a class="dropdown-item" href="{% url 'usuarios:mi_perfil' %}">Mi Perfil</a></li>
+              <li><a class="dropdown-item" href="#" id="btnMiPerfil" data-bs-toggle="modal" data-bs-target="#modalMiPerfil">Mi Perfil</a></li>
+
               <li><hr class="dropdown-divider" /></li>
               <li>
                 <a class="dropdown-item" href="{% url 'logout' %}"
@@ -72,415 +71,261 @@
           </li>
         </ul>
       </div>
-    </nav>
+
+  </nav>
 
     <div id="layoutSidenav">
       <div id="layoutSidenav_nav">
         <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
           <div class="sb-sidenav-menu">
             <div class="nav">
-              <!-- Navbar Search-->
-              <div class="sb-sidenav-menu-heading">
-                <form
-                  class="d-none d-md-inline-block form-inline ms-auto me-0 me-md-3 my-2 my-md-0"
-                >
-                  <div class="input-group">
-                    <input
-                      id="navbarSearch"
-                      class="form-control"
-                      type="text"
-                      placeholder="Buscar"
-                      aria-label="Buscar"
-                      aria-describedby="btnNavbarSearch"
-                    />
-                    <button
-                      class="btn btn-primary"
-                      id="btnNavbarSearch"
-                      type="button"
-                    >
-                      <i class="fas fa-search"></i>
-                    </button>
-                  </div>
-                </form>
-              </div>
-              <div class="sb-sidenav-menu-heading">Principal</div>
-              <a class="nav-link" href="{% url 'dashboard'%}">
-                <div class="sb-nav-link-icon">
-                  <i class="fas fa-tachometer-alt"></i>
-                </div>
-                Inicio
-              </a>
-              <a
-                class="nav-link collapsed"
-                href="#"
-                data-bs-toggle="collapse"
-                data-bs-target="#collapseLayouts"
-                aria-expanded="false"
-                aria-controls="collapseLayouts"
-              >
-                <div class="sb-nav-link-icon">
-                  <i class="fas fa-columns"></i>
-                </div>
-                Usuarios
-                <div class="sb-sidenav-collapse-arrow">
-                  <i class="fas fa-angle-down"></i>
-                </div>
-              </a>
-              <div
-                class="collapse"
-                id="collapseLayouts"
-                aria-labelledby="headingOne"
-                data-bs-parent="#sidenavAccordion"
-              >
-                <nav class="sb-sidenav-menu-nested nav">
-                  <a
-                    class="nav-link"
-                    href="{% url 'usuarios:listar_usuarios' %}"
-                    >Listas de usuarios</a
-                  >
-                  <a class="nav-link" href="{% url 'usuarios:nuevo_usuario' %}"
-                    >Ingresar nuevo usuario</a
-                  >
-                </nav>
-              </div>
-              <a
-                class="nav-link collapsed"
-                href="#"
-                data-bs-toggle="collapse"
-                data-bs-target="#collapseProductos"
-                aria-expanded="false"
-                aria-controls="collapseProductos"
-              >
-                <div class="sb-nav-link-icon">
-                  <i class="fas fa-columns"></i>
-                </div>
-                Productos
-                <div class="sb-sidenav-collapse-arrow">
-                  <i class="fas fa-angle-down"></i>
-                </div>
-              </a>
-              <div
-                class="collapse"
-                id="collapseProductos"
-                aria-labelledby="headingOne"
-                data-bs-parent="#sidenavAccordion"
-              >
-                <nav class="sb-sidenav-menu-nested nav">
-                  <a class="nav-link" href="{% url 'mis_articulos' %}"
-                    >Lista de productos</a
-                  >
-                  <a class="nav-link" href="{% url 'categorias'%}"
-                    >Categorias de productos</a
-                  >
-                </nav>
-              </div>
-              <a
-              class="nav-link collapsed"
-              href="#"
-              data-bs-toggle="collapse"
-              data-bs-target="#collapsePedidos"
-              aria-expanded="false"
-              aria-controls="collapsePedidos"
-            >
-              <div class="sb-nav-link-icon">
-                <i class="fas fa-truck"></i>
-              </div>
-              Pedidos
-              <div class="sb-sidenav-collapse-arrow">
-                <i class="fas fa-angle-down"></i>
-              </div>
-            </a>
-            <div
-              class="collapse"
-              id="collapsePedidos"
-              aria-labelledby="headingPedidos"
-              data-bs-parent="#sidenavAccordion"
-            >
-              <nav class="sb-sidenav-menu-nested nav">
-                <a class="nav-link" href="{% url 'listar_pedidos' %}">
-                  Lista de pedidos
-                </a>
-                <a class="nav-link" href="{% url 'nuevo_pedido' %}">
-                    Nuevo pedido
-                </a>
-              </nav>
-            </div>
-              <a
-                class="nav-link collapsed"
-                href="#"
-                data-bs-toggle="collapse"
-                data-bs-target="#collapseProveedores"
-                aria-expanded="false"
-                aria-controls="collapseProveedores"
-              >
-                <div class="sb-nav-link-icon">
-                  <i class="fas fa-book-open"></i>
-                </div>
-                Proveedores
-                <div class="sb-sidenav-collapse-arrow">
-                  <i class="fas fa-angle-down"></i>
-                </div>
-              </a>
-              <div
-                class="collapse"
-                id="collapseProveedores"
-                aria-labelledby="headingTwo"
-                data-bs-parent="#sidenavAccordion"
-              >
-                <nav class="sb-sidenav-menu-nested nav">
-                  <a class="nav-link" href="{% url 'mis_proveedores' %}">
-                    Lista de proveedores
-                  </a>
-                </nav>
-              </div>
-              <a
-                class="nav-link collapsed"
-                href="#"
-                data-bs-toggle="collapse"
-                data-bs-target="#collapseEstacionalidades"
-                aria-expanded="false"
-                aria-controls="collapseEstacionalidades"
-              >
-                <div class="sb-nav-link-icon">
-                  <i class="fas fa-book-open"></i>
-                </div>
-                Estacionalidades
-                <div class="sb-sidenav-collapse-arrow">
-                  <i class="fas fa-angle-down"></i>
-                </div>
-              </a>
-              <div
-                class="collapse"
-                id="collapseEstacionalidades"
-                aria-labelledby="headingTwo"
-                data-bs-parent="#sidenavAccordion"
-              >
-                <nav class="sb-sidenav-menu-nested nav">
-                  <a class="nav-link" href="{% url 'mis_estacionalidades' %}">
-                    Lista de estacionalidades
-                  </a>
-                </nav>
-              </div>
-              <a
-                class="nav-link collapsed"
-                href="#"
-                data-bs-toggle="collapse"
-                data-bs-target="#collapseFormasPago"
-                aria-expanded="false"
-                aria-controls="collapseFormasPago"
-              >
-                <div class="sb-nav-link-icon">
-                  <i class="fas fa-credit-card"></i>
-                </div>
-                Formas de Pago
-                <div class="sb-sidenav-collapse-arrow">
-                  <i class="fas fa-angle-down"></i>
-                </div>
-              </a>
-              <div
-                class="collapse"
-                id="collapseFormasPago"
-                aria-labelledby="headingFormasPago"
-                data-bs-parent="#sidenavAccordion"
-              >
-                <nav class="sb-sidenav-menu-nested nav">
-                  <a class="nav-link" href="{% url 'mis_formasdepago' %}">
-                    Lista de formas de pago
-                  </a>
-                  <a class="nav-link" href="{% url 'nueva_formadepago' %}">
-                    Nueva forma de pago
-                  </a>
-                </nav>
-              </div>
+              <style>
+                :root {
+                  --sidebar-width: 340px;
+                }
+                .modulo-menu {
+                  background: linear-gradient(135deg, #232323 60%, #292c31 100%);
+                  border-radius: 28px;
+                  margin-bottom: 16px;
+                  padding: 22px 0 18px 0;
+                  box-shadow: 0 4px 24px 0 rgba(44,62,80,0.10);
+                  width: 100%;
+                  max-width: 500px;
+                  margin-left: auto;
+                  margin-right: auto;
+                  transition: box-shadow 0.18s;
+                }
+                .modulo-menu:hover {
+                  box-shadow: 0 8px 32px 0 rgba(44,62,80,0.18);
+                }
+                .modulo-menu .sb-sidenav-menu-heading {
+                  color: #ffb347;
+                  font-size: 1.18rem;
+                  font-weight: 800;
+                  margin-bottom: 18px;
+                  margin-top: 0;
+                  letter-spacing: 1.5px;
+                  padding-left: 28px;
+                  text-shadow: 0 2px 8px rgba(0,0,0,0.10);
+                  text-transform: uppercase;
+                }
+                .modulo-menu .nav-link {
+                  border-radius: 8px;
+                  margin-bottom: 2px;
+                  background: none;
+                  color: #f5f5f5;
+                  font-weight: 600;
+                  font-size: 1.09rem;
+                  padding: 9px 0 9px 36px;
+                  transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+                  box-shadow: none;
+                  position: relative;
+                  letter-spacing: 0.5px;
+                }
+                .modulo-menu .nav-link:hover, .modulo-menu .nav-link:focus {
+                  background: linear-gradient(90deg, #ffb34722 0%, #232323 100%);
+                  color: #ffb347;
+                  box-shadow: 0 2px 12px 0 rgba(255,179,71,0.10);
+                  text-decoration: none;
+                  outline: none;
+                }
+                .modulo-menu .nav-link.active {
+                  background: linear-gradient(90deg, #ffb34744 0%, #232323 100%);
+                  color: #ffb347;
+                  font-weight: 800;
+                }
+                .modulo-menu .collapse {
+                  background: none;
+                }
+                .modulo-menu .sb-sidenav-collapse-arrow, .modulo-menu .sb-nav-link-icon {
+                  display: none;
+                }
+                .modulo-menu .sb-sidenav-menu-nested {
+                  margin-left: 0;
+                  padding-left: 0;
+                }
 
-              <a
-                class="nav-link collapsed"
-                href="#"
-                data-bs-toggle="collapse"
-                data-bs-target="#collapseIva"
-                aria-expanded="false"
-                aria-controls="collapseIva"
-              >
-                <div class="sb-nav-link-icon">
-                  <i class="fas fa-credit-card"></i>
+                .modulo-menu + .modulo-menu {
+                  border-top: 2px solid #292c31;
+                  margin-top: 0;
+                  padding-top: 12px;
+                }
+              </style>
+              <!-- MÓDULO PRINCIPAL -->
+              <div class="modulo-menu">
+                <div class="sb-sidenav-menu-heading">Principal</div>
+                <a class="nav-link" href="{% url 'dashboard'%}">
+                  <i class="fas fa-home me-2"></i> Inicio
+                </a>
+                {% if not es_vendedor or user.is_superuser or user.is_staff %}
+                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayouts" aria-expanded="false" aria-controls="collapseLayouts">
+                  <i class="fas fa-users me-2"></i> Usuarios
+                  <div class="sb-sidenav-collapse-arrow">
+                    <i class="fas fa-angle-down"></i>
+                  </div>
+                </a>
+                <div class="collapse" id="collapseLayouts" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+                  <nav class="sb-sidenav-menu-nested nav">
+                    <a class="nav-link" href="{% url 'usuarios:listar_usuarios' %}"><i class="fas fa-list me-2"></i> Listas de usuarios</a>
+                    <a class="nav-link" href="{% url 'usuarios:nuevo_usuario' %}"><i class="fas fa-user-plus me-2"></i> Ingresar nuevo usuario</a>
+                  </nav>
                 </div>
-                IVA
-                <div class="sb-sidenav-collapse-arrow">
-                  <i class="fas fa-angle-down"></i>
+                {% endif %}
+                {% if user.is_superuser or user.is_staff %}
+                <a class="nav-link" href="{% url 'base_para_informes' %}">
+                  <i class="fas fa-chart-bar me-2"></i> Informes
+                </a>
+                {% endif %}
+                {% if not es_vendedor or user.is_superuser or user.is_staff %}
+                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseEstacionalidades" aria-expanded="false" aria-controls="collapseEstacionalidades">
+                  <i class="fas fa-calendar-alt me-2"></i> Estacionalidades
+                  <div class="sb-sidenav-collapse-arrow">
+                    <i class="fas fa-angle-down"></i>
+                  </div>
+                </a>
+                <div class="collapse" id="collapseEstacionalidades" aria-labelledby="headingTwo" data-bs-parent="#sidenavAccordion">
+                  <nav class="sb-sidenav-menu-nested nav">
+                    <a class="nav-link" href="{% url 'mis_estacionalidades' %}"><i class="fas fa-list me-2"></i> Lista de estacionalidades</a>
+                  </nav>
                 </div>
-              </a>
-              <div
-                class="collapse"
-                id="collapseIva"
-                aria-labelledby="headingIva"
-                data-bs-parent="#sidenavAccordion"
-              >
-                <nav class="sb-sidenav-menu-nested nav">
-                  <a class="nav-link" href="{% url 'mis_iva' %}">
-                    Lista de IVA
-                  </a>
-                  <a class="nav-link" href="{% url 'nuevo_iva' %}">
-                    Nuevo IVA
-                  </a>
-                </nav>
+                {% endif %}
               </div>
-                <a
-                class="nav-link collapsed"
-                href="#"
-                data-bs-toggle="collapse"
-                data-bs-target="#collapseMoneda"
-                aria-expanded="false"
-                aria-controls="collapseMoneda"
-              >
-                <div class="sb-nav-link-icon">
-                  <i class="fas fa-credit-card"></i>
+              <!-- MÓDULO VENTA -->
+              <div class="modulo-menu">
+                <div class="sb-sidenav-menu-heading">Venta</div>
+                {% if not es_vendedor or user.is_superuser or user.is_staff %}
+                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseFormasPago" aria-expanded="false" aria-controls="collapseFormasPago">
+                  <i class="fas fa-credit-card me-2"></i> Formas de Pago
+                  <div class="sb-sidenav-collapse-arrow">
+                    <i class="fas fa-angle-down"></i>
+                  </div>
+                </a>
+                <div class="collapse" id="collapseFormasPago" aria-labelledby="headingFormasPago" data-bs-parent="#sidenavAccordion">
+                  <nav class="sb-sidenav-menu-nested nav">
+                    <a class="nav-link" href="{% url 'mis_formasdepago' %}"><i class="fas fa-list me-2"></i> Lista de formas de pago</a>
+                    <a class="nav-link" href="{% url 'nueva_formadepago' %}"><i class="fas fa-plus me-2"></i> Nueva forma de pago</a>
+                  </nav>
                 </div>
-                Moneda
-                <div class="sb-sidenav-collapse-arrow">
-                  <i class="fas fa-angle-down"></i>
+                {% endif %}
+                {% if not es_vendedor or user.is_superuser or user.is_staff %}
+                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseIva" aria-expanded="false" aria-controls="collapseIva">
+                  <i class="fas fa-percentage me-2"></i> IVA
+                  <div class="sb-sidenav-collapse-arrow">
+                    <i class="fas fa-angle-down"></i>
+                  </div>
+                </a>
+                <div class="collapse" id="collapseIva" aria-labelledby="headingIva" data-bs-parent="#sidenavAccordion">
+                  <nav class="sb-sidenav-menu-nested nav">
+                    <a class="nav-link" href="{% url 'mis_iva' %}"><i class="fas fa-list me-2"></i> Lista de IVA</a>
+                    <a class="nav-link" href="{% url 'nuevo_iva' %}"><i class="fas fa-plus me-2"></i> Nuevo IVA</a>
+                  </nav>
                 </div>
-              </a>
-              <div
-                class="collapse"
-                id="collapseMoneda"
-                aria-labelledby="headingMoneda"
-                data-bs-parent="#sidenavAccordion"
-              >
-                <nav class="sb-sidenav-menu-nested nav">
-                  <a class="nav-link" href="{% url 'mis_monedas' %}">
-                    Lista de Monedas
-                  </a>
-                  <a class="nav-link" href="{% url 'nueva_moneda' %}">
-                    Nuevo Moneda
-                  </a>
-                </nav>
+                {% endif %}
+                {% if not es_vendedor or user.is_superuser or user.is_staff %}
+                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseMoneda" aria-expanded="false" aria-controls="collapseMoneda">
+                  <i class="fas fa-coins me-2"></i> Moneda
+                  <div class="sb-sidenav-collapse-arrow">
+                    <i class="fas fa-angle-down"></i>
+                  </div>
+                </a>
+                <div class="collapse" id="collapseMoneda" aria-labelledby="headingMoneda" data-bs-parent="#sidenavAccordion">
+                  <nav class="sb-sidenav-menu-nested nav">
+                    <a class="nav-link" href="{% url 'mis_monedas' %}"><i class="fas fa-list me-2"></i> Lista de Monedas</a>
+                    <a class="nav-link" href="{% url 'nueva_moneda' %}"><i class="fas fa-plus me-2"></i> Nuevo Moneda</a>
+                  </nav>
+                </div>
+                {% endif %}
+                {% if not es_vendedor or user.is_superuser or user.is_staff %}
+                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseCondicionFiscal" aria-expanded="false" aria-controls="collapseCondicionFiscal">
+                  <i class="fas fa-file-invoice-dollar me-2"></i> Condicion Fiscal
+                  <div class="sb-sidenav-collapse-arrow">
+                    <i class="fas fa-angle-down"></i>
+                  </div>
+                </a>
+                <div class="collapse" id="collapseCondicionFiscal" aria-labelledby="headingcCondicionFiscal" data-bs-parent="#sidenavAccordion">
+                  <nav class="sb-sidenav-menu-nested nav">
+                    <a class="nav-link" href="{% url 'mis_condiciones_fiscales' %}"><i class="fas fa-list me-2"></i> Lista de Condiciones Fiscales</a>
+                    <a class="nav-link" href="{% url 'nueva_condicion_fiscal' %}"><i class="fas fa-plus me-2"></i> Nueva Condicion Fiscal</a>
+                  </nav>
+                </div>
+                {% endif %}
+                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseVentas" aria-expanded="false" aria-controls="collapseVentas">
+                  <i class="fas fa-shopping-cart me-2"></i> Ventas
+                  <div class="sb-sidenav-collapse-arrow">
+                    <i class="fas fa-angle-down"></i>
+                  </div>
+                </a>
+                <div class="collapse" id="collapseVentas" aria-labelledby="headingVentas" data-bs-parent="#sidenavAccordion">
+                  <nav class="sb-sidenav-menu-nested nav">
+                    <a class="nav-link" href="{% url 'mis_ventas' %}"><i class="fas fa-list me-2"></i> Lista de Ventas</a>
+                    <a class="nav-link" href="{% url 'nueva_venta' %}"><i class="fas fa-plus me-2"></i> Nueva Ventas</a>
+                  </nav>
+                </div>
+                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseNotas" aria-expanded="false" aria-controls="collapseNotas">
+                  <i class="fas fa-file-invoice me-2"></i> Notas de Crédito
+                  <div class="sb-sidenav-collapse-arrow">
+                    <i class="fas fa-angle-down"></i>
+                  </div>
+                </a>
+                <div class="collapse" id="collapseNotas" aria-labelledby="headingNotas" data-bs-parent="#sidenavAccordion">
+                  <nav class="sb-sidenav-menu-nested nav">
+                    <a class="nav-link" href="{% url 'mis_notascredito' %}"><i class="fas fa-list me-2"></i> Lista de Notas de Crédito</a>
+                  </nav>
+                </div>
+                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseClientes" aria-expanded="false" aria-controls="collapseClientes">
+                  <i class="fas fa-user-friends me-2"></i> Clientes
+                  <div class="sb-sidenav-collapse-arrow">
+                    <i class="fas fa-angle-down"></i>
+                  </div>
+                </a>
+                <div class="collapse" id="collapseClientes" aria-labelledby="headingClientes" data-bs-parent="#sidenavAccordion">
+                  <nav class="sb-sidenav-menu-nested nav">
+                    <a class="nav-link" href="{% url 'mis_clientes' %}"><i class="fas fa-list me-2"></i> Lista de Clientes</a>
+                    <a class="nav-link" href="{% url 'nuevo_cliente' %}"><i class="fas fa-plus me-2"></i> Nuevo Cliente</a>
+                  </nav>
+                </div>
               </div>
-                <a
-                class="nav-link collapsed"
-                href="#"
-                data-bs-toggle="collapse"
-                data-bs-target="#collapseCondicionFiscal"
-                aria-expanded="false"
-                aria-controls="collapseCondicionFiscal"
-              >
-                <div class="sb-nav-link-icon">
-                  <i class="fas fa-credit-card"></i>
+              <!-- MÓDULO PEDIDOS -->
+              <div class="modulo-menu">
+                <div class="sb-sidenav-menu-heading">Pedidos</div>
+                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePedidos" aria-expanded="false" aria-controls="collapsePedidos">
+                  <i class="fas fa-truck me-2"></i> Pedidos
+                  <div class="sb-sidenav-collapse-arrow">
+                    <i class="fas fa-angle-down"></i>
+                  </div>
+                </a>
+                <div class="collapse" id="collapsePedidos" aria-labelledby="headingPedidos" data-bs-parent="#sidenavAccordion">
+                  <nav class="sb-sidenav-menu-nested nav">
+                    <a class="nav-link" href="{% url 'listar_pedidos' %}"><i class="fas fa-list me-2"></i> Lista de pedidos</a>
+                    <a class="nav-link" href="{% url 'nuevo_pedido' %}"><i class="fas fa-plus me-2"></i> Nuevo pedido</a>
+                  </nav>
                 </div>
-                Condicion Fiscal
-                <div class="sb-sidenav-collapse-arrow">
-                  <i class="fas fa-angle-down"></i>
+                {% if not es_vendedor or user.is_superuser or user.is_staff %}
+                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseProductos" aria-expanded="false" aria-controls="collapseProductos">
+                  <i class="fas fa-boxes-stacked me-2"></i> Productos
+                  <div class="sb-sidenav-collapse-arrow">
+                    <i class="fas fa-angle-down"></i>
+                  </div>
+                </a>
+                <div class="collapse" id="collapseProductos" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+                  <nav class="sb-sidenav-menu-nested nav">
+                    <a class="nav-link" href="{% url 'mis_articulos' %}"><i class="fas fa-list me-2"></i> Lista de productos</a>
+                    <a class="nav-link" href="{% url 'categorias'%}"><i class="fas fa-tags me-2"></i> Categorias de productos</a>
+                  </nav>
                 </div>
-              </a>
-              <div
-                class="collapse"
-                id="collapseCondicionFiscal"
-                aria-labelledby="headingcCondicionFiscal"
-                data-bs-parent="#sidenavAccordion"
-              >
-                <nav class="sb-sidenav-menu-nested nav">
-                  <a class="nav-link" href="{% url 'mis_condiciones_fiscales' %}">
-                    Lista de Condiciones Fiscales
-                  </a>
-                  <a class="nav-link" href="{% url 'nueva_condicion_fiscal' %}">
-                    Nueva Condicion Fiscal
-                  </a>
-                </nav>
+                {% endif %}
+                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseProveedores" aria-expanded="false" aria-controls="collapseProveedores">
+                  <i class="fas fa-people-carry-box me-2"></i> Proveedores
+                  <div class="sb-sidenav-collapse-arrow">
+                    <i class="fas fa-angle-down"></i>
+                  </div>
+                </a>
+                <div class="collapse" id="collapseProveedores" aria-labelledby="headingTwo" data-bs-parent="#sidenavAccordion">
+                  <nav class="sb-sidenav-menu-nested nav">
+                    <a class="nav-link" href="{% url 'mis_proveedores' %}"><i class="fas fa-list me-2"></i> Lista de proveedores</a>
+                  </nav>
+                </div>
               </div>
-               <a
-                class="nav-link collapsed"
-                href="#"
-                data-bs-toggle="collapse"
-                data-bs-target="#collapseClientes"
-                aria-expanded="false"
-                aria-controls="collapseClientes"
-              >
-                <div class="sb-nav-link-icon">
-                  <i class="fas fa-credit-card"></i>
-                </div>
-                Clientes
-                <div class="sb-sidenav-collapse-arrow">
-                  <i class="fas fa-angle-down"></i>
-                </div>
-              </a>
-              <div
-                class="collapse"
-                id="collapseClientes"
-                aria-labelledby="headingClientes"
-                data-bs-parent="#sidenavAccordion"
-              >
-                <nav class="sb-sidenav-menu-nested nav">
-                  <a class="nav-link" href="{% url 'mis_clientes' %}">
-                    Lista de Clientes
-                  </a>
-                  <a class="nav-link" href="{% url 'nuevo_cliente' %}">
-                    Nuevo Cliente
-                  </a>
-                </nav>
-              </div>
-              <div class="sb-sidenav-menu-heading">Registros</div>
-               <a
-                class="nav-link collapsed"
-                href="#"
-                data-bs-toggle="collapse"
-                data-bs-target="#collapseVentas"
-                aria-expanded="false"
-                aria-controls="collapseVentas"
-              >
-                <div class="sb-nav-link-icon">
-                  <i class="fas fa-credit-card"></i>
-                </div>
-                Ventas
-                <div class="sb-sidenav-collapse-arrow">
-                  <i class="fas fa-angle-down"></i>
-                </div>
-              </a>
-              <div
-                class="collapse"
-                id="collapseVentas"
-                aria-labelledby="headingVentas"
-                data-bs-parent="#sidenavAccordion"
-              >
-                <nav class="sb-sidenav-menu-nested nav">
-                  <a class="nav-link" href="{% url 'mis_ventas' %}">
-                    Lista de Ventas
-                  </a>
-                  <a class="nav-link" href="{% url 'nueva_venta' %}">
-                    Nueva Ventas
-                  </a>
-                </nav>
-              </div>
-              <a
-                class="nav-link collapsed"
-                href="#"
-                data-bs-toggle="collapse"
-                data-bs-target="#collapseNotas"
-                aria-expanded="false"
-                aria-controls="collapseNotas"
-              >
-                <div class="sb-nav-link-icon">
-                  <i class="fa-solid fa-file-invoice"></i>
-                </div>
-                Notas de Crédito
-                <div class="sb-sidenav-collapse-arrow">
-                  <i class="fas fa-angle-down"></i>
-                </div>
-              </a>
-              <div
-                class="collapse"
-                id="collapseNotas"
-                aria-labelledby="headingNotas"
-                data-bs-parent="#sidenavAccordion"
-              >
-                <nav class="sb-sidenav-menu-nested nav">
-                  <a class="nav-link" href="{% url 'mis_notascredito' %}">
-                    Lista de Notas de Crédito
-                  </a>
-                </nav>
-              </div>
-              <a class="nav-link" href="{% url 'base_para_informes' %}">
-                <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
-                Informes
-              </a>
             </div>
           </div>
           <div class="sb-sidenav-footer">
@@ -600,6 +445,510 @@
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
       crossorigin="anonymous"
     ></script>
+
+    <div class="modal fade" id="modalMiPerfil" tabindex="-1" aria-labelledby="modalMiPerfilLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalMiPerfilLabel">Mi Perfil</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <style>
+              .modal-modern-bg {
+                background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
+                min-height: 100vh;
+                padding: 0;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start;
+                height: 100%;
+              }
+              .perfil-modern-card {
+                background: #fff;
+                border-radius: 18px;
+                box-shadow: 0 6px 32px 0 rgba(44,62,80,0.13);
+                padding: 2rem 2.5rem 1.2rem 2.5rem;
+                margin: 0 auto 0.5rem auto;
+                max-width: 650px;
+                position: relative;
+              }
+              .perfil-img-circulo {
+                width: 110px;
+                height: 110px;
+                border-radius: 50%;
+                border: 4px solid #fff;
+                box-shadow: 0 2px 12px rgba(0,0,0,0.13);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: -70px auto 1.2rem auto;
+                overflow: hidden;
+                background: linear-gradient(135deg, #ffb347 0%, #ffcc80 100%);
+                position: relative;
+                transition: box-shadow 0.2s;
+              }
+              .perfil-img-circulo img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                border-radius: 50%;
+                border: 2px solid #fff;
+              }
+              .perfil-img-circulo::after {
+                content: '';
+                position: absolute;
+                top: -6px; left: -6px; right: -6px; bottom: -6px;
+                border-radius: 50%;
+                border: 2px solid #ff8800;
+                opacity: 0.18;
+                pointer-events: none;
+                transition: opacity 0.2s;
+              }
+              .perfil-img-circulo:hover {
+                box-shadow: 0 4px 24px 0 rgba(255,136,0,0.18);
+              }
+              .perfil-form-label {
+                font-weight: 600;
+                color: #ff8800;
+                margin-bottom: 0.2rem;
+                font-size: 0.98rem;
+              }
+              .perfil-form-input {
+                width: 100%;
+                border: 1.5px solid #e0e0e0;
+                border-radius: 6px;
+                padding: 7px 12px;
+                background: #f7f7fa;
+                color: #444;
+                font-size: 1.04rem;
+                margin-bottom: 1rem;
+                box-shadow: none;
+                transition: border 0.2s;
+              }
+              .perfil-form-input[disabled] {
+                background: #f3f3f3;
+                color: #888;
+                font-weight: 500;
+              }
+              .perfil-btns-top {
+                display: flex;
+                gap: 0.7rem;
+                margin-bottom: 1.2rem;
+                justify-content: flex-end;
+              }
+              .perfil-btn-editar {
+                background: #fff;
+                color: #28a745 !important;
+                border: 1.5px solid #28a745 !important;
+                font-weight: 600;
+                border-radius: 6px;
+                transition: background 0.2s, color 0.2s;
+              }
+              .perfil-btn-editar:hover {
+                background: #28a745 !important;
+                color: #fff !important;
+              }
+              .perfil-btn-cambiar {
+                background: #fff;
+                color: #ff8800 !important;
+                border: 1.5px solid #ff8800 !important;
+                font-weight: 600;
+                border-radius: 6px;
+                transition: background 0.2s, color 0.2s;
+              }
+              .perfil-btn-cambiar:hover {
+                background: #ff8800 !important;
+                color: #fff !important;
+              }
+              .perfil-modern-card .badge {
+                font-size: 1rem;
+                font-weight: 600;
+                letter-spacing: 1px;
+                box-shadow: 0 1px 4px rgba(44,62,80,0.08);
+              }
+            </style>
+            <div class="modal-modern-bg" style="padding:0;margin:0;">
+                <div class="perfil-modern-card">
+                  <div class="perfil-img-circulo">
+                    {% if user.is_superuser %}
+                      <img src="{% static 'principal/assets/img/superadmin.png' %}" alt="Superadmin" />
+                    {% elif user.is_staff %}
+                      <img src="{% static 'principal/assets/img/administrador.png' %}" alt="Administrador" />
+                    {% else %}
+                      <img src="{% static 'principal/assets/img/vendedor.png' %}" alt="Vendedor" />
+                    {% endif %}
+                  </div>
+                  <div class="perfil-btns-top" id="perfilBtnsTop">
+                    <button type="button" class="btn perfil-btn-editar" id="btnEditarPerfil">
+                      <i class="fa fa-edit me-1"></i> Editar
+                    </button>
+                    <button type="button" class="btn perfil-btn-cambiar" id="btnCambiarPass">
+                      <i class="fa fa-key me-1"></i> Cambiar contraseña
+                    </button>
+                  </div>
+                  <form id="perfilForm" autocomplete="off">
+                    <div id="perfilCamposLectura">
+                      <label class="perfil-form-label">Nombre</label>
+                      <input type="text" class="perfil-form-input" name="first_name" id="perfilNombre" value="{{ user.first_name }}" disabled>
+                      <label class="perfil-form-label">Apellido</label>
+                      <input type="text" class="perfil-form-input" name="last_name" id="perfilApellido" value="{{ user.last_name }}" disabled>
+                      <label class="perfil-form-label">Usuario</label>
+                      <input type="text" class="perfil-form-input" name="username" id="perfilUsuario" value="{{ user.username }}" disabled>
+                      <label class="perfil-form-label">Email</label>
+                      <input type="email" class="perfil-form-input" name="email" id="perfilEmail" value="{{ user.email }}" disabled>
+                      <label class="perfil-form-label">Rol/es</label>
+                      <input type="text" class="perfil-form-input" disabled
+                        value="{% if user.is_superuser %}👑 Superadmin{% endif %}{% if user.is_superuser and user.is_staff %}, {% endif %}{% if user.is_staff %}Administrador{% endif %}{% if not user.is_superuser and not user.is_staff %}Vendedor{% endif %}">
+                      <div class="text-center my-3">
+                        {% if user.is_active %}
+                          <span class="badge bg-success px-3 py-2">
+                            <i class="fa fa-check-circle me-1"></i> Activo
+                          </span>
+                        {% else %}
+                          <span class="badge bg-danger px-3 py-2">
+                            <i class="fa fa-times-circle me-1"></i> Inactivo
+                          </span>
+                        {% endif %}
+                      </div>
+                    </div>
+                    <div id="perfilCamposEdicion" style="display:none;">
+                      <label class="perfil-form-label">Nombre</label>
+                      <input type="text" class="perfil-form-input" name="first_name" id="perfilNombreEdit" value="{{ user.first_name }}" disabled>
+                      <label class="perfil-form-label">Apellido</label>
+                      <input type="text" class="perfil-form-input" name="last_name" id="perfilApellidoEdit" value="{{ user.last_name }}" disabled>
+                    </div>
+                    <div class="perfil-btns-top" id="perfilBtnsGuardar" style="display:none;">
+                      <button type="button" class="btn btn-success" id="btnGuardarPerfil">
+                        <i class="fa fa-save me-1"></i> Guardar
+                      </button>
+                      <button type="button" class="btn btn-secondary" id="btnCancelarPerfil">
+                        Cancelar
+                      </button>
+                    </div>
+                    <div id="perfilMsg" class="mt-2"></div>
+                  </form>
+                  <!-- Formulario de cambio de contraseña -->
+                  <form id="formCambioPass" autocomplete="off" style="display:none;">
+                    <label class="perfil-form-label">Contraseña actual</label>
+                    <input type="password" class="perfil-form-input" name="old_password" id="passActual" autocomplete="current-password">
+                    <label class="perfil-form-label">Nueva contraseña</label>
+                    <input type="password" class="perfil-form-input" name="new_password1" id="passNueva" autocomplete="new-password">
+                    <label class="perfil-form-label">Confirmar nueva contraseña</label>
+                    <input type="password" class="perfil-form-input" name="new_password2" id="passNueva2" autocomplete="new-password">
+                    <div class="perfil-btns-top" id="perfilBtnsPass">
+                      <button type="button" class="btn btn-success" id="btnGuardarPass">
+                        <i class="fa fa-save me-1"></i> Guardar
+                      </button>
+                      <button type="button" class="btn btn-secondary" id="btnCancelarPass">
+                        Cancelar
+                      </button>
+                    </div>
+                    <div id="passMsg" class="mt-2"></div>
+                  </form>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var btnCambiarPass = document.getElementById('btnCambiarPass');
+      var formCambioPass = document.getElementById('formCambioPass');
+      var btnsPass = document.getElementById('perfilBtnsPass');
+      var btnGuardarPass = document.getElementById('btnGuardarPass');
+      var btnCancelarPass = document.getElementById('btnCancelarPass');
+      var passMsg = document.getElementById('passMsg');
+      var passActual = document.getElementById('passActual');
+      var passNueva = document.getElementById('passNueva');
+      var passNueva2 = document.getElementById('passNueva2');
+
+      if(btnCambiarPass) {
+        btnCambiarPass.addEventListener('click', function() {
+          divLectura.style.display = 'none';
+          divEdicion.style.display = 'none';
+          formCambioPass.style.display = 'block';
+          btnsTop.style.display = 'none';
+          btnsGuardar.style.display = 'none';
+          passMsg.textContent = '';
+          passMsg.innerHTML = '';
+          msg.textContent = '';
+          msg.innerHTML = '';
+          passActual.value = '';
+          passNueva.value = '';
+          passNueva2.value = '';
+        });
+      }
+      if(btnCancelarPass) {
+        btnCancelarPass.addEventListener('click', function() {
+          formCambioPass.style.display = 'none';
+          divLectura.style.display = 'block';
+          btnsTop.style.display = 'flex';
+          passMsg.textContent = '';
+          passMsg.innerHTML = '';
+        });
+      }
+      if(btnGuardarPass) {
+        btnGuardarPass.addEventListener('click', function() {
+          passMsg.innerHTML = '<span class="text-info">Guardando...</span>';
+          var data = {
+            old_password: passActual.value,
+            new_password1: passNueva.value,
+            new_password2: passNueva2.value,
+            csrfmiddlewaretoken: '{{ csrf_token }}'
+          };
+          fetch("{% url 'usuarios:cambiar_contrasena_ajax' %}", {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams(data)
+          })
+          .then(response => response.json())
+          .then(json => {
+            if(json.success) {
+              passMsg.innerHTML = '<span class="text-success">Contraseña cambiada correctamente.</span>';
+              formCambioPass.style.display = 'none';
+              divLectura.style.display = 'block';
+              btnsTop.style.display = 'flex';
+            } else {
+              let msgError = '';
+              if (typeof json.error === 'object') {
+                for (const campo in json.error) {
+                  let errores = json.error[campo];
+                  if (Array.isArray(errores)) {
+                    errores.forEach(function(err) {
+                      msgError += `<div>${err}</div>`;
+                    });
+                  } else {
+                    msgError += `<div>${errores}</div>`;
+                  }
+                }
+              } else {
+                msgError = json.error || 'Error al cambiar la contraseña.';
+              }
+              passMsg.innerHTML = '<span class="text-danger">' + msgError + '</span>';
+            }
+          })
+          .catch(() => {
+            passMsg.innerHTML = '<span class="text-danger">Error de red.</span>';
+          });
+        });
+      }
+    });
+</script>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+
+    document.addEventListener('DOMContentLoaded', function() {
+
+      var btn = document.getElementById('btnMiPerfil');
+      var btnEditar = document.getElementById('btnEditarPerfil');
+      var btnsGuardar = document.getElementById('perfilBtnsGuardar');
+      var btnsTop = document.getElementById('perfilBtnsTop');
+      var form = document.getElementById('perfilForm');
+      var msg = document.getElementById('perfilMsg');
+      var camposLectura = [
+        document.getElementById('perfilNombre'),
+        document.getElementById('perfilApellido')
+      ];
+      var camposEdicion = [
+        document.getElementById('perfilNombreEdit'),
+        document.getElementById('perfilApellidoEdit')
+      ];
+      var divLectura = document.getElementById('perfilCamposLectura');
+      var divEdicion = document.getElementById('perfilCamposEdicion');
+
+      var btnCambiarPass = document.getElementById('btnCambiarPass');
+      var formCambioPass = document.getElementById('formCambioPass');
+      var btnsPass = document.getElementById('perfilBtnsPass');
+      var btnGuardarPass = document.getElementById('btnGuardarPass');
+      var btnCancelarPass = document.getElementById('btnCancelarPass');
+      var passMsg = document.getElementById('passMsg');
+      var passActual = document.getElementById('passActual');
+      var passNueva = document.getElementById('passNueva');
+      var passNueva2 = document.getElementById('passNueva2');
+
+
+      if (btn) {
+        btn.addEventListener('click', function(e) {
+          divLectura.style.display = 'block';
+          divEdicion.style.display = 'none';
+          formCambioPass.style.display = 'none';
+          btnsTop.style.display = 'flex';
+          btnsGuardar.style.display = 'none';
+          msg.textContent = '';
+          msg.innerHTML = '';
+          passMsg.textContent = '';
+          passMsg.innerHTML = '';
+
+          camposLectura[0].value = "{{ user.first_name|escapejs }}";
+          camposLectura[1].value = "{{ user.last_name|escapejs }}";
+          camposEdicion[0].value = "{{ user.first_name|escapejs }}";
+          camposEdicion[1].value = "{{ user.last_name|escapejs }}";
+          camposEdicion.forEach(function(campo) { campo.disabled = true; });
+          passActual.value = '';
+          passNueva.value = '';
+          passNueva2.value = '';
+          var modal = document.getElementById('modalMiPerfil');
+          if (modal) {
+            var modalInstance = bootstrap.Modal.getOrCreateInstance(modal);
+            modalInstance.show();
+          }
+        });
+      }
+
+      if(btnEditar) {
+        btnEditar.addEventListener('click', function() {
+          msg.textContent = '';
+          msg.innerHTML = '';
+          divLectura.style.display = 'none';
+          divEdicion.style.display = 'block';
+          formCambioPass.style.display = 'none';
+          camposEdicion.forEach(function(campo) { campo.disabled = false; });
+          btnsTop.style.display = 'none';
+          btnsGuardar.style.display = 'flex';
+        });
+      }
+      var btnCancelar = document.getElementById('btnCancelarPerfil');
+      if(btnCancelar) {
+        btnCancelar.addEventListener('click', function() {
+          camposEdicion[0].value = "{{ user.first_name|escapejs }}";
+          camposEdicion[1].value = "{{ user.last_name|escapejs }}";
+          camposEdicion.forEach(function(campo) { campo.disabled = true; });
+          divEdicion.style.display = 'none';
+          divLectura.style.display = 'block';
+          formCambioPass.style.display = 'none';
+          btnsGuardar.style.display = 'none';
+          btnsTop.style.display = 'flex';
+          msg.innerHTML = '';
+        });
+      }
+      var btnGuardar = document.getElementById('btnGuardarPerfil');
+      if(btnGuardar) {
+        btnGuardar.addEventListener('click', function() {
+          msg.innerHTML = '<span class="text-info">Guardando...</span>';
+          var data = {
+            first_name: camposEdicion[0].value,
+            last_name: camposEdicion[1].value,
+            csrfmiddlewaretoken: '{{ csrf_token }}'
+          };
+          fetch("{% url 'usuarios:editar_perfil_modal' user.pk %}", {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams(data)
+          })
+          .then(response => response.json())
+          .then(json => {
+            if(json.success) {
+              msg.innerHTML = '<span class="text-success">Perfil actualizado correctamente.</span>';
+              setTimeout(function() { msg.innerHTML = ''; }, 1000);
+              camposEdicion.forEach(function(campo) { campo.disabled = true; });
+              divEdicion.style.display = 'none';
+              divLectura.style.display = 'block';
+              
+              camposLectura[0].value = camposEdicion[0].value;
+              camposLectura[1].value = camposEdicion[1].value;
+              btnsGuardar.style.display = 'none';
+              btnsTop.style.display = 'flex';
+            } else {
+              msg.innerHTML = '<span class="text-danger">' + (json.error || 'Error al actualizar.') + '</span>';
+              setTimeout(function() { msg.innerHTML = ''; }, 1000);
+            }
+          })
+          .catch(() => {
+            msg.innerHTML = '<span class="text-danger">Error de red.</span>';
+          });
+        });
+      }
+      if(btnCambiarPass) {
+        btnCambiarPass.addEventListener('click', function() {
+          divLectura.style.display = 'none';
+          divEdicion.style.display = 'none';
+          formCambioPass.style.display = 'block';
+          btnsTop.style.display = 'none';
+          btnsGuardar.style.display = 'none';
+          passMsg.textContent = '';
+          passMsg.innerHTML = '';
+          passActual.value = '';
+          passNueva.value = '';
+          passNueva2.value = '';
+        });
+      }
+      if(btnCancelarPass) {
+        btnCancelarPass.addEventListener('click', function() {
+          formCambioPass.style.display = 'none';
+          divLectura.style.display = 'block';
+          btnsTop.style.display = 'flex';
+          passMsg.textContent = '';
+          passMsg.innerHTML = '';
+        });
+      }
+      if(btnGuardarPass) {
+        btnGuardarPass.addEventListener('click', function() {
+          passMsg.innerHTML = '<span class="text-info">Guardando...</span>';
+          var data = {
+            old_password: passActual.value,
+            new_password1: passNueva.value,
+            new_password2: passNueva2.value,
+            csrfmiddlewaretoken: '{{ csrf_token }}'
+          };
+          fetch("{% url 'usuarios:cambiar_contrasena_ajax' %}", {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams(data)
+          })
+          .then(response => response.json())
+          .then(json => {
+            if(json.success) {
+              passMsg.innerHTML = '<span class="text-success">Contraseña cambiada correctamente.</span>';
+              setTimeout(function() { passMsg.innerHTML = ''; }, 1000);
+              formCambioPass.style.display = 'none';
+              divLectura.style.display = 'block';
+              btnsTop.style.display = 'flex';
+            } else {
+              let msgError = '';
+              let esObligatorio = false;
+              if (typeof json.error === 'object') {
+                for (const campo in json.error) {
+                  let errores = json.error[campo];
+                  if (Array.isArray(errores)) {
+                    errores.forEach(function(err) {
+                      msgError += `<div>${err}</div>`;
+                      if (err === 'Este campo es obligatorio.') esObligatorio = true;
+                    });
+                  } else {
+                    msgError += `<div>${errores}</div>`;
+                    if (errores === 'Este campo es obligatorio.') esObligatorio = true;
+                  }
+                }
+              } else {
+                msgError = json.error || 'Error al cambiar la contraseña.';
+              }
+              passMsg.innerHTML = '<span class="text-danger">' + msgError + '</span>';
+              if (!esObligatorio) {
+                setTimeout(function() { passMsg.innerHTML = ''; }, 1000);
+              } else {
+
+                var limpiarMsgObligatorio = function() {
+                  passMsg.innerHTML = '';
+                  passActual.removeEventListener('input', limpiarMsgObligatorio);
+                  passNueva.removeEventListener('input', limpiarMsgObligatorio);
+                  passNueva2.removeEventListener('input', limpiarMsgObligatorio);
+                };
+                passActual.addEventListener('input', limpiarMsgObligatorio);
+                passNueva.addEventListener('input', limpiarMsgObligatorio);
+                passNueva2.addEventListener('input', limpiarMsgObligatorio);
+              }
+            }
+          })
+          .catch(() => {
+            passMsg.innerHTML = '<span class="text-danger">Error de red.</span>';
+          });
+        });
+      }
+    });
+    </script>
     <script src="{% static 'principal/js/scripts.js'%}"></script>
 
     <script src="{% static 'principal/assets/demo/chart-bar-demo.js'%}"></script>
@@ -613,7 +962,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
     <script>
     document.addEventListener("DOMContentLoaded", function() {
-      // Filtro de menú lateral mejorado
       const searchInput = document.getElementById('navbarSearch');
       const searchButton = document.getElementById('btnNavbarSearch');
 
@@ -642,12 +990,29 @@
       if (searchInput) searchInput.addEventListener('input', filtrarMenu);
       if (searchButton) searchButton.addEventListener('click', filtrarMenu);
 
-      // Top 10 productos más pedidos (se mantiene el gráfico horizontal)
       const myAreaEl = document.getElementById('myAreaChart');
       if (myAreaEl) {
         fetch('/dashboard/top-10-productos/')
           .then(response => response.json())
           .then(({ labels, data }) => {
+            if (!labels || labels.length === 0 || !data || data.length === 0) {
+              const parent = myAreaEl.parentElement;
+              let advertencia = document.getElementById('advertencia-top10');
+              if (!advertencia) {
+                advertencia = document.createElement('div');
+                advertencia.id = 'advertencia-top10';
+                advertencia.className = 'alert alert-warning mt-3';
+                advertencia.innerText = 'No hay datos suficientes para mostrar el gráfico de Top 10 productos más pedidos.';
+                parent.appendChild(advertencia);
+              }
+              myAreaEl.style.display = 'none';
+              return;
+            } else {
+
+              myAreaEl.style.display = '';
+              const advertencia = document.getElementById('advertencia-top10');
+              if (advertencia) advertencia.remove();
+            }
             const ctx = myAreaEl.getContext('2d');
             new Chart(ctx, {
               type: 'bar',
@@ -687,7 +1052,6 @@
           });
       }
 
-      // Tabla de productos por debajo del stock mínimo
       const tablaStock = document.getElementById('tabla-stock-minimo');
       const mensajeVacio = document.getElementById('mensaje-stock-vacio');
       if (tablaStock) {
@@ -707,6 +1071,19 @@
           });
       }
     });
+    </script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const body = document.body;
+        const navbarBrand = document.getElementById('navbarBrand');
+        function updateNavbarBrand() {
+          const isMinimized = body.classList.contains('sb-sidenav-toggled');
+          navbarBrand.style.display = isMinimized ? 'none' : '';
+        }
+        updateNavbarBrand();
+        const observer = new MutationObserver(updateNavbarBrand);
+        observer.observe(body, { attributes: true, attributeFilter: ['class'] });
+      });
     </script>
   </body>
 </html>

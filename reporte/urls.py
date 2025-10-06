@@ -6,4 +6,5 @@ urlpatterns = [
     path('reportes/rep_ventas_generales', views.rep_ventas_generales_view, name='rep_ventas_generales'),
     path('reportes/categorias_api', views.categorias_api, name='categorias_api'),
     path('reportes/vendedores_api', views.vendedores_api, name='vendedores_api'),
+    path('reportes/proyeccion_api', views.proyeccion_api, name='proyeccion_api'),
 ]
