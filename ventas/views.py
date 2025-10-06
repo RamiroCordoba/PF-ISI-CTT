@@ -4,7 +4,7 @@ from .forms import ClienteForm
 from django.views.decorators.http import require_POST
 from django.shortcuts import render,redirect
 from .models import *
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import ListView,CreateView,UpdateView,DeleteView,DetailView
 from django.urls import reverse_lazy
 from .forms import *
@@ -27,7 +27,17 @@ from django.contrib.auth.decorators import login_required
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 
-class IvaList(LoginRequiredMixin, ListView):
+# Mixin para bloquear acceso a vendedores
+class NoVendedoresMixin(UserPassesTestMixin):
+    def test_func(self):
+        user = self.request.user
+        # Solo restringe si es vendedor y no es staff ni superuser
+        return not (user.groups.filter(name='vendedor').exists() and not (user.is_staff or user.is_superuser))
+    def handle_no_permission(self):
+        from django.core.exceptions import PermissionDenied
+        raise PermissionDenied()
+
+class IvaList(LoginRequiredMixin, NoVendedoresMixin, ListView):
     model = Iva
     template_name = "iva/iva_list.html"
     context_object_name = "ivas"
@@ -60,30 +70,30 @@ class IvaList(LoginRequiredMixin, ListView):
 
 
   
-class IvaCreate(LoginRequiredMixin,CreateView):
+class IvaCreate(LoginRequiredMixin, NoVendedoresMixin, CreateView):
      model=Iva
      fields = ["nombre", "porcentaje", "activo"]
      template_name="iva/iva_form.html"
      success_url = reverse_lazy("mis_iva")
      
-class IvaUpdate(LoginRequiredMixin,UpdateView):
+class IvaUpdate(LoginRequiredMixin, NoVendedoresMixin, UpdateView):
      model=Iva
      fields = ["nombre", "porcentaje", "activo"]
      template_name="iva/iva_form.html"
      success_url = reverse_lazy("mis_iva")
 
-class IvaDelete(LoginRequiredMixin,DeleteView):
+class IvaDelete(LoginRequiredMixin, NoVendedoresMixin, DeleteView):
      model=Iva
      template_name="iva/iva_confirm_delete.html"
      success_url = reverse_lazy("mis_iva")
 
-class IvaDetail(DetailView):
+class IvaDetail(NoVendedoresMixin, DetailView):
      model=Iva
      template_name="iva/iva_details.html"
      context_object_name = 'iva'
 
 
-class MonedaList(LoginRequiredMixin, ListView):
+class MonedaList(LoginRequiredMixin, NoVendedoresMixin, ListView):
     model = Moneda
     template_name = "moneda/moneda_list.html"
     context_object_name = "monedas"
@@ -117,29 +127,29 @@ class MonedaList(LoginRequiredMixin, ListView):
 
 
   
-class MonedaCreate(LoginRequiredMixin,CreateView):
+class MonedaCreate(LoginRequiredMixin, NoVendedoresMixin, CreateView):
      model=Moneda
      fields = ["nombre", "simbolo", "activo"]
      template_name="moneda/moneda_form.html"
      success_url = reverse_lazy("mis_monedas")
      
-class MonedaUpdate(LoginRequiredMixin,UpdateView):
+class MonedaUpdate(LoginRequiredMixin, NoVendedoresMixin, UpdateView):
      model=Moneda
      fields = ["nombre", "simbolo", "activo"]
      template_name="moneda/moneda_form.html"
      success_url = reverse_lazy("mis_monedas")
 
-class MonedaDelete(LoginRequiredMixin,DeleteView):
+class MonedaDelete(LoginRequiredMixin, NoVendedoresMixin, DeleteView):
      model=Moneda
      template_name="moneda/moneda_confirm_delete.html"
      success_url = reverse_lazy("mis_monedas")
 
-class MonedaDetail(DetailView):
+class MonedaDetail(NoVendedoresMixin, DetailView):
      model=Moneda
      template_name="moneda/moneda_details.html"
      context_object_name = 'moneda'
 
-class CondicionFiscalList(LoginRequiredMixin, ListView):
+class CondicionFiscalList(LoginRequiredMixin, NoVendedoresMixin, ListView):
     model = CondicionFiscal
     template_name = "condicionfiscal/condicionfiscal_list.html"
     context_object_name = "condicionesFiscales"
@@ -173,19 +183,19 @@ class CondicionFiscalList(LoginRequiredMixin, ListView):
 
 
   
-class CondicionFiscalCreate(LoginRequiredMixin,CreateView):
+class CondicionFiscalCreate(LoginRequiredMixin, NoVendedoresMixin, CreateView):
      model=CondicionFiscal
      fields = ["nombre", "activo"]
      template_name="condicionFiscal/condicionfiscal_form.html"
      success_url = reverse_lazy("mis_condiciones_fiscales")
      
-class CondicionFiscalUpdate(LoginRequiredMixin,UpdateView):
+class CondicionFiscalUpdate(LoginRequiredMixin, NoVendedoresMixin, UpdateView):
      model=CondicionFiscal
      fields = ["nombre", "activo"]
      template_name="condicionFiscal/condicionfiscal_form.html"
      success_url = reverse_lazy("mis_condiciones_fiscales")
 
-class CondicionFiscalDelete(LoginRequiredMixin,DeleteView):
+class CondicionFiscalDelete(LoginRequiredMixin, NoVendedoresMixin, DeleteView):
      model=CondicionFiscal
      template_name="condicionFiscal/condicionfiscal_confirm_delete.html"
      success_url = reverse_lazy("mis_condiciones_fiscales")
@@ -235,7 +245,7 @@ class CondicionFiscalDelete(LoginRequiredMixin,DeleteView):
 
          return super().post(request, *args, **kwargs)
 
-class CondicionFiscalDetail(DetailView):
+class CondicionFiscalDetail(NoVendedoresMixin, DetailView):
      model=CondicionFiscal
      template_name="condicionFiscal/condicionfiscal_details.html"
      context_object_name = 'condicionFiscal'
