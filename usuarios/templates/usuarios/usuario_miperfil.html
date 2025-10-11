@@ -1,7 +1,79 @@
 {% extends 'dashboard/principal.html' %}
 {% block Contenido %}
 {% load static %}
-<link rel="stylesheet" href="{% static 'usuarios/css/usuario_miperfil.css' %}">
+<style>
+  .perfil-bg-izq {
+    background: #ff8800;
+    border-top-right-radius: 200px;
+    border-bottom-right-radius: 200px;
+    min-height: 450px;
+    position: relative;
+  }
+  .perfil-img-circulo {
+    width: 180px;
+    height: 180px;
+    background: #888;
+    border-radius: 50%;
+    border: 6px solid #fff;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #eee;
+    font-size: 1.1rem;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .perfil-form-label {
+    font-weight: 600;
+    color: #888;
+    margin-bottom: 0.2rem;
+  }
+  .perfil-form-input {
+    width: 100%;
+    border: 2px solid #aaa;
+    border-radius: 4px;
+    padding: 6px 10px;
+    background: #f8f8f8;
+    color: #444;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+  }
+  .perfil-form-input[disabled] {
+    background: #f3f3f3;
+    color: #888;
+    font-weight: 500;
+  }
+
+  .perfil-btns-top {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.2rem;
+    justify-content: flex-end;
+  }
+
+  /* Botones estilo Bootstrap outline */
+  .perfil-btn-volver {
+    @apply btn btn-outline-secondary;
+  }
+  .perfil-btn-editar {
+    @apply btn btn-outline-success;
+  }
+  .perfil-btn-cambiar {
+    @apply btn btn-outline-warning;
+    color: #ff8800 !important;
+    border-color: #ff8800 !important;
+    background: #fff !important;
+  }
+  .perfil-btn-cambiar:hover {
+    background: #ec8d10ff !important;
+    color: #fff !important;
+    border-color: #ff8800 !important;
+  }
+</style>
+
 <div class="container-fluid px-4">
   <h1 class="mt-4">Mi Perfil</h1>
   <hr style="height: 5px; background-color: black; border: none" />
