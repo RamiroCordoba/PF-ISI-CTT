@@ -81,254 +81,410 @@
         <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
           <div class="sb-sidenav-menu">
             <div class="nav">
-              <style>
-                :root {
-                  --sidebar-width: 340px;
-                }
-                /* Solo estilos visuales de los módulos, el layout se maneja en el CSS global */
-                .modulo-menu {
-                  background: linear-gradient(135deg, #232323 60%, #292c31 100%);
-                  border-radius: 28px;
-                  margin-bottom: 16px;
-                  padding: 22px 0 18px 0;
-                  box-shadow: 0 4px 24px 0 rgba(44,62,80,0.10);
-                  width: 100%;
-                  max-width: 500px;
-                  margin-left: auto;
-                  margin-right: auto;
-                  transition: box-shadow 0.18s;
-                }
-                .modulo-menu:hover {
-                  box-shadow: 0 8px 32px 0 rgba(44,62,80,0.18);
-                }
-                .modulo-menu .sb-sidenav-menu-heading {
-                  color: #ffb347;
-                  font-size: 1.18rem;
-                  font-weight: 800;
-                  margin-bottom: 18px;
-                  margin-top: 0;
-                  letter-spacing: 1.5px;
-                  padding-left: 28px;
-                  text-shadow: 0 2px 8px rgba(0,0,0,0.10);
-                  text-transform: uppercase;
-                }
-                .modulo-menu .nav-link {
-                  border-radius: 8px;
-                  margin-bottom: 2px;
-                  background: none;
-                  color: #f5f5f5;
-                  font-weight: 600;
-                  font-size: 1.09rem;
-                  padding: 9px 0 9px 36px;
-                  transition: background 0.18s, color 0.18s, box-shadow 0.18s;
-                  box-shadow: none;
-                  position: relative;
-                  letter-spacing: 0.5px;
-                }
-                .modulo-menu .nav-link:hover, .modulo-menu .nav-link:focus {
-                  background: linear-gradient(90deg, #ffb34722 0%, #232323 100%);
-                  color: #ffb347;
-                  box-shadow: 0 2px 12px 0 rgba(255,179,71,0.10);
-                  text-decoration: none;
-                  outline: none;
-                }
-                .modulo-menu .nav-link.active {
-                  background: linear-gradient(90deg, #ffb34744 0%, #232323 100%);
-                  color: #ffb347;
-                  font-weight: 800;
-                }
-                .modulo-menu .collapse {
-                  background: none;
-                }
-                .modulo-menu .sb-sidenav-collapse-arrow, .modulo-menu .sb-nav-link-icon {
-                  display: none;
-                }
-                .modulo-menu .sb-sidenav-menu-nested {
-                  margin-left: 0;
-                  padding-left: 0;
-                }
-                /* Separador visual entre módulos */
-                .modulo-menu + .modulo-menu {
-                  border-top: 2px solid #292c31;
-                  margin-top: 0;
-                  padding-top: 12px;
-                }
-              </style>
-              <!-- MÓDULO PRINCIPAL -->
-              <div class="modulo-menu">
-                <div class="sb-sidenav-menu-heading">Principal</div>
-                <a class="nav-link" href="{% url 'dashboard'%}">
-                  <i class="fas fa-home me-2"></i> Inicio
-                </a>
-                {% if not es_vendedor or user.is_superuser or user.is_staff %}
-                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayouts" aria-expanded="false" aria-controls="collapseLayouts">
-                  <i class="fas fa-users me-2"></i> Usuarios
-                  <div class="sb-sidenav-collapse-arrow">
-                    <i class="fas fa-angle-down"></i>
+              <!-- Navbar Search-->
+              <div class="sb-sidenav-menu-heading">
+                <form
+                  class="d-none d-md-inline-block form-inline ms-auto me-0 me-md-3 my-2 my-md-0"
+                >
+                  <div class="input-group">
+                    <input
+                      id="navbarSearch"
+                      class="form-control"
+                      type="text"
+                      placeholder="Buscar"
+                      aria-label="Buscar"
+                      aria-describedby="btnNavbarSearch"
+                    />
+                    <button
+                      class="btn btn-primary"
+                      id="btnNavbarSearch"
+                      type="button"
+                    >
+                      <i class="fas fa-search"></i>
+                    </button>
                   </div>
-                </a>
-                <div class="collapse" id="collapseLayouts" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
-                  <nav class="sb-sidenav-menu-nested nav">
-                    <a class="nav-link" href="{% url 'usuarios:listar_usuarios' %}"><i class="fas fa-list me-2"></i> Listas de usuarios</a>
-                    <a class="nav-link" href="{% url 'usuarios:nuevo_usuario' %}"><i class="fas fa-user-plus me-2"></i> Ingresar nuevo usuario</a>
-                  </nav>
-                </div>
-                {% endif %}
-                {% if user.is_superuser or user.is_staff %}
-                <a class="nav-link" href="{% url 'base_para_informes' %}">
-                  <i class="fas fa-chart-bar me-2"></i> Informes
-                </a>
-                {% endif %}
-                {% if not es_vendedor or user.is_superuser or user.is_staff %}
-                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseEstacionalidades" aria-expanded="false" aria-controls="collapseEstacionalidades">
-                  <i class="fas fa-calendar-alt me-2"></i> Estacionalidades
-                  <div class="sb-sidenav-collapse-arrow">
-                    <i class="fas fa-angle-down"></i>
-                  </div>
-                </a>
-                <div class="collapse" id="collapseEstacionalidades" aria-labelledby="headingTwo" data-bs-parent="#sidenavAccordion">
-                  <nav class="sb-sidenav-menu-nested nav">
-                    <a class="nav-link" href="{% url 'mis_estacionalidades' %}"><i class="fas fa-list me-2"></i> Lista de estacionalidades</a>
-                  </nav>
-                </div>
-                {% endif %}
+                </form>
               </div>
-              <!-- MÓDULO VENTA -->
-              <div class="modulo-menu">
-                <div class="sb-sidenav-menu-heading">Venta</div>
-                {% if not es_vendedor or user.is_superuser or user.is_staff %}
-                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseFormasPago" aria-expanded="false" aria-controls="collapseFormasPago">
-                  <i class="fas fa-credit-card me-2"></i> Formas de Pago
-                  <div class="sb-sidenav-collapse-arrow">
-                    <i class="fas fa-angle-down"></i>
-                  </div>
-                </a>
-                <div class="collapse" id="collapseFormasPago" aria-labelledby="headingFormasPago" data-bs-parent="#sidenavAccordion">
-                  <nav class="sb-sidenav-menu-nested nav">
-                    <a class="nav-link" href="{% url 'mis_formasdepago' %}"><i class="fas fa-list me-2"></i> Lista de formas de pago</a>
-                    <a class="nav-link" href="{% url 'nueva_formadepago' %}"><i class="fas fa-plus me-2"></i> Nueva forma de pago</a>
-                  </nav>
+              <div class="sb-sidenav-menu-heading">Principal</div>
+              <a class="nav-link" href="{% url 'dashboard'%}">
+                <div class="sb-nav-link-icon">
+                  <i class="fas fa-tachometer-alt"></i>
                 </div>
-                {% endif %}
-                {% if not es_vendedor or user.is_superuser or user.is_staff %}
-                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseIva" aria-expanded="false" aria-controls="collapseIva">
-                  <i class="fas fa-percentage me-2"></i> IVA
-                  <div class="sb-sidenav-collapse-arrow">
-                    <i class="fas fa-angle-down"></i>
-                  </div>
-                </a>
-                <div class="collapse" id="collapseIva" aria-labelledby="headingIva" data-bs-parent="#sidenavAccordion">
-                  <nav class="sb-sidenav-menu-nested nav">
-                    <a class="nav-link" href="{% url 'mis_iva' %}"><i class="fas fa-list me-2"></i> Lista de IVA</a>
-                    <a class="nav-link" href="{% url 'nuevo_iva' %}"><i class="fas fa-plus me-2"></i> Nuevo IVA</a>
-                  </nav>
+                Inicio
+              </a>
+              {% if user.is_superuser or user.is_staff %}
+              <a
+                class="nav-link collapsed"
+                href="#"
+                data-bs-toggle="collapse"
+                data-bs-target="#collapseLayouts"
+                aria-expanded="false"
+                aria-controls="collapseLayouts"
+              >
+                <div class="sb-nav-link-icon">
+                  <i class="fas fa-columns"></i>
                 </div>
-                {% endif %}
-                {% if not es_vendedor or user.is_superuser or user.is_staff %}
-                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseMoneda" aria-expanded="false" aria-controls="collapseMoneda">
-                  <i class="fas fa-coins me-2"></i> Moneda
-                  <div class="sb-sidenav-collapse-arrow">
-                    <i class="fas fa-angle-down"></i>
-                  </div>
-                </a>
-                <div class="collapse" id="collapseMoneda" aria-labelledby="headingMoneda" data-bs-parent="#sidenavAccordion">
-                  <nav class="sb-sidenav-menu-nested nav">
-                    <a class="nav-link" href="{% url 'mis_monedas' %}"><i class="fas fa-list me-2"></i> Lista de Monedas</a>
-                    <a class="nav-link" href="{% url 'nueva_moneda' %}"><i class="fas fa-plus me-2"></i> Nuevo Moneda</a>
-                  </nav>
+                Usuarios
+                <div class="sb-sidenav-collapse-arrow">
+                  <i class="fas fa-angle-down"></i>
                 </div>
-                {% endif %}
-                {% if not es_vendedor or user.is_superuser or user.is_staff %}
-                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseCondicionFiscal" aria-expanded="false" aria-controls="collapseCondicionFiscal">
-                  <i class="fas fa-file-invoice-dollar me-2"></i> Condicion Fiscal
-                  <div class="sb-sidenav-collapse-arrow">
-                    <i class="fas fa-angle-down"></i>
-                  </div>
-                </a>
-                <div class="collapse" id="collapseCondicionFiscal" aria-labelledby="headingcCondicionFiscal" data-bs-parent="#sidenavAccordion">
-                  <nav class="sb-sidenav-menu-nested nav">
-                    <a class="nav-link" href="{% url 'mis_condiciones_fiscales' %}"><i class="fas fa-list me-2"></i> Lista de Condiciones Fiscales</a>
-                    <a class="nav-link" href="{% url 'nueva_condicion_fiscal' %}"><i class="fas fa-plus me-2"></i> Nueva Condicion Fiscal</a>
-                  </nav>
-                </div>
-                {% endif %}
-                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseVentas" aria-expanded="false" aria-controls="collapseVentas">
-                  <i class="fas fa-shopping-cart me-2"></i> Ventas
-                  <div class="sb-sidenav-collapse-arrow">
-                    <i class="fas fa-angle-down"></i>
-                  </div>
-                </a>
-                <div class="collapse" id="collapseVentas" aria-labelledby="headingVentas" data-bs-parent="#sidenavAccordion">
-                  <nav class="sb-sidenav-menu-nested nav">
-                    <a class="nav-link" href="{% url 'mis_ventas' %}"><i class="fas fa-list me-2"></i> Lista de Ventas</a>
-                    <a class="nav-link" href="{% url 'nueva_venta' %}"><i class="fas fa-plus me-2"></i> Nueva Ventas</a>
-                  </nav>
-                </div>
-                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseNotas" aria-expanded="false" aria-controls="collapseNotas">
-                  <i class="fas fa-file-invoice me-2"></i> Notas de Crédito
-                  <div class="sb-sidenav-collapse-arrow">
-                    <i class="fas fa-angle-down"></i>
-                  </div>
-                </a>
-                <div class="collapse" id="collapseNotas" aria-labelledby="headingNotas" data-bs-parent="#sidenavAccordion">
-                  <nav class="sb-sidenav-menu-nested nav">
-                    <a class="nav-link" href="{% url 'mis_notascredito' %}"><i class="fas fa-list me-2"></i> Lista de Notas de Crédito</a>
-                  </nav>
-                </div>
-                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseClientes" aria-expanded="false" aria-controls="collapseClientes">
-                  <i class="fas fa-user-friends me-2"></i> Clientes
-                  <div class="sb-sidenav-collapse-arrow">
-                    <i class="fas fa-angle-down"></i>
-                  </div>
-                </a>
-                <div class="collapse" id="collapseClientes" aria-labelledby="headingClientes" data-bs-parent="#sidenavAccordion">
-                  <nav class="sb-sidenav-menu-nested nav">
-                    <a class="nav-link" href="{% url 'mis_clientes' %}"><i class="fas fa-list me-2"></i> Lista de Clientes</a>
-                    <a class="nav-link" href="{% url 'nuevo_cliente' %}"><i class="fas fa-plus me-2"></i> Nuevo Cliente</a>
-                  </nav>
-                </div>
+              </a>
+              <div
+                class="collapse"
+                id="collapseLayouts"
+                aria-labelledby="headingOne"
+                data-bs-parent="#sidenavAccordion"
+              >
+                <nav class="sb-sidenav-menu-nested nav">
+                  <a
+                    class="nav-link"
+                    href="{% url 'usuarios:listar_usuarios' %}"
+                    >Listas de usuarios</a
+                  >
+                  <a class="nav-link" href="{% url 'usuarios:nuevo_usuario' %}"
+                    >Ingresar nuevo usuario</a
+                  >
+                </nav>
               </div>
-              <!-- MÓDULO PEDIDOS -->
-              <div class="modulo-menu">
-                <div class="sb-sidenav-menu-heading">Pedidos</div>
-                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePedidos" aria-expanded="false" aria-controls="collapsePedidos">
-                  <i class="fas fa-truck me-2"></i> Pedidos
-                  <div class="sb-sidenav-collapse-arrow">
-                    <i class="fas fa-angle-down"></i>
-                  </div>
-                </a>
-                <div class="collapse" id="collapsePedidos" aria-labelledby="headingPedidos" data-bs-parent="#sidenavAccordion">
-                  <nav class="sb-sidenav-menu-nested nav">
-                    <a class="nav-link" href="{% url 'listar_pedidos' %}"><i class="fas fa-list me-2"></i> Lista de pedidos</a>
-                    <a class="nav-link" href="{% url 'nuevo_pedido' %}"><i class="fas fa-plus me-2"></i> Nuevo pedido</a>
-                  </nav>
+              {% endif %}
+              <a
+                class="nav-link collapsed"
+                href="#"
+                data-bs-toggle="collapse"
+                data-bs-target="#collapseProductos"
+                aria-expanded="false"
+                aria-controls="collapseProductos"
+              >
+                <div class="sb-nav-link-icon">
+                  <i class="fas fa-columns"></i>
                 </div>
-                {% if not es_vendedor or user.is_superuser or user.is_staff %}
-                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseProductos" aria-expanded="false" aria-controls="collapseProductos">
-                  <i class="fas fa-boxes-stacked me-2"></i> Productos
-                  <div class="sb-sidenav-collapse-arrow">
-                    <i class="fas fa-angle-down"></i>
-                  </div>
-                </a>
-                <div class="collapse" id="collapseProductos" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
-                  <nav class="sb-sidenav-menu-nested nav">
-                    <a class="nav-link" href="{% url 'mis_articulos' %}"><i class="fas fa-list me-2"></i> Lista de productos</a>
-                    <a class="nav-link" href="{% url 'categorias'%}"><i class="fas fa-tags me-2"></i> Categorias de productos</a>
-                  </nav>
+                Productos
+                <div class="sb-sidenav-collapse-arrow">
+                  <i class="fas fa-angle-down"></i>
                 </div>
-                {% endif %}
-                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseProveedores" aria-expanded="false" aria-controls="collapseProveedores">
-                  <i class="fas fa-people-carry-box me-2"></i> Proveedores
-                  <div class="sb-sidenav-collapse-arrow">
-                    <i class="fas fa-angle-down"></i>
-                  </div>
-                </a>
-                <div class="collapse" id="collapseProveedores" aria-labelledby="headingTwo" data-bs-parent="#sidenavAccordion">
-                  <nav class="sb-sidenav-menu-nested nav">
-                    <a class="nav-link" href="{% url 'mis_proveedores' %}"><i class="fas fa-list me-2"></i> Lista de proveedores</a>
-                  </nav>
-                </div>
+              </a>
+              <div
+                class="collapse"
+                id="collapseProductos"
+                aria-labelledby="headingOne"
+                data-bs-parent="#sidenavAccordion"
+              >
+                <nav class="sb-sidenav-menu-nested nav">
+                  <a class="nav-link" href="{% url 'mis_articulos' %}"
+                    >Lista de productos</a
+                  >
+                  <a class="nav-link" href="{% url 'categorias'%}"
+                    >Categorias de productos</a
+                  >
+                </nav>
               </div>
+              <a
+              class="nav-link collapsed"
+              href="#"
+              data-bs-toggle="collapse"
+              data-bs-target="#collapsePedidos"
+              aria-expanded="false"
+              aria-controls="collapsePedidos"
+            >
+              <div class="sb-nav-link-icon">
+                <i class="fas fa-truck"></i>
+              </div>
+              Pedidos
+              <div class="sb-sidenav-collapse-arrow">
+                <i class="fas fa-angle-down"></i>
+              </div>
+            </a>
+            <div
+              class="collapse"
+              id="collapsePedidos"
+              aria-labelledby="headingPedidos"
+              data-bs-parent="#sidenavAccordion"
+            >
+              <nav class="sb-sidenav-menu-nested nav">
+                <a class="nav-link" href="{% url 'listar_pedidos' %}">
+                  Lista de pedidos
+                </a>
+                <a class="nav-link" href="{% url 'nuevo_pedido' %}">
+                    Nuevo pedido
+                </a>
+              </nav>
+            </div>
+              <a
+                class="nav-link collapsed"
+                href="#"
+                data-bs-toggle="collapse"
+                data-bs-target="#collapseProveedores"
+                aria-expanded="false"
+                aria-controls="collapseProveedores"
+              >
+                <div class="sb-nav-link-icon">
+                  <i class="fas fa-book-open"></i>
+                </div>
+                Proveedores
+                <div class="sb-sidenav-collapse-arrow">
+                  <i class="fas fa-angle-down"></i>
+                </div>
+              </a>
+              <div
+                class="collapse"
+                id="collapseProveedores"
+                aria-labelledby="headingTwo"
+                data-bs-parent="#sidenavAccordion"
+              >
+                <nav class="sb-sidenav-menu-nested nav">
+                  <a class="nav-link" href="{% url 'mis_proveedores' %}">
+                    Lista de proveedores
+                  </a>
+                </nav>
+              </div>
+              <a
+                class="nav-link collapsed"
+                href="#"
+                data-bs-toggle="collapse"
+                data-bs-target="#collapseEstacionalidades"
+                aria-expanded="false"
+                aria-controls="collapseEstacionalidades"
+              >
+                <div class="sb-nav-link-icon">
+                  <i class="fas fa-book-open"></i>
+                </div>
+                Estacionalidades
+                <div class="sb-sidenav-collapse-arrow">
+                  <i class="fas fa-angle-down"></i>
+                </div>
+              </a>
+              <div
+                class="collapse"
+                id="collapseEstacionalidades"
+                aria-labelledby="headingTwo"
+                data-bs-parent="#sidenavAccordion"
+              >
+                <nav class="sb-sidenav-menu-nested nav">
+                  <a class="nav-link" href="{% url 'mis_estacionalidades' %}">
+                    Lista de estacionalidades
+                  </a>
+                </nav>
+              </div>
+              <a
+                class="nav-link collapsed"
+                href="#"
+                data-bs-toggle="collapse"
+                data-bs-target="#collapseFormasPago"
+                aria-expanded="false"
+                aria-controls="collapseFormasPago"
+              >
+                <div class="sb-nav-link-icon">
+                  <i class="fas fa-credit-card"></i>
+                </div>
+                Formas de Pago
+                <div class="sb-sidenav-collapse-arrow">
+                  <i class="fas fa-angle-down"></i>
+                </div>
+              </a>
+              <div
+                class="collapse"
+                id="collapseFormasPago"
+                aria-labelledby="headingFormasPago"
+                data-bs-parent="#sidenavAccordion"
+              >
+                <nav class="sb-sidenav-menu-nested nav">
+                  <a class="nav-link" href="{% url 'mis_formasdepago' %}">
+                    Lista de formas de pago
+                  </a>
+                  <a class="nav-link" href="{% url 'nueva_formadepago' %}">
+                    Nueva forma de pago
+                  </a>
+                </nav>
+              </div>
+
+              <a
+                class="nav-link collapsed"
+                href="#"
+                data-bs-toggle="collapse"
+                data-bs-target="#collapseIva"
+                aria-expanded="false"
+                aria-controls="collapseIva"
+              >
+                <div class="sb-nav-link-icon">
+                  <i class="fas fa-credit-card"></i>
+                </div>
+                IVA
+                <div class="sb-sidenav-collapse-arrow">
+                  <i class="fas fa-angle-down"></i>
+                </div>
+              </a>
+              <div
+                class="collapse"
+                id="collapseIva"
+                aria-labelledby="headingIva"
+                data-bs-parent="#sidenavAccordion"
+              >
+                <nav class="sb-sidenav-menu-nested nav">
+                  <a class="nav-link" href="{% url 'mis_iva' %}">
+                    Lista de IVA
+                  </a>
+                  <a class="nav-link" href="{% url 'nuevo_iva' %}">
+                    Nuevo IVA
+                  </a>
+                </nav>
+              </div>
+                <a
+                class="nav-link collapsed"
+                href="#"
+                data-bs-toggle="collapse"
+                data-bs-target="#collapseMoneda"
+                aria-expanded="false"
+                aria-controls="collapseMoneda"
+              >
+                <div class="sb-nav-link-icon">
+                  <i class="fas fa-credit-card"></i>
+                </div>
+                Moneda
+                <div class="sb-sidenav-collapse-arrow">
+                  <i class="fas fa-angle-down"></i>
+                </div>
+              </a>
+              <div
+                class="collapse"
+                id="collapseMoneda"
+                aria-labelledby="headingMoneda"
+                data-bs-parent="#sidenavAccordion"
+              >
+                <nav class="sb-sidenav-menu-nested nav">
+                  <a class="nav-link" href="{% url 'mis_monedas' %}">
+                    Lista de Monedas
+                  </a>
+                  <a class="nav-link" href="{% url 'nueva_moneda' %}">
+                    Nuevo Moneda
+                  </a>
+                </nav>
+              </div>
+                <a
+                class="nav-link collapsed"
+                href="#"
+                data-bs-toggle="collapse"
+                data-bs-target="#collapseCondicionFiscal"
+                aria-expanded="false"
+                aria-controls="collapseCondicionFiscal"
+              >
+                <div class="sb-nav-link-icon">
+                  <i class="fas fa-credit-card"></i>
+                </div>
+                Condicion Fiscal
+                <div class="sb-sidenav-collapse-arrow">
+                  <i class="fas fa-angle-down"></i>
+                </div>
+              </a>
+              <div
+                class="collapse"
+                id="collapseCondicionFiscal"
+                aria-labelledby="headingcCondicionFiscal"
+                data-bs-parent="#sidenavAccordion"
+              >
+                <nav class="sb-sidenav-menu-nested nav">
+                  <a class="nav-link" href="{% url 'mis_condiciones_fiscales' %}">
+                    Lista de Condiciones Fiscales
+                  </a>
+                  <a class="nav-link" href="{% url 'nueva_condicion_fiscal' %}">
+                    Nueva Condicion Fiscal
+                  </a>
+                </nav>
+              </div>
+               <a
+                class="nav-link collapsed"
+                href="#"
+                data-bs-toggle="collapse"
+                data-bs-target="#collapseClientes"
+                aria-expanded="false"
+                aria-controls="collapseClientes"
+              >
+                <div class="sb-nav-link-icon">
+                  <i class="fas fa-credit-card"></i>
+                </div>
+                Clientes
+                <div class="sb-sidenav-collapse-arrow">
+                  <i class="fas fa-angle-down"></i>
+                </div>
+              </a>
+              <div
+                class="collapse"
+                id="collapseClientes"
+                aria-labelledby="headingClientes"
+                data-bs-parent="#sidenavAccordion"
+              >
+                <nav class="sb-sidenav-menu-nested nav">
+                  <a class="nav-link" href="{% url 'mis_clientes' %}">
+                    Lista de Clientes
+                  </a>
+                  <a class="nav-link" href="{% url 'nuevo_cliente' %}">
+                    Nuevo Cliente
+                  </a>
+                </nav>
+              </div>
+              <div class="sb-sidenav-menu-heading">Registros</div>
+               <a
+                class="nav-link collapsed"
+                href="#"
+                data-bs-toggle="collapse"
+                data-bs-target="#collapseVentas"
+                aria-expanded="false"
+                aria-controls="collapseVentas"
+              >
+                <div class="sb-nav-link-icon">
+                  <i class="fas fa-credit-card"></i>
+                </div>
+                Ventas
+                <div class="sb-sidenav-collapse-arrow">
+                  <i class="fas fa-angle-down"></i>
+                </div>
+              </a>
+              <div
+                class="collapse"
+                id="collapseVentas"
+                aria-labelledby="headingVentas"
+                data-bs-parent="#sidenavAccordion"
+              >
+                <nav class="sb-sidenav-menu-nested nav">
+                  <a class="nav-link" href="{% url 'mis_ventas' %}">
+                    Lista de Ventas
+                  </a>
+                  <a class="nav-link" href="{% url 'nueva_venta' %}">
+                    Nueva Ventas
+                  </a>
+                </nav>
+              </div>
+              <a
+                class="nav-link collapsed"
+                href="#"
+                data-bs-toggle="collapse"
+                data-bs-target="#collapseNotas"
+                aria-expanded="false"
+                aria-controls="collapseNotas"
+              >
+                <div class="sb-nav-link-icon">
+                  <i class="fa-solid fa-file-invoice"></i>
+                </div>
+                Notas de Crédito
+                <div class="sb-sidenav-collapse-arrow">
+                  <i class="fas fa-angle-down"></i>
+                </div>
+              </a>
+              <div
+                class="collapse"
+                id="collapseNotas"
+                aria-labelledby="headingNotas"
+                data-bs-parent="#sidenavAccordion"
+              >
+                <nav class="sb-sidenav-menu-nested nav">
+                  <a class="nav-link" href="{% url 'mis_notascredito' %}">
+                    Lista de Notas de Crédito
+                  </a>
+                </nav>
+              </div>
+              <a class="nav-link" href="{% url 'base_para_informes' %}">
+                <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
+                Informes
+              </a>
             </div>
           </div>
           <div class="sb-sidenav-footer">
