@@ -1,3 +1,52 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
+# Vista para cambio de contraseña por AJAX
+from django.views import View
+@method_decorator(csrf_exempt, name='dispatch')
+class CambiarContrasenaAjaxView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            form = PasswordChangeForm(user=request.user, data=request.POST)
+            if form.is_valid():
+                user = form.save()
+                update_session_auth_hash(request, user)
+                return JsonResponse({'success': True})
+            else:
+                return JsonResponse({'success': False, 'error': form.errors})
+        return JsonResponse({'success': False, 'error': 'Petición inválida'}, status=400)
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from django.http import JsonResponse
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic.edit import UpdateView
+from .models import UsuarioPersonalizado
+# Vista para edición de perfil desde el modal (solo AJAX, solo datos básicos)
+@method_decorator(csrf_exempt, name='dispatch')
+class PerfilModalUpdateView(LoginRequiredMixin, UpdateView):
+    model = UsuarioPersonalizado
+    fields = ['first_name', 'last_name', 'email']
+
+    def post(self, request, *args, **kwargs):
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            self.object = self.get_object()
+            data = request.POST
+            first_name = data.get('first_name', '').strip()
+            last_name = data.get('last_name', '').strip()
+            errors = {}
+            if not first_name:
+                errors['first_name'] = 'El nombre no puede estar vacío.'
+            if not last_name:
+                errors['last_name'] = 'El apellido no puede estar vacío.'
+            if errors:
+                return JsonResponse({'success': False, 'error': errors})
+            self.object.first_name = first_name
+            self.object.last_name = last_name
+            self.object.save()
+            return JsonResponse({'success': True})
+        return JsonResponse({'success': False, 'error': 'Petición inválida'}, status=400)
 from django.contrib.auth.models import User
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
 from django.urls import reverse_lazy
