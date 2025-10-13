@@ -69,8 +69,46 @@
     </div>
     <div id="tab-content-estacionarios" class="tab-content-fichero" style="display:none;">
       <h3><i class="fa-solid fa-cube"></i> Productos estacionarios</h3>
-      <p>Este informe contendrá un resumen de los productos estacionarios de la ferretería en el rango de fechas y categorías seleccionadas.</p>
+      <p>En la historia de ventas ver los 15 productos más vendidos del mes elegido (sin importar el año). Seleccioná el mes, la categoría y el top N.</p>
       <hr />
+      <form method="get" action="{% url 'rep_estacionarios' %}" autocomplete="off" style="margin-bottom:0;">
+        <div style="display: flex; flex-wrap: wrap; gap: 40px; align-items: stretch; justify-content: flex-start;">
+          <div class="filter-card">
+            <span style="font-size:1.3rem; color:#F15A29; margin-bottom:8px;"><i class="fa-solid fa-calendar-days"></i></span>
+            <label for="mes_est" class="form-label">Mes</label>
+            <select id="mes_est" name="mes" class="form-control" style="min-width: 160px; margin-top:6px;">
+              <option value="">-- Selecciona un mes --</option>
+              {% for num, nombre in meses %}
+                <option value="{{ num }}" {% if request.GET.mes == num|stringformat:'s' %}selected{% endif %}>{{ nombre }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="filter-card">
+            <span style="font-size:1.3rem; color:#FBB03B; margin-bottom:8px;"><i class="fa-solid fa-cubes"></i></span>
+            <label for="categoria_est" class="form-label">Categoría</label>
+            <select id="categoria_est" name="categoria" class="form-control" style="min-width: 160px; margin-top:6px;">
+              <option value="">-- Todas --</option>
+              {% for c in categorias %}
+                <option value="{{ c.id }}" {% if request.GET.categoria == c.id|stringformat:'s' %}selected{% endif %}>{{ c.nombre }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="filter-card">
+            <span style="font-size:1.3rem; color:#29ABE2; margin-bottom:8px;"><i class="fa-solid fa-list-ol"></i></span>
+            <label for="top_n_est" class="form-label">Top</label>
+            <select id="top_n_est" name="top_n" class="form-control" style="min-width: 120px; margin-top:6px;">
+              <option value="10" {% if request.GET.top_n == '10' %}selected{% endif %}>Top 10</option>
+              <option value="15" {% if request.GET.top_n == '15' or not request.GET.top_n %}selected{% endif %}>Top 15</option>
+              <option value="20" {% if request.GET.top_n == '20' %}selected{% endif %}>Top 20</option>
+              <option value="50" {% if request.GET.top_n == '50' %}selected{% endif %}>Top 50</option>
+              <option value="100" {% if request.GET.top_n == '100' %}selected{% endif %}>Top 100</option>
+            </select>
+          </div>
+          <div class="filter-card d-flex align-items-end" style="min-width: 120px;">
+            <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-cube"></i> Ver top</button>
+          </div>
+        </div>
+      </form>
     </div>
     <div id="tab-content-proyeccion" class="tab-content-fichero" style="display:none;">
       <h3><i class="fa-solid fa-chart-area"></i> Proyección de ventas</h3>

@@ -1,42 +1,47 @@
 {% extends 'dashboard/principal.html' %}
 {% load static %}
 {% block Contenido %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+<link rel="stylesheet" href="{% static 'CSS/report_filters.css' %}" />
+<link rel="stylesheet" href="{% static 'CSS/rep_ventas_generales.css' %}" />
 <div class="container mt-5">
-  <h2>Top 15 productos más vendidos del mes</h2>
+  <div class="mb-3">
+    <a href="{% url 'base_para_informes' %}" class="btn btn-outline-secondary">
+      <i class="fa-solid fa-arrow-left"></i> Volver a informes
+    </a>
+  </div>
+  <h2>Top {{ top_n|default:15 }} productos más vendidos del mes</h2>
   <div class="card mt-4">
     <div class="card-body">
       <form method="get" class="mb-4" autocomplete="off">
-        <div class="row">
-          <div class="col-md-4">
+        <div style="display: flex; flex-wrap: wrap; gap: 40px; align-items: stretch; justify-content: space-between;">
+          <!-- Mes -->
+          <div class="filter-card">
+            <span style="font-size:1.3rem; color:#F15A29; margin-bottom:8px;"><i class="fa-solid fa-calendar-days"></i></span>
             <label for="mes" class="form-label">Mes</label>
-            <select id="mes" name="mes" class="form-control">
+            <select id="mes" name="mes" class="form-control" style="min-width: 160px; margin-top:6px;">
               <option value="">-- Selecciona un mes --</option>
-              <option value="1" {% if mes == '1' %}selected{% endif %}>Enero</option>
-              <option value="2" {% if mes == '2' %}selected{% endif %}>Febrero</option>
-              <option value="3" {% if mes == '3' %}selected{% endif %}>Marzo</option>
-              <option value="4" {% if mes == '4' %}selected{% endif %}>Abril</option>
-              <option value="5" {% if mes == '5' %}selected{% endif %}>Mayo</option>
-              <option value="6" {% if mes == '6' %}selected{% endif %}>Junio</option>
-              <option value="7" {% if mes == '7' %}selected{% endif %}>Julio</option>
-              <option value="8" {% if mes == '8' %}selected{% endif %}>Agosto</option>
-              <option value="9" {% if mes == '9' %}selected{% endif %}>Septiembre</option>
-              <option value="10" {% if mes == '10' %}selected{% endif %}>Octubre</option>
-              <option value="11" {% if mes == '11' %}selected{% endif %}>Noviembre</option>
-              <option value="12" {% if mes == '12' %}selected{% endif %}>Diciembre</option>
+              {% for num, nombre in meses %}
+                <option value="{{ num }}" {% if mes == num|stringformat:'s' %}selected{% endif %}>{{ nombre }}</option>
+              {% endfor %}
             </select>
           </div>
-          <div class="col-md-4">
+          <!-- Categoría -->
+          <div class="filter-card">
+            <span style="font-size:1.3rem; color:#FBB03B; margin-bottom:8px;"><i class="fa-solid fa-cubes"></i></span>
             <label for="categoria" class="form-label">Categoría</label>
-            <select id="categoria" name="categoria" class="form-control">
+            <select id="categoria" name="categoria" class="form-control" style="min-width: 160px; margin-top:6px;">
               <option value="">-- Todas --</option>
               {% for c in categorias %}
                 <option value="{{ c.id }}" {% if categoria_id == c.id|stringformat:'s' %}selected{% endif %}>{{ c.nombre }}</option>
               {% endfor %}
             </select>
           </div>
-          <div class="col-md-2">
+          <!-- Top N -->
+          <div class="filter-card">
+            <span style="font-size:1.3rem; color:#29ABE2; margin-bottom:8px;"><i class="fa-solid fa-list-ol"></i></span>
             <label for="top_n" class="form-label">Top</label>
-            <select id="top_n" name="top_n" class="form-control">
+            <select id="top_n" name="top_n" class="form-control" style="min-width: 120px; margin-top:6px;">
               <option value="10" {% if top_n == '10' %}selected{% endif %}>Top 10</option>
               <option value="15" {% if top_n == '15' or not top_n %}selected{% endif %}>Top 15</option>
               <option value="20" {% if top_n == '20' %}selected{% endif %}>Top 20</option>
@@ -44,7 +49,7 @@
               <option value="100" {% if top_n == '100' %}selected{% endif %}>Top 100</option>
             </select>
           </div>
-          <div class="col-md-2 d-flex align-items-end">
+          <div class="filter-card d-flex align-items-end" style="min-width: 120px;">
             <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-cube"></i> Ver top</button>
           </div>
         </div>
