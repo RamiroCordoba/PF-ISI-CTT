@@ -90,12 +90,19 @@ def rep_ventas_generales_view(request):
         ventas_qs = ventas_qs.filter(id__in=ventas_ids)
 
     # --- Ventas por fecha ---
-    # Solo aplicar filtros de fecha
+    # Aplicar todos los filtros (fecha, vendedores, categorías)
     ventas_fecha_qs = Venta.objects.filter(anulada=False)
     if fecha_desde:
         ventas_fecha_qs = ventas_fecha_qs.filter(fecha__gte=fecha_desde)
     if fecha_hasta:
         ventas_fecha_qs = ventas_fecha_qs.filter(fecha__lte=fecha_hasta)
+    if vendedores_seleccionados and 'todos' not in vendedores_seleccionados:
+        vendedores_nombres = [v for v in vendedores_seleccionados if v != 'todos']
+        ventas_fecha_qs = ventas_fecha_qs.filter(vendedor__in=vendedores_nombres)
+    if categorias_seleccionadas and 'todas' not in categorias_seleccionadas:
+        categorias_ids = [int(c) for c in categorias_seleccionadas if c.isdigit()]
+        ventas_ids = VentaItem.objects.filter(producto__categoria__id__in=categorias_ids).values_list('venta_id', flat=True)
+        ventas_fecha_qs = ventas_fecha_qs.filter(id__in=ventas_ids)
 
     from collections import defaultdict
     ventas_por_fecha_dict = defaultdict(float)

@@ -1,0 +1,100 @@
+{% extends 'dashboard/principal.html' %}
+{% load static %}
+{% block Contenido %}
+<div class="container mt-5">
+  <h2>Top 15 productos más vendidos del mes</h2>
+  <div class="card mt-4">
+    <div class="card-body">
+      <form method="get" class="mb-4" autocomplete="off">
+        <div class="row">
+          <div class="col-md-4">
+            <label for="mes" class="form-label">Mes</label>
+            <select id="mes" name="mes" class="form-control">
+              <option value="">-- Selecciona un mes --</option>
+              <option value="1" {% if mes == '1' %}selected{% endif %}>Enero</option>
+              <option value="2" {% if mes == '2' %}selected{% endif %}>Febrero</option>
+              <option value="3" {% if mes == '3' %}selected{% endif %}>Marzo</option>
+              <option value="4" {% if mes == '4' %}selected{% endif %}>Abril</option>
+              <option value="5" {% if mes == '5' %}selected{% endif %}>Mayo</option>
+              <option value="6" {% if mes == '6' %}selected{% endif %}>Junio</option>
+              <option value="7" {% if mes == '7' %}selected{% endif %}>Julio</option>
+              <option value="8" {% if mes == '8' %}selected{% endif %}>Agosto</option>
+              <option value="9" {% if mes == '9' %}selected{% endif %}>Septiembre</option>
+              <option value="10" {% if mes == '10' %}selected{% endif %}>Octubre</option>
+              <option value="11" {% if mes == '11' %}selected{% endif %}>Noviembre</option>
+              <option value="12" {% if mes == '12' %}selected{% endif %}>Diciembre</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label for="categoria" class="form-label">Categoría</label>
+            <select id="categoria" name="categoria" class="form-control">
+              <option value="">-- Todas --</option>
+              {% for c in categorias %}
+                <option value="{{ c.id }}" {% if categoria_id == c.id|stringformat:'s' %}selected{% endif %}>{{ c.nombre }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label for="top_n" class="form-label">Top</label>
+            <select id="top_n" name="top_n" class="form-control">
+              <option value="10" {% if top_n == '10' %}selected{% endif %}>Top 10</option>
+              <option value="15" {% if top_n == '15' or not top_n %}selected{% endif %}>Top 15</option>
+              <option value="20" {% if top_n == '20' %}selected{% endif %}>Top 20</option>
+              <option value="50" {% if top_n == '50' %}selected{% endif %}>Top 50</option>
+              <option value="100" {% if top_n == '100' %}selected{% endif %}>Top 100</option>
+            </select>
+          </div>
+          <div class="col-md-2 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-cube"></i> Ver top</button>
+          </div>
+        </div>
+      </form>
+      {% if page_obj %}
+      <div class="table-responsive">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Producto</th>
+              <th>Cantidad vendida</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for prod in page_obj %}
+            <tr>
+              <td>{{ forloop.counter0|add:page_obj.start_index }}</td>
+              <td>{{ prod.producto__nombre }}</td>
+              <td>{{ prod.total_cantidad }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <nav aria-label="Paginación">
+        <ul class="pagination justify-content-center">
+          {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?mes={{ mes }}&categoria={{ categoria_id }}&top_n={{ top_n }}&page={{ page_obj.previous_page_number }}">Anterior</a></li>
+          {% else %}
+            <li class="page-item disabled"><span class="page-link">Anterior</span></li>
+          {% endif %}
+          {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+              <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+              <li class="page-item"><a class="page-link" href="?mes={{ mes }}&categoria={{ categoria_id }}&top_n={{ top_n }}&page={{ num }}">{{ num }}</a></li>
+            {% endif %}
+          {% endfor %}
+          {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?mes={{ mes }}&categoria={{ categoria_id }}&top_n={{ top_n }}&page={{ page_obj.next_page_number }}">Siguiente</a></li>
+          {% else %}
+            <li class="page-item disabled"><span class="page-link">Siguiente</span></li>
+          {% endif %}
+        </ul>
+      </nav>
+      {% elif mes %}
+        <div class="alert alert-warning">No hay ventas registradas para el mes seleccionado.</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
