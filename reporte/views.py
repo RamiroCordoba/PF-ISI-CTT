@@ -1,4 +1,4 @@
-fr2m django.core.paginator import Paginator
+from django.core.paginator import Paginator
 from calendar import month_name
 def rep_estacionarios_view(request):
     from ventas.models import Venta, VentaItem
@@ -9,7 +9,7 @@ def rep_estacionarios_view(request):
     categoria_id = request.GET.get('categoria', '')
     top_n = request.GET.get('top_n', '15')
     page = request.GET.get('page', 1)
-    # Meses para el select
+    # Meses para el select 
     meses_es = [
         ("1", "Enero"), ("2", "Febrero"), ("3", "Marzo"), ("4", "Abril"), ("5", "Mayo"), ("6", "Junio"),
         ("7", "Julio"), ("8", "Agosto"), ("9", "Septiembre"), ("10", "Octubre"), ("11", "Noviembre"), ("12", "Diciembre")
