@@ -1,0 +1,15 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Ver VentaItem de Pintura",
+			"type": "shell",
+			"command": "python manage.py shell -c \"from ventas.models import VentaItem; from productos.models import Categoria; cat = Categoria.objects.get(nombre='Pintura'); items = VentaItem.objects.filter(producto__categoria=cat, venta__anulada=False); print(list(items.values('producto__nombre','cantidad','precio','venta_id')))\""
+		},
+		{
+			"label": "Ver VentaItem de Pintura detalle",
+			"type": "shell",
+			"command": "python manage.py shell -c \"from ventas.models import VentaItem; from productos.models import Categoria; cat = Categoria.objects.get(nombre='Pintureria'); items = VentaItem.objects.filter(producto__categoria=cat, venta__anulada=False); print(list(items.values('producto__nombre','cantidad','precio','venta_id')))\""
+		}
+	]
+}

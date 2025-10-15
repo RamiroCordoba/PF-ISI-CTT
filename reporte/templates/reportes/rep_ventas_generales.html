@@ -20,20 +20,20 @@
         </button>
       </div>
       <div id="filtros-content">
-        <form method="get" id="filtros-form" class="report-filters" autocomplete="off" onsubmit="return validarFiltrosReporte();">
+  <form method="get" id="filtros-form" class="report-filters" autocomplete="off">
           <div style="display: flex; flex-wrap: wrap; gap: 40px; align-items: stretch; justify-content: space-between;">
             <!-- Fecha desde -->
             <div class="filter-card">
               <span style="font-size:1.3rem; color:#F15A29; margin-bottom:8px;"><i class="fa-solid fa-calendar-day"></i></span>
               <label for="fecha_desde" class="form-label">Fecha desde</label>
-              <input type="date" class="form-control" id="fecha_desde" name="fecha_desde" value="{{ fecha_desde }}" required>
+              <input type="date" class="form-control" id="fecha_desde" name="fecha_desde" value="{{ fecha_desde|date:'Y-m-d' }}" required>
               <div id="error-fecha-desde" class="filter-error" style="display:none;"></div>
             </div>
             <!-- Fecha hasta -->
             <div class="filter-card">
               <span style="font-size:1.3rem; color:#29ABE2; margin-bottom:8px;"><i class="fa-solid fa-calendar-check"></i></span>
               <label for="fecha_hasta" class="form-label">Fecha hasta</label>
-              <input type="date" class="form-control" id="fecha_hasta" name="fecha_hasta" value="{{ fecha_hasta }}" required>
+              <input type="date" class="form-control" id="fecha_hasta" name="fecha_hasta" value="{{ fecha_hasta|date:'Y-m-d' }}" required>
               <div id="error-fecha-hasta" class="filter-error" style="display:none;"></div>
             </div>
             <!-- Vendedores -->
@@ -41,7 +41,7 @@
               <span style="font-size:1.3rem; color:#7AC943; margin-bottom:8px;"><i class="fa-solid fa-user-tie"></i></span>
               <label class="form-label">Vendedores</label>
               <div id="vendedores-checklist">
-                <label style="font-weight:500; color:#F15A29;"><input type="checkbox" id="vendedor-todos" value="todos" {% if 'todos' in vendedores_seleccionados %}checked{% endif %}> Todos</label><br>
+                <label style="font-weight:500; color:#F15A29;"><input type="checkbox" id="vendedor-todos" value="todos" name="vendedores" {% if 'todos' in vendedores_seleccionados %}checked{% endif %}> Todos</label><br>
                 {% for v in vendedores %}
                   <label><input type="checkbox" class="vendedor-check" name="vendedores" value="{{ v.id }}" {% if v.id in vendedores_seleccionados or 'todos' in vendedores_seleccionados %}checked{% endif %}> {{ v.nombre }}</label><br>
                 {% endfor %}
@@ -53,7 +53,7 @@
               <span style="font-size:1.3rem; color:#FBB03B; margin-bottom:8px;"><i class="fa-solid fa-cubes"></i></span>
               <label class="form-label">Categorías</label>
               <div id="categorias-checklist">
-                <label style="font-weight:500; color:#29ABE2;"><input type="checkbox" id="categoria-todas" value="todas" {% if 'todas' in categorias_seleccionadas %}checked{% endif %}> Todas</label><br>
+                <label style="font-weight:500; color:#29ABE2;"><input type="checkbox" id="categoria-todas" value="todas" name="categorias" {% if 'todas' in categorias_seleccionadas %}checked{% endif %}> Todas</label><br>
                 {% for c in categorias %}
                   <label><input type="checkbox" class="categoria-check" name="categorias" value="{{ c.id }}" {% if c.id in categorias_seleccionadas or 'todas' in categorias_seleccionadas %}checked{% endif %}> {{ c.nombre }}</label><br>
                 {% endfor %}
@@ -62,7 +62,7 @@
             </div>
           </div>
           <div style="margin-top: 32px; text-align: right;">
-            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-rotate"></i> Actualizar</button>
+            <button type="submit" class="btn btn-primary" id="btn-generar-reporte"><i class="fa-solid fa-rotate"></i> Actualizar</button>
           </div>
         </form>
       </div>
@@ -86,21 +86,21 @@
           <div class="col-md-3">
             <div class="kpi-card kpi-bg-red">
               <span class="kpi-icon"><i class="fa-solid fa-ban"></i></span>
-              <span class="kpi-label">Ventas canceladas</span>
+              <span class="kpi-label">Notas de credito</span>
               <span class="kpi-value text-danger">{{ ventas_canceladas }}</span>
             </div>
           </div>
           <div class="col-md-3">
             <div class="kpi-card kpi-bg-blue">
               <span class="kpi-icon"><i class="fa-solid fa-file-invoice-dollar"></i></span>
-              <span class="kpi-label">Notas de crédito</span>
-              <span class="kpi-value">{{ cantidad_notas_credito }}</span>
+              <span class="kpi-label">Saldo Bruto</span>
+              <span class="kpi-value">{{ promedio_saldo_bruto|floatformat:2 }}</span>
             </div>
           </div>
           <div class="col-md-3">
             <div class="kpi-card kpi-bg-yellow">
               <span class="kpi-icon"><i class="fa-solid fa-coins"></i></span>
-              <span class="kpi-label">Promedio saldo NC</span>
+              <span class="kpi-label">Salto Neto</span>
               <span class="kpi-value">${{ promedio_saldo_notas|floatformat:2 }}</span>
             </div>
           </div>
@@ -185,10 +185,10 @@
 
     // Ventas por fecha
     const ventasFechaData = {
-      labels: [{% for fecha in ventas_por_fecha %}'{{ fecha }}',{% endfor %}],
+      labels: [{% for fecha in ventas_por_fecha %}'{{ fecha }}'{% if not forloop.last %},{% endif %}{% endfor %}],
       datasets: [{
         label: 'Total ventas',
-  data: [{% for monto in montos_ventas %}{{ monto|floatformat:"0"|default:0 }},{% endfor %}],
+        data: [{% for monto in montos_ventas %}{{ monto|floatformat:"0"|default:0 }}{% if not forloop.last %},{% endif %}{% endfor %}],
         backgroundColor: '#29ABE2',
       }]
     };
@@ -229,10 +229,10 @@
 
     // Ventas por vendedor
     const ventasVendedorData = {
-      labels: [{% for v in ventas_por_vendedor %}'{{ v.vendedor }}',{% endfor %}],
+      labels: [{% for v in ventas_por_vendedor %}'{{ v.vendedor }}'{% if not forloop.last %},{% endif %}{% endfor %}],
       datasets: [{
         label: 'Total ventas',
-        data: [{% for v in ventas_por_vendedor %}{{ v.total|default:0 }},{% endfor %}],
+        data: [{% for v in ventas_por_vendedor %}{{ v.total|default:0 }}{% if not forloop.last %},{% endif %}{% endfor %}],
         backgroundColor: '#FBB03B',
       }]
     };
@@ -262,10 +262,10 @@
 
     // Ventas por categoría
     const ventasCategoriaData = {
-      labels: [{% for v in ventas_por_categoria %}'{{ v.producto__categoria__nombre }}',{% endfor %}],
+      labels: {{ ventas_categoria_labels_json|safe }},
       datasets: [{
         label: 'Total ventas',
-        data: [{% for v in ventas_por_categoria %}{{ v.total|default:0 }},{% endfor %}],
+        data: {{ ventas_categoria_data_json|safe }},
         backgroundColor: '#7AC943',
       }]
     };
