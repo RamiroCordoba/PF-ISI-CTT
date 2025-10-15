@@ -1,6 +1,7 @@
 from django.core.paginator import Paginator
 from calendar import month_name
 def rep_estacionarios_view(request):
+    from ventas.models import VentaItem
     from ventas.models import Venta, VentaItem
     from productos.models import Categoria
     from django.db.models import Sum
@@ -9,6 +10,21 @@ def rep_estacionarios_view(request):
     categoria_id = request.GET.get('categoria', '')
     top_n = request.GET.get('top_n', '15')
     page = request.GET.get('page', 1)
+    # NOTA: este informe filtra por mes (sin importar año), categoría y top_n
+    # Meses para el select
+    meses = [
+        ("1", "Enero"), ("2", "Febrero"), ("3", "Marzo"), ("4", "Abril"), ("5", "Mayo"), ("6", "Junio"),
+        ("7", "Julio"), ("8", "Agosto"), ("9", "Septiembre"), ("10", "Octubre"), ("11", "Noviembre"), ("12", "Diciembre")
+    ]
+    categorias = Categoria.objects.all().order_by('nombre')
+    # Query base
+    items = VentaItem.objects.filter(venta__anulada=False)
+    # Si se seleccionó un mes, hacemos la búsqueda por mes (ignorando año) tal como pidió el usuario
+    if mes:
+        try:
+            items = items.filter(venta__fecha__month=int(mes))
+        except Exception:
+            pass
     # Meses para el select 
     meses_es = [
         ("1", "Enero"), ("2", "Febrero"), ("3", "Marzo"), ("4", "Abril"), ("5", "Mayo"), ("6", "Junio"),
@@ -25,6 +41,16 @@ def rep_estacionarios_view(request):
         items = items.filter(producto__categoria__id=categoria_id)
     # Agrupar por producto y sumar cantidad
     productos = items.values('producto__nombre').annotate(total_cantidad=Sum('cantidad')).order_by('-total_cantidad')
+    # Top N (solo los N más vendidos)
+    try:
+        top_n_int = int(top_n)
+        if top_n_int not in [10, 15, 20, 25, 50, 100]:
+            top_n_int = 15
+    except Exception:
+        top_n_int = 15
+    productos = list(productos[:top_n_int])
+    # Paginación (máx 20 por página)
+    from django.core.paginator import Paginator
     # Top N
     try:
         top_n_int = int(top_n)
@@ -78,6 +104,11 @@ logger = logging.getLogger(__name__)
 
 def dashboard_view(request):
     from productos.models import Categoria
+    # Meses en español fijos para evitar depender de la configuración de locale
+    meses = [
+        ("1", "Enero"), ("2", "Febrero"), ("3", "Marzo"), ("4", "Abril"), ("5", "Mayo"), ("6", "Junio"),
+        ("7", "Julio"), ("8", "Agosto"), ("9", "Septiembre"), ("10", "Octubre"), ("11", "Noviembre"), ("12", "Diciembre")
+    ]
     from calendar import month_name
     meses = [(str(i), month_name[i].capitalize()) for i in range(1, 13)]
     categorias = Categoria.objects.all().order_by('nombre')
