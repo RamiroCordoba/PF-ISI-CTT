@@ -69,6 +69,8 @@
     </div>
     <div id="tab-content-estacionarios" class="tab-content-fichero" style="display:none;">
       <h3><i class="fa-solid fa-cube"></i> Productos estacionarios</h3>
+
+      <p>En la historia de ventas ver los 15 productos más vendidos del mes elegido (sin importar el año). Seleccioná el mes, la categoría y el top N.</p>
       <p>En la historia de ventas ver los productos más vendidos del mes elegido (sin importar el año). Seleccioná el mes, la categoría y el top N.</p>
       <hr />
       <form method="get" action="{% url 'rep_estacionarios' %}" autocomplete="off" style="margin-bottom:0;">
@@ -100,7 +102,6 @@
               <option value="10" {% if request.GET.top_n == '10' %}selected{% endif %}>Top 10</option>
               <option value="15" {% if request.GET.top_n == '15' or not request.GET.top_n %}selected{% endif %}>Top 15</option>
               <option value="20" {% if request.GET.top_n == '20' %}selected{% endif %}>Top 20</option>
-              <option value="25" {% if request.GET.top_n == '25' %}selected{% endif %}>Top 25</option>
               <option value="50" {% if request.GET.top_n == '50' %}selected{% endif %}>Top 50</option>
               <option value="100" {% if request.GET.top_n == '100' %}selected{% endif %}>Top 100</option>
             </select>

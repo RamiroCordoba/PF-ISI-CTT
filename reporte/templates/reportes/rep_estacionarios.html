@@ -1,111 +1,105 @@
 {% extends 'dashboard/principal.html' %}
 {% load static %}
 {% block Contenido %}
-
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="{% static 'CSS/report_filters.css' %}" />
 <link rel="stylesheet" href="{% static 'CSS/rep_ventas_generales.css' %}" />
-
 <div class="container mt-5">
-  <a href="{% url 'base_para_informes' %}" class="btn btn-outline-secondary mb-3"><i class="fa-solid fa-arrow-left"></i> Volver a informes</a>
-
-  <div class="card">
+  <div class="mb-3">
+    <a href="{% url 'base_para_informes' %}" class="btn btn-outline-secondary">
+      <i class="fa-solid fa-arrow-left"></i> Volver a informes
+    </a>
+  </div>
+  <h2>Top {{ top_n|default:15 }} productos más vendidos del mes</h2>
+  <div class="card mt-4">
     <div class="card-body">
-      <h4 class="card-title">Top {{ top_n|default:15 }} productos más vendidos del mes</h4>
-
       <form method="get" class="mb-4" autocomplete="off">
-        <div style="display:flex;flex-wrap:wrap;gap:20px;align-items:flex-end;">
+        <div style="display: flex; flex-wrap: wrap; gap: 40px; align-items: stretch; justify-content: space-between;">
+          <!-- Mes -->
           <div class="filter-card">
+            <span style="font-size:1.3rem; color:#F15A29; margin-bottom:8px;"><i class="fa-solid fa-calendar-days"></i></span>
             <label for="mes" class="form-label">Mes</label>
-            <select id="mes" name="mes" class="form-control">
+            <select id="mes" name="mes" class="form-control" style="min-width: 160px; margin-top:6px;">
               <option value="">-- Selecciona un mes --</option>
               {% for num, nombre in meses %}
                 <option value="{{ num }}" {% if mes == num|stringformat:'s' %}selected{% endif %}>{{ nombre }}</option>
               {% endfor %}
             </select>
           </div>
-
+          <!-- Categoría -->
           <div class="filter-card">
+            <span style="font-size:1.3rem; color:#FBB03B; margin-bottom:8px;"><i class="fa-solid fa-cubes"></i></span>
             <label for="categoria" class="form-label">Categoría</label>
-            <select id="categoria" name="categoria" class="form-control">
+            <select id="categoria" name="categoria" class="form-control" style="min-width: 160px; margin-top:6px;">
               <option value="">-- Todas --</option>
               {% for c in categorias %}
                 <option value="{{ c.id }}" {% if categoria_id == c.id|stringformat:'s' %}selected{% endif %}>{{ c.nombre }}</option>
               {% endfor %}
             </select>
           </div>
-
+          <!-- Top N -->
           <div class="filter-card">
+            <span style="font-size:1.3rem; color:#29ABE2; margin-bottom:8px;"><i class="fa-solid fa-list-ol"></i></span>
             <label for="top_n" class="form-label">Top</label>
-            <select id="top_n" name="top_n" class="form-control">
+            <select id="top_n" name="top_n" class="form-control" style="min-width: 120px; margin-top:6px;">
               <option value="10" {% if top_n == '10' %}selected{% endif %}>Top 10</option>
               <option value="15" {% if top_n == '15' or not top_n %}selected{% endif %}>Top 15</option>
               <option value="20" {% if top_n == '20' %}selected{% endif %}>Top 20</option>
-              <option value="25" {% if top_n == '25' %}selected{% endif %}>Top 25</option>
               <option value="50" {% if top_n == '50' %}selected{% endif %}>Top 50</option>
               <option value="100" {% if top_n == '100' %}selected{% endif %}>Top 100</option>
             </select>
           </div>
-
-          <div class="filter-card">
-            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-filter"></i> Ver top</button>
+          <div class="filter-card d-flex align-items-end" style="min-width: 120px;">
+            <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-cube"></i> Ver top</button>
           </div>
         </div>
       </form>
-
-      {% if page_obj and page_obj.object_list %}
-        <div class="table-responsive">
-          <table class="table table-striped">
-            <thead>
-              <tr>
-                <th style="width:80px;">#</th>
-                <th>Producto</th>
-                <th style="width:180px;">Cantidad vendida</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for prod in page_obj %}
-                <tr>
-                  <td>{{ forloop.counter0|add:page_obj.start_index }}</td>
-                  <td>{{ prod.producto__nombre }}</td>
-                  <td>{{ prod.total_cantidad }}</td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Paginación simple -->
-        <nav aria-label="Paginación">
-          <ul class="pagination justify-content-center">
-            {% if page_obj.has_previous %}
-              <li class="page-item"><a class="page-link" href="?mes={{ mes }}&categoria={{ categoria_id }}&top_n={{ top_n }}&page={{ page_obj.previous_page_number }}">Anterior</a></li>
-            {% else %}
-              <li class="page-item disabled"><span class="page-link">Anterior</span></li>
-            {% endif %}
-
-            {% for num in page_obj.paginator.page_range %}
-              <li class="page-item {% if page_obj.number == num %}active{% endif %}">
-                <a class="page-link" href="?mes={{ mes }}&categoria={{ categoria_id }}&top_n={{ top_n }}&page={{ num }}">{{ num }}</a>
-              </li>
+      {% if page_obj %}
+      <div class="table-responsive">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Producto</th>
+              <th>Cantidad vendida</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for prod in page_obj %}
+            <tr>
+              <td>{{ forloop.counter0|add:page_obj.start_index }}</td>
+              <td>{{ prod.producto__nombre }}</td>
+              <td>{{ prod.total_cantidad }}</td>
+            </tr>
             {% endfor %}
-
-            {% if page_obj.has_next %}
-              <li class="page-item"><a class="page-link" href="?mes={{ mes }}&categoria={{ categoria_id }}&top_n={{ top_n }}&page={{ page_obj.next_page_number }}">Siguiente</a></li>
-            {% else %}
-              <li class="page-item disabled"><span class="page-link">Siguiente</span></li>
+          </tbody>
+        </table>
+      </div>
+      <nav aria-label="Paginación">
+        <ul class="pagination justify-content-center">
+          {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?mes={{ mes }}&categoria={{ categoria_id }}&top_n={{ top_n }}&page={{ page_obj.previous_page_number }}">Anterior</a></li>
+          {% else %}
+            <li class="page-item disabled"><span class="page-link">Anterior</span></li>
+          {% endif %}
+          {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+              <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+              <li class="page-item"><a class="page-link" href="?mes={{ mes }}&categoria={{ categoria_id }}&top_n={{ top_n }}&page={{ num }}">{{ num }}</a></li>
             {% endif %}
-          </ul>
-        </nav>
-
+          {% endfor %}
+          {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?mes={{ mes }}&categoria={{ categoria_id }}&top_n={{ top_n }}&page={{ page_obj.next_page_number }}">Siguiente</a></li>
+          {% else %}
+            <li class="page-item disabled"><span class="page-link">Siguiente</span></li>
+          {% endif %}
+        </ul>
+      </nav>
       {% elif mes %}
         <div class="alert alert-warning">No hay ventas registradas para el mes seleccionado.</div>
-      {% else %}
-        <div class="alert alert-secondary">Seleccione filtros y presione "Ver top" para generar el informe.</div>
       {% endif %}
-
     </div>
   </div>
 </div>
-
 {% endblock %}

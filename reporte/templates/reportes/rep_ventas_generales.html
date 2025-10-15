@@ -9,6 +9,11 @@
 <link rel="stylesheet" href="{% static 'CSS/report_filters.css' %}" />
 <link rel="stylesheet" href="{% static 'CSS/rep_ventas_generales.css' %}" />
 <div class="container mt-5">
+  <div class="mb-3">
+    <a href="{% url 'base_para_informes' %}" class="btn btn-outline-secondary">
+      <i class="fa-solid fa-arrow-left"></i> Volver a informes
+    </a>
+  </div>
   <h2>Reporte de Ventas Generales</h2>
   <!-- Parte 1: Filtros editables -->
   <div class="card mt-4">
